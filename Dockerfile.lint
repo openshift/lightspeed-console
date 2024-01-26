@@ -1,0 +1,14 @@
+FROM registry.redhat.io/rhel8/nodejs-18-minimal:1-91
+
+WORKDIR /usr/src/app
+
+RUN npm install --global yarn
+
+COPY package.json yarn.lock .
+RUN yarn
+
+COPY ./.eslintrc.yml ./.prettierrc.yml ./.stylelintrc.yaml .
+COPY ./integration-tests ./integration-tests
+COPY ./src ./src
+
+ENTRYPOINT ["yarn", "lint"]
