@@ -1,5 +1,12 @@
 [
   {
+    "type": "console.action/provider",
+    "properties": {
+      "contextId": "monitoring-alert-list-item",
+      "provider": { "$codeRef": "AlertActionsProvider" }
+    }
+  },
+  {
     "type": "console.page/route",
     "properties": {
       "exact": true,

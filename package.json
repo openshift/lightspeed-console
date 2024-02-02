@@ -69,6 +69,7 @@
     "displayName": "OpenShift Lightspeed Console Plugin",
     "description": "Add UI elements for interacting with OpenShift Lightspeed to the OpenShift web console.",
     "exposedModules": {
+      "AlertActionsProvider": "./hooks/useAlertExtension",
       "GeneralPage": "./components/GeneralPage"
     },
     "dependencies": {
