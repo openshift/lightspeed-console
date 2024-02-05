@@ -4,8 +4,7 @@
 }
 
 .ols-plugin__chat-history {
-  max-height: calc(100% - 100px);
-  padding-bottom: 100px;
+  height: calc(100% - 80px);
   overflow-y: auto;
 
   .ols-plugin__chat-entry {
@@ -33,18 +32,21 @@
 }
 
 .ols-plugin__chat-prompt {
+  --prompt-height: 150px;
+
   bottom: 0;
   position: fixed;
-  width: 100%;
+  width: calc(100% - 290px);
 
   textarea.ols-plugin__chat-prompt-input {
-    height: 100px;
+    border-radius: var(--pf-v5-global--BorderRadius--sm) 0 0 var(--pf-v5-global--BorderRadius--sm);
+    height: var(--prompt-height);
     resize: none;
-    width: calc(100% - 340px);
   }
 
   .ols-plugin__chat-prompt-submit {
-    height: 100px;
+    border-radius: 0 var(--pf-v5-global--BorderRadius--sm) var(--pf-v5-global--BorderRadius--sm) 0;
+    height: var(--prompt-height);
     width: 50px;
   }
 }
