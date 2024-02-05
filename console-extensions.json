@@ -7,6 +7,13 @@
     }
   },
   {
+    "type": "console.action/provider",
+    "properties": {
+      "contextId": "core~v1~Pod",
+      "provider": { "$codeRef": "PodActionsProvider" }
+    }
+  },
+  {
     "type": "console.page/route",
     "properties": {
       "exact": true,
@@ -22,6 +29,13 @@
       "href": "/lightspeed",
       "perspective": "admin",
       "section": "home"
+    }
+  },
+  {
+    "type": "console.redux-reducer",
+    "properties": {
+      "scope": "ols",
+      "reducer": { "$codeRef": "OLSReducer" }
     }
   }
 ]
