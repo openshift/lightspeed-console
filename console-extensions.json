@@ -18,7 +18,7 @@
     "type": "console.navigation/href",
     "properties": {
       "id": "LightspeedGeneral",
-      "name": "%plugin__lightspeed~OpenShift Lightspeed%",
+      "name": "%plugin__lightspeed-console-plugin~OpenShift Lightspeed%",
       "href": "/lightspeed",
       "perspective": "admin",
       "section": "home"
