@@ -3,7 +3,7 @@ import Helmet from 'react-helmet';
 import {
   Button,
   Form,
-  FormGroup,
+  InputGroup,
   Page,
   PageSection,
   Spinner,
@@ -135,7 +135,7 @@ const GeneralPage = () => {
         </PageSection>
         <PageSection className="ols-plugin__chat-prompt" variant="light">
           <Form onSubmit={onSubmit}>
-            <FormGroup>
+            <InputGroup>
               <TextArea
                 aria-label="OpenShift Lightspeed prompt"
                 autoResize
@@ -150,7 +150,7 @@ const GeneralPage = () => {
               >
                 {'>'}
               </Button>
-            </FormGroup>
+            </InputGroup>
           </Form>
         </PageSection>
       </Page>
