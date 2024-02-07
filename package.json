@@ -52,6 +52,7 @@
     "react-dom": "^17.0.1",
     "react-helmet": "^6.1.0",
     "react-i18next": "^13.0.0",
+    "react-redux": "^7.2.2",
     "react-router": "5.3.x",
     "react-router-dom": "5.3.x",
     "style-loader": "^3.3.1",
@@ -71,7 +72,9 @@
     "description": "Add UI elements for interacting with OpenShift Lightspeed to the OpenShift web console.",
     "exposedModules": {
       "AlertActionsProvider": "./hooks/useAlertExtension",
-      "GeneralPage": "./components/GeneralPage"
+      "GeneralPage": "./components/GeneralPage",
+      "OLSReducer": "./redux-reducers",
+      "PodActionsProvider": "./hooks/usePodExtension"
     },
     "dependencies": {
       "@console/pluginAPI": "*"

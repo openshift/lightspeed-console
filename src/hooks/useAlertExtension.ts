@@ -10,10 +10,10 @@ const useAlertExtension: ExtensionHook<Array<Action>, AlertExtensionOptions> = (
     // TODO: Just a placeholder for now
     {
       id: 'monitoring-alert-list-item',
-      label: 'Lightspeed callback',
+      label: 'Ask OpenShift Lightspeed',
       cta: () => {
         const ruleName = options.alert?.rule?.name;
-        console.warn(`Lightspeed callback called for alert ${ruleName}`);
+        console.warn(`OpenShift Lightspeed callback called for alert ${ruleName}`);
       }
     },
   ]);

@@ -1,5 +1,7 @@
 import * as React from 'react';
 import Helmet from 'react-helmet';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import {
   Button,
   Form,
@@ -11,9 +13,11 @@ import {
   TextContent,
   Title,
 } from '@patternfly/react-core';
+
 import { cancellableFetch } from '../cancellable-fetch';
+import { State } from '../redux-reducers';
+
 import './general-page.css';
-import { useTranslation } from 'react-i18next';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
 const QUERY_TIMEOUT = 60 * 1000;
@@ -69,7 +73,9 @@ const HistoryEntryWaiting = () => (
 const GeneralPage = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const [prompt, setPrompt] = React.useState('');
+  const initialPrompt = useSelector((s: State) => s.plugins?.ols.get('prompt'));
+
+  const [prompt, setPrompt] = React.useState(initialPrompt ?? '');
   const [history, setHistory] = React.useState<ChatEntry[]>([
     { text: t('Hello there. How can I help?'), who: 'ai' },
   ]);
@@ -97,7 +103,6 @@ const GeneralPage = () => {
 
       request()
         .then((response: QueryResponse) => {
-          console.warn(response);
           setHistory([
             ...newHistory,
             { text: response.response, who: 'ai' },
@@ -105,7 +110,6 @@ const GeneralPage = () => {
           setIsWaiting(false);
         })
         .catch((error) => {
-          console.warn(error);
           setHistory([
             ...newHistory,
             { error: error.toString(), text: undefined, who: 'ai' },
