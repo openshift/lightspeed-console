@@ -15,7 +15,7 @@ import { cancellableFetch } from '../cancellable-fetch';
 import './general-page.css';
 import { useTranslation } from 'react-i18next';
 
-const QUERY_ENDPOINT = '/api/proxy/plugin/console-lightspeed-plugin/ols/v1/query';
+const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
 const QUERY_TIMEOUT = 60 * 1000;
 
 type QueryResponse = {
@@ -67,7 +67,7 @@ const HistoryEntryWaiting = () => (
 );
 
 const GeneralPage = () => {
-  const { t } = useTranslation('plugin__lightspeed');
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const [prompt, setPrompt] = React.useState('');
   const [history, setHistory] = React.useState<ChatEntry[]>([

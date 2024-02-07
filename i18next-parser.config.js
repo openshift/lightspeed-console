@@ -9,7 +9,7 @@ module.exports = {
   locales: ['en'],
   namespaceSeparator: '~',
   reactNamespace: false,
-  defaultNamespace: 'plugin__lightspeed',
+  defaultNamespace: 'plugin__lightspeed-console-plugin',
   useKeysAsDefaultValue: true,
 
   // see below for more details

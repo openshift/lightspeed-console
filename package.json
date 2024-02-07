@@ -65,7 +65,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "consolePlugin": {
-    "name": "console-lightspeed-plugin",
+    "name": "lightspeed-console-plugin",
     "version": "0.0.1",
     "displayName": "OpenShift Lightspeed Console Plugin",
     "description": "Add UI elements for interacting with OpenShift Lightspeed to the OpenShift web console.",
