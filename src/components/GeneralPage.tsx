@@ -3,8 +3,12 @@ import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import {
+  Alert,
+  AlertActionLink,
   Button,
   Form,
+  HelperText,
+  HelperTextItem,
   InputGroup,
   Page,
   PageSection,
@@ -15,6 +19,7 @@ import {
 } from '@patternfly/react-core';
 
 import { cancellableFetch } from '../cancellable-fetch';
+import { useBoolean } from '../hooks/useBoolean';
 import { State } from '../redux-reducers';
 
 import './general-page.css';
@@ -73,9 +78,10 @@ const HistoryEntryWaiting = () => (
 const GeneralPage = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const initialPrompt = useSelector((s: State) => s.plugins?.ols.get('prompt'));
+  const initialPrompt = useSelector((s: State) => s.plugins?.ols?.get('prompt'));
 
   const [prompt, setPrompt] = React.useState(initialPrompt ?? '');
+  const [isPrivacyAlertShown, , , dismissPrivacyAlert] = useBoolean(true);
   const [history, setHistory] = React.useState<ChatEntry[]>([
     { text: t('Hello there. How can I help?'), who: 'ai' },
   ]);
@@ -138,6 +144,22 @@ const GeneralPage = () => {
           </TextContent>
         </PageSection>
         <PageSection className="ols-plugin__chat-prompt" variant="light">
+          {isPrivacyAlertShown && (
+            <Alert
+              actionLinks={
+                <>
+                  <AlertActionLink onClick={dismissPrivacyAlert}>Got it</AlertActionLink>
+                  <AlertActionLink onClick={() => {}}>Don't show again (TODO)</AlertActionLink>
+                </>
+              }
+              isInline
+              title="Data privacy"
+              variant="info"
+            >
+              <p>TODO: Data privacy info wording line 1</p>
+              <p>TODO: Data privacy info wording line 2</p>
+            </Alert>
+          )}
           <Form onSubmit={onSubmit}>
             <InputGroup>
               <TextArea
@@ -156,6 +178,9 @@ const GeneralPage = () => {
               </Button>
             </InputGroup>
           </Form>
+          <HelperText>
+            <HelperTextItem variant="indeterminate">TODO: Footer info wording</HelperTextItem>
+          </HelperText>
         </PageSection>
       </Page>
     </>
