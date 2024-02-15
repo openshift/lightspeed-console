@@ -47,13 +47,15 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
   if (entry.who === 'ai') {
     if (!!entry.error) {
       return (
-        <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai ols-plugin__chat-entry-error">
-          {entry.error}
+        <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+          <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+          <div className="ols-plugin__chat-entry-error">{entry.error}</div>
         </div>
       );
     } else {
       return (
         <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+          <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
           {entry.text}
         </div>
       );
@@ -62,6 +64,7 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
   if (entry.who === 'user') {
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry-user">
+        <div className="ols-plugin__chat-entry-name">You</div>
         {entry.text}
       </div>
     );
@@ -135,6 +138,7 @@ const GeneralPage = () => {
         <PageSection variant="light">
           <Title headingLevel="h1">{t('OpenShift Lightspeed')}</Title>
         </PageSection>
+
         <PageSection className="ols-plugin__chat-history" variant="light">
           <TextContent>
             {history.map((entry, i) => (
@@ -143,6 +147,7 @@ const GeneralPage = () => {
             {isWaiting && <HistoryEntryWaiting />}
           </TextContent>
         </PageSection>
+
         <PageSection className="ols-plugin__chat-prompt" variant="light">
           {isPrivacyAlertShown && (
             <Alert
@@ -160,6 +165,7 @@ const GeneralPage = () => {
               <p>TODO: Data privacy info wording line 2</p>
             </Alert>
           )}
+
           <Form onSubmit={onSubmit}>
             <InputGroup>
               <TextArea
@@ -178,8 +184,14 @@ const GeneralPage = () => {
               </Button>
             </InputGroup>
           </Form>
+
           <HelperText>
-            <HelperTextItem variant="indeterminate">TODO: Footer info wording</HelperTextItem>
+            <HelperTextItem
+              className="ols-plugin__chat-footer"
+              variant="indeterminate"
+            >
+              TODO: Footer info wording
+            </HelperTextItem>
           </HelperText>
         </PageSection>
       </Page>
