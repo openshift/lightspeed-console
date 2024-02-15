@@ -173,6 +173,7 @@ const GeneralPage = () => {
                 autoResize
                 className="ols-plugin__chat-prompt-input"
                 onChange={onChange}
+                placeholder="Send a message..."
                 value={prompt}
               />
               <Button
