@@ -90,7 +90,7 @@ const GeneralPage = () => {
   ]);
   const [isWaiting, setIsWaiting] = React.useState(false);
 
-  const onChange = React.useCallback((value) => {
+  const onChange = React.useCallback((_event, value) => {
     setPrompt(value);
   }, []);
 

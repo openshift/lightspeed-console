@@ -70,6 +70,7 @@ const config: Configuration = {
     devMiddleware: {
       writeToDisk: true,
     },
+    hot: false,
   },
   plugins: [
     new ConsoleRemotePlugin(), 
