@@ -1,7 +1,7 @@
-# OpenShift Console Plugin Template
+# OpenShift Lightspeed Console Plugin
 
-This project is a minimal template for writing a new OpenShift Console dynamic
-plugin.
+This project is a console plugin for the [OpenShift Lightspeed AI assistant](https://github.com/openshift/lightspeed-service)
+project.
 
 [Dynamic plugins](https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk)
 allow you to extend the
@@ -13,9 +13,6 @@ and enabled in the console operator config by a cluster administrator.
 
 Using the latest `v1` API version of `ConsolePlugin` CRD, requires OpenShift 4.12
 and higher. For using old `v1alpha1` API version us OpenShift version 4.10 or 4.11.
-
-For an example of a plugin that works with OpenShift 4.11, see the `release-4.11` branch.
-For a plugin that works with OpenShift 4.10, see the `release-4.10` branch.
 
 [Node.js](https://nodejs.org/en/) and [yarn](https://yarnpkg.com) are required
 to build and run the example. To run OpenShift console in a container, either
@@ -66,7 +63,7 @@ cached containers will help you start developing in seconds.
 1. Create a `dev.env` file inside the `.devcontainer` folder with the correct values for your cluster:
 
 ```bash
-OC_PLUGIN_NAME=console-plugin-template
+OC_PLUGIN_NAME=openshift-console-plugin
 OC_URL=https://api.example.com:6443
 OC_USER=kubeadmin
 OC_PASS=<password>
@@ -109,17 +106,20 @@ A [Helm](https://helm.sh) chart is available to deploy the plugin to an OpenShif
 
 The following Helm parameters are required:
 
-`plugin.image`: The location of the image containing the plugin that was previously pushed
+`plugin.image`: The location of the image containing the plugin that was previously pushed.  `quay.io/openshift/lightspeed-console-plugin:latest` contains the latest merged code.
 
 Additional parameters can be specified if desired. Consult the chart [values](charts/openshift-console-plugin/values.yaml) file for the full set of supported parameters.
 
 ### Installing the Helm Chart
 
-Install the chart using the name of the plugin as the Helm release name into a new namespace or an existing namespace as specified by the `plugin_console-plugin-template` parameter and providing the location of the image within the `plugin.image` parameter by using the following command:
-
-```shell
-helm upgrade -i  my-plugin charts/openshift-console-plugin -n plugin__console-plugin-template --create-namespace --set plugin.image=my-plugin-image-location
-```
+1. Create an openshift-lightspeed namespace:
+    ```shell
+    $ oc create ns openshift-lightspeed
+    ```
+2. Install the chart using the name of the plugin as the Helm release name into the `openshift-lightspeed` namespace, providing the location of the image within the `plugin.image` parameter, by running the following command from the plugin repository root:
+    ```shell
+    $ helm upgrade -i lightspeed-console-plugin charts/openshift-console-plugin -n openshift-lightspeed --set plugin.image=quay.io/openshift/lightspeed-console-plugin:latest
+    ```
 
 NOTE: When deploying on OpenShift 4.10, it is recommended to add the parameter `--set plugin.securityContext.enabled=false` which will omit configurations related to Pod Security.
 
