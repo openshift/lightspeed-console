@@ -9,10 +9,11 @@ import {
   Form,
   HelperText,
   HelperTextItem,
-  InputGroup,
   Page,
   PageSection,
   Spinner,
+  Split,
+  SplitItem,
   TextArea,
   TextContent,
   Title,
@@ -139,16 +140,7 @@ const GeneralPage = () => {
           <Title headingLevel="h1">{t('OpenShift Lightspeed')}</Title>
         </PageSection>
 
-        <PageSection className="ols-plugin__chat-history" variant="light">
-          <TextContent>
-            {history.map((entry, i) => (
-              <HistoryEntry key={i} entry={entry} />
-            ))}
-            {isWaiting && <HistoryEntryWaiting />}
-          </TextContent>
-        </PageSection>
-
-        <PageSection className="ols-plugin__chat-prompt" variant="light">
+        <PageSection className="ols-plugin__chat-history" isFilled variant="light">
           {isPrivacyAlertShown && (
             <Alert
               actionLinks={
@@ -166,24 +158,35 @@ const GeneralPage = () => {
             </Alert>
           )}
 
+          <TextContent>
+            {history.map((entry, i) => (
+              <HistoryEntry key={i} entry={entry} />
+            ))}
+            {isWaiting && <HistoryEntryWaiting />}
+          </TextContent>
+        </PageSection>
+
+        <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
           <Form onSubmit={onSubmit}>
-            <InputGroup>
-              <TextArea
-                aria-label="OpenShift Lightspeed prompt"
-                autoResize
-                className="ols-plugin__chat-prompt-input"
-                onChange={onChange}
-                placeholder="Send a message..."
-                value={prompt}
-              />
-              <Button
-                className="ols-plugin__chat-prompt-submit"
-                type="submit"
-                variant="primary"
-              >
-                {'>'}
-              </Button>
-            </InputGroup>
+            <Split hasGutter>
+              <SplitItem isFilled>
+                <TextArea
+                  aria-label="OpenShift Lightspeed prompt"
+                  autoResize
+                  className="ols-plugin__chat-prompt-input"
+                  onChange={onChange}
+                  placeholder="Send a message..."
+                  resizeOrientation="vertical"
+                  rows={1}
+                  value={prompt}
+                />
+              </SplitItem>
+              <SplitItem className="ols-plugin__chat-prompt-submit">
+                <Button type="submit" variant="primary">
+                  {'>'}
+                </Button>
+              </SplitItem>
+            </Split>
           </Form>
 
           <HelperText>
