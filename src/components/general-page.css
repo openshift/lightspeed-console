@@ -1,17 +1,12 @@
-.ols-plugin__chat-history, .ols-plugin__chat-prompt {
+.ols-plugin__chat-history {
+  overflow-y: auto;
+  padding-bottom: 8rem;
   padding-left: 10%;
   padding-right: 10%;
-}
-
-.ols-plugin__chat-history {
-  height: calc(100% - 80px);
-  overflow-y: auto;
 
   .ols-plugin__chat-entry {
     clear: both;
-    padding-left: var(--pf-v5-global--spacer--xl);
-    padding-right: var(--pf-v5-global--spacer--xl);
-    padding-bottom: var(--pf-v5-global--spacer--lg);
+    padding-top: var(--pf-v5-global--spacer--lg);
   }
 
   .ols-plugin__chat-entry-error {
@@ -30,22 +25,21 @@
 }
 
 .ols-plugin__chat-prompt {
-  --prompt-height: 100px;
-
-  bottom: 0;
-  padding-top: var(--pf-v5-global--spacer--md);
+  padding-bottom: var(--pf-v5-global--spacer--sm);
+  padding-top: var(--pf-v5-global--spacer--sm);
   position: fixed;
-  width: calc(100% - 290px);
+  bottom: 0;
+  width: 50%;
 
-  textarea.ols-plugin__chat-prompt-input {
-    height: var(--prompt-height);
-    resize: none;
-    width: calc(100% - 50px);
+  .ols-plugin__chat-prompt-input {
+    max-height: 20rem;
+    textarea {
+      resize: none;
+    }
   }
 
   .ols-plugin__chat-prompt-submit {
-    height: var(--prompt-height);
-    width: 50px;
+    align-self: end;
   }
 }
 
