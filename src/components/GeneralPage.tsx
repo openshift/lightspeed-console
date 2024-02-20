@@ -18,6 +18,7 @@ import {
   TextContent,
   Title,
 } from '@patternfly/react-core';
+import { PaperPlaneIcon } from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
@@ -183,7 +184,7 @@ const GeneralPage = () => {
               </SplitItem>
               <SplitItem className="ols-plugin__chat-prompt-submit">
                 <Button type="submit" variant="primary">
-                  {'>'}
+                  <PaperPlaneIcon />
                 </Button>
               </SplitItem>
             </Split>
