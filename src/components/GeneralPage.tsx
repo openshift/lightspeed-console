@@ -1,3 +1,5 @@
+import { dump } from 'js-yaml';
+import { defer } from 'lodash';
 import * as React from 'react';
 import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +20,7 @@ import {
   TextContent,
   Title,
 } from '@patternfly/react-core';
-import { PaperPlaneIcon } from '@patternfly/react-icons';
+import { FileImportIcon, PaperPlaneIcon } from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
@@ -83,32 +85,66 @@ const HistoryEntryWaiting = () => (
 const GeneralPage = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const initialPrompt = useSelector((s: State) => s.plugins?.ols?.get('prompt'));
+  const context = useSelector((s: State) => s.plugins?.ols?.get('context'));
 
-  const [prompt, setPrompt] = React.useState(initialPrompt ?? '');
+  let initialQuery = '';
+  if (context && context.metadata && typeof context.kind === 'string') {
+    initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
+  }
+
+  const [query, setQuery] = React.useState(initialQuery);
   const [isPrivacyAlertShown, , , dismissPrivacyAlert] = useBoolean(true);
   const [history, setHistory] = React.useState<ChatEntry[]>([
     { text: t('Hello there. How can I help?'), who: 'ai' },
   ]);
   const [isWaiting, setIsWaiting] = React.useState(false);
 
+  const promptRef = React.useRef(null);
+
+  const onInsertYAML = (e) => {
+    e.preventDefault();
+
+    if (context && promptRef?.current) {
+      const { selectionStart, selectionEnd } = promptRef.current;
+
+      console.warn({ selectionStart, selectionEnd });
+      let yaml = '';
+      try {
+        yaml = dump(context, { lineWidth: -1 }).trim();
+      } catch (e) {
+        yaml = t('Error getting YAML: {{e}}', { e });
+      }
+
+      const textBeforeCursor = query.substring(0, selectionStart);
+      const textAfterCursor = query.substring(selectionEnd, query.length);
+      setQuery(textBeforeCursor + yaml + textAfterCursor);
+
+      // Restore focus back to prompt input with the same cursor position
+      // Defer so that this is called after the prompt text is updated
+      defer(() => {
+        promptRef.current.setSelectionRange(selectionStart, selectionStart);
+        promptRef.current.focus();
+      });
+    }
+  };
+
   const onChange = React.useCallback((_event, value) => {
-    setPrompt(value);
+    setQuery(value);
   }, []);
 
   const onSubmit = React.useCallback(
     (e) => {
       e.preventDefault();
 
-      if (!prompt) {
+      if (!query) {
         return;
       }
 
-      const newHistory = [...history, { text: prompt, who: 'user' }];
+      const newHistory = [...history, { text: query, who: 'user' }];
       setHistory(newHistory);
       setIsWaiting(true);
 
-      const body = JSON.stringify({ query: prompt });
+      const body = JSON.stringify({ query });
       const requestData = { body, method: 'POST', timeout: QUERY_TIMEOUT};
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
 
@@ -128,7 +164,7 @@ const GeneralPage = () => {
           setIsWaiting(false);
         });
     },
-    [history, prompt],
+    [history, query],
   );
 
   return (
@@ -150,6 +186,7 @@ const GeneralPage = () => {
                   <AlertActionLink onClick={() => {}}>Don't show again (TODO)</AlertActionLink>
                 </>
               }
+              className="ols-plugin__alert"
               isInline
               title="Data privacy"
               variant="info"
@@ -168,18 +205,33 @@ const GeneralPage = () => {
         </PageSection>
 
         <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
+          {context && typeof context.kind === 'string' && <>
+            <Alert
+              className="ols-plugin__alert"
+              isInline
+              title={`You are asking about ${context.kind.toLowerCase()} "${context.metadata.name}"`}
+              variant="info"
+            >
+              <Button icon={<FileImportIcon /> } onClick={onInsertYAML} variant="secondary">
+                Insert {context.kind.toLowerCase()} YAML at cursor
+              </Button>
+            </Alert>
+          </>}
+
           <Form onSubmit={onSubmit}>
             <Split hasGutter>
               <SplitItem isFilled>
                 <TextArea
                   aria-label="OpenShift Lightspeed prompt"
+                  autoFocus
                   autoResize
                   className="ols-plugin__chat-prompt-input"
                   onChange={onChange}
                   placeholder="Send a message..."
+                  ref={promptRef}
                   resizeOrientation="vertical"
                   rows={1}
-                  value={prompt}
+                  value={query}
                 />
               </SplitItem>
               <SplitItem className="ols-plugin__chat-prompt-submit">

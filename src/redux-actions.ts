@@ -1,11 +1,11 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
 export enum ActionType {
-  SetPromptText = 'setPromptText',
+  SetContext = 'setContext',
 }
 
-export const setPromptText = (prompt: string) => action(ActionType.SetPromptText, { prompt });
+export const setContext = (context: Object) => action(ActionType.SetContext, { context });
 
-const actions = { setPromptText };
+const actions = { setContext };
 
 export type OLSAction = Action<typeof actions>;

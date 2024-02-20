@@ -11,12 +11,12 @@ export type State = {
 
 const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
-    return ImmutableMap({ prompt: null });
+    return ImmutableMap({ context: null });
   }
 
   switch (action.type) {
-    case ActionType.SetPromptText:
-      return state.set('prompt', action.payload.prompt);
+    case ActionType.SetContext:
+      return state.set('context', action.payload.context);
 
     default:
       break;
