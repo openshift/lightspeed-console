@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { Action, ExtensionHook } from '@openshift-console/dynamic-plugin-sdk';
 
-import { setPromptText } from '../redux-actions';
+import { setContext } from '../redux-actions';
 
 type PodExtensionOptions = {
   pod?: any; // TODO
@@ -14,13 +14,11 @@ const usePodExtension: ExtensionHook<Array<Action>, PodExtensionOptions> = (opti
   const history = useHistory();
 
   const [actions] = React.useState<Action[]>([
-    // TODO: Just a placeholder for now
     {
       id: 'core~v1~Pod',
       label: 'Ask OpenShift Lightspeed',
       cta: () => {
-        var prompt = `Tell me more about this pod.\n${JSON.stringify(options, null, 2)}`;
-        dispatch(setPromptText(prompt));
+        dispatch(setContext(options));
         history.push('/lightspeed');
       }
     },

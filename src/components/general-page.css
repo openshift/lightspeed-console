@@ -1,3 +1,7 @@
+.ols-plugin__alert {
+  margin-bottom: var(--pf-v5-global--spacer--lg);
+}
+
 .ols-plugin__chat-history {
   overflow-y: auto;
   padding-bottom: 8rem;
@@ -6,7 +10,7 @@
 
   .ols-plugin__chat-entry {
     clear: both;
-    padding-top: var(--pf-v5-global--spacer--lg);
+    padding-bottom: var(--pf-v5-global--spacer--lg);
   }
 
   .ols-plugin__chat-entry-error {
@@ -25,11 +29,13 @@
 }
 
 .ols-plugin__chat-prompt {
+  bottom: 0;
   padding-bottom: var(--pf-v5-global--spacer--sm);
   padding-top: var(--pf-v5-global--spacer--sm);
+  padding-left: 10%;
+  padding-right: 10%;
   position: fixed;
-  bottom: 0;
-  width: 50%;
+  width: 80%;
 
   .ols-plugin__chat-prompt-input {
     max-height: 20rem;
