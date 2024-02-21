@@ -11,6 +11,8 @@ import {
   Form,
   HelperText,
   HelperTextItem,
+  Level,
+  LevelItem,
   Page,
   PageSection,
   Spinner,
@@ -92,11 +94,14 @@ const GeneralPage = () => {
     initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
   }
 
+  const initialHistory = [{
+    text: t('Hello there. How can I help?'),
+    who: 'ai',
+  }];
+
   const [query, setQuery] = React.useState(initialQuery);
   const [isPrivacyAlertShown, , , dismissPrivacyAlert] = useBoolean(true);
-  const [history, setHistory] = React.useState<ChatEntry[]>([
-    { text: t('Hello there. How can I help?'), who: 'ai' },
-  ]);
+  const [history, setHistory] = React.useState<ChatEntry[]>(initialHistory);
   const [isWaiting, setIsWaiting] = React.useState(false);
 
   const promptRef = React.useRef(null);
@@ -128,7 +133,11 @@ const GeneralPage = () => {
     }
   };
 
-  const onChange = React.useCallback((_event, value) => {
+  const clearChat = React.useCallback((_e) => {
+    setHistory(initialHistory);
+  }, []);
+
+  const onChange = React.useCallback((_e, value) => {
     setQuery(value);
   }, []);
 
@@ -144,12 +153,14 @@ const GeneralPage = () => {
       setHistory(newHistory);
       setIsWaiting(true);
 
+      // TODO: Also send the conversation_id ID
       const body = JSON.stringify({ query });
       const requestData = { body, method: 'POST', timeout: QUERY_TIMEOUT};
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
 
       request()
         .then((response: QueryResponse) => {
+          // TODO: Also store the conversation_id in history
           setHistory([
             ...newHistory,
             { text: response.response, who: 'ai' },
@@ -174,7 +185,14 @@ const GeneralPage = () => {
       </Helmet>
       <Page>
         <PageSection className="ols-plugin__page-title" variant="light">
-          <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
+          <Level>
+            <LevelItem>
+              <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
+            </LevelItem>
+            <LevelItem>
+              <Button onClick={clearChat} variant="primary">New chat</Button>
+            </LevelItem>
+          </Level>
         </PageSection>
 
         <PageSection className="ols-plugin__chat-history" isFilled variant="light">
