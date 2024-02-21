@@ -52,3 +52,16 @@
 .ols-plugin__chat-footer {
   margin: var(--pf-v5-global--spacer--sm) auto;
 }
+
+.ols-plugin__page-title {
+  --logo-size: var(--pf-v5-global--spacer--2xl);
+  --logo-spacer-left: var(--pf-v5-global--spacer--lg);
+  --logo-spacer-right: var(--pf-v5-global--spacer--md);
+
+  background-image: url('../assets/logo.svg');
+  background-position: var(--logo-spacer-left) center;
+  background-repeat: no-repeat;
+  background-size: var(--logo-size);
+  border-bottom: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
+  padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
+}

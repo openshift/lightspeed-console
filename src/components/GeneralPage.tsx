@@ -173,8 +173,8 @@ const GeneralPage = () => {
         <title>{t('OpenShift Lightspeed')}</title>
       </Helmet>
       <Page>
-        <PageSection variant="light">
-          <Title headingLevel="h1">{t('OpenShift Lightspeed')}</Title>
+        <PageSection className="ols-plugin__page-title" variant="light">
+          <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
         </PageSection>
 
         <PageSection className="ols-plugin__chat-history" isFilled variant="light">
