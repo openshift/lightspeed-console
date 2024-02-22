@@ -4,7 +4,7 @@ export enum ActionType {
   SetContext = 'setContext',
 }
 
-export const setContext = (context: Object) => action(ActionType.SetContext, { context });
+export const setContext = (context: object) => action(ActionType.SetContext, { context });
 
 const actions = { setContext };
 

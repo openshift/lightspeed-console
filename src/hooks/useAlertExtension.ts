@@ -14,7 +14,7 @@ const useAlertExtension: ExtensionHook<Array<Action>, AlertExtensionOptions> = (
       cta: () => {
         const ruleName = options.alert?.rule?.name;
         console.warn(`OpenShift Lightspeed callback called for alert ${ruleName}`);
-      }
+      },
     },
   ]);
   return [actions, true, null];

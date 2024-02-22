@@ -1,15 +1,11 @@
 import * as React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { Action, ExtensionHook } from '@openshift-console/dynamic-plugin-sdk';
+import { Action, ExtensionHook, K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk';
 
 import { setContext } from '../redux-actions';
 
-type PodExtensionOptions = {
-  pod?: any; // TODO
-};
-
-const usePodExtension: ExtensionHook<Array<Action>, PodExtensionOptions> = (options) => {
+const usePodExtension: ExtensionHook<Array<Action>, K8sResourceCommon> = (k8sResource) => {
   const dispatch = useDispatch();
   const history = useHistory();
 
@@ -18,9 +14,9 @@ const usePodExtension: ExtensionHook<Array<Action>, PodExtensionOptions> = (opti
       id: 'core~v1~Pod',
       label: 'Ask OpenShift Lightspeed',
       cta: () => {
-        dispatch(setContext(options));
+        dispatch(setContext(k8sResource));
         history.push('/lightspeed');
-      }
+      },
     },
   ]);
   return [actions, true, null];

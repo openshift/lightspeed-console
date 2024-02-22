@@ -51,7 +51,7 @@ type HistoryEntryProps = {
 
 const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
   if (entry.who === 'ai') {
-    if (!!entry.error) {
+    if (entry.error) {
       return (
         <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
           <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
@@ -94,10 +94,12 @@ const GeneralPage = () => {
     initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
   }
 
-  const initialHistory = [{
-    text: t('Hello there. How can I help?'),
-    who: 'ai',
-  }];
+  const initialHistory = [
+    {
+      text: t('Hello there. How can I help?'),
+      who: 'ai',
+    },
+  ];
 
   const [query, setQuery] = React.useState(initialQuery);
   const [isPrivacyAlertShown, , , dismissPrivacyAlert] = useBoolean(true);
@@ -133,9 +135,9 @@ const GeneralPage = () => {
     }
   };
 
-  const clearChat = React.useCallback((_e) => {
+  const clearChat = (_e) => {
     setHistory(initialHistory);
-  }, []);
+  };
 
   const onChange = React.useCallback((_e, value) => {
     setQuery(value);
@@ -155,16 +157,13 @@ const GeneralPage = () => {
 
       // TODO: Also send the conversation_id ID
       const body = JSON.stringify({ query });
-      const requestData = { body, method: 'POST', timeout: QUERY_TIMEOUT};
+      const requestData = { body, method: 'POST', timeout: QUERY_TIMEOUT };
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
 
       request()
         .then((response: QueryResponse) => {
           // TODO: Also store the conversation_id in history
-          setHistory([
-            ...newHistory,
-            { text: response.response, who: 'ai' },
-          ]);
+          setHistory([...newHistory, { text: response.response, who: 'ai' }]);
           setIsWaiting(false);
         })
         .catch((error) => {
@@ -190,7 +189,9 @@ const GeneralPage = () => {
               <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
             </LevelItem>
             <LevelItem>
-              <Button onClick={clearChat} variant="primary">New chat</Button>
+              <Button onClick={clearChat} variant="primary">
+                New chat
+              </Button>
             </LevelItem>
           </Level>
         </PageSection>
@@ -201,7 +202,7 @@ const GeneralPage = () => {
               actionLinks={
                 <>
                   <AlertActionLink onClick={dismissPrivacyAlert}>Got it</AlertActionLink>
-                  <AlertActionLink onClick={() => {}}>Don't show again (TODO)</AlertActionLink>
+                  <AlertActionLink onClick={() => {}}>Don&apos;t show again (TODO)</AlertActionLink>
                 </>
               }
               className="ols-plugin__alert"
@@ -223,18 +224,20 @@ const GeneralPage = () => {
         </PageSection>
 
         <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
-          {context && typeof context.kind === 'string' && <>
-            <Alert
-              className="ols-plugin__alert"
-              isInline
-              title={`You are asking about ${context.kind.toLowerCase()} "${context.metadata.name}"`}
-              variant="info"
-            >
-              <Button icon={<FileImportIcon /> } onClick={onInsertYAML} variant="secondary">
-                Insert {context.kind.toLowerCase()} YAML at cursor
-              </Button>
-            </Alert>
-          </>}
+          {context && typeof context.kind === 'string' && (
+            <>
+              <Alert
+                className="ols-plugin__alert"
+                isInline
+                title={`You are asking about ${context.kind.toLowerCase()} "${context.metadata.name}"`}
+                variant="info"
+              >
+                <Button icon={<FileImportIcon />} onClick={onInsertYAML} variant="secondary">
+                  Insert {context.kind.toLowerCase()} YAML at cursor
+                </Button>
+              </Alert>
+            </>
+          )}
 
           <Form onSubmit={onSubmit}>
             <Split hasGutter>
@@ -261,10 +264,7 @@ const GeneralPage = () => {
           </Form>
 
           <HelperText>
-            <HelperTextItem
-              className="ols-plugin__chat-footer"
-              variant="indeterminate"
-            >
+            <HelperTextItem className="ols-plugin__chat-footer" variant="indeterminate">
               TODO: Footer info wording
             </HelperTextItem>
           </HelperText>
