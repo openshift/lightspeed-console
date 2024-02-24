@@ -79,8 +79,8 @@
     "exposedModules": {
       "AlertActionsProvider": "./hooks/useAlertExtension",
       "GeneralPage": "./components/GeneralPage",
-      "OLSReducer": "./redux-reducers",
-      "PodActionsProvider": "./hooks/usePodExtension"
+      "K8sResourceActionsProvider": "./hooks/useK8sResourceExtension",
+      "OLSReducer": "./redux-reducers"
     },
     "dependencies": {
       "@console/pluginAPI": "*"

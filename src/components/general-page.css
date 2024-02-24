@@ -39,13 +39,14 @@
 
   .ols-plugin__chat-prompt-input {
     max-height: 20rem;
-    textarea {
-      resize: none;
-    }
   }
 
   .ols-plugin__chat-prompt-submit {
     align-self: end;
+  }
+
+  .ols-plugin__chat-context-action {
+    margin-top: var(--pf-v5-global--spacer--sm);
   }
 }
 

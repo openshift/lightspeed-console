@@ -4,6 +4,7 @@ import * as React from 'react';
 import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { K8sResourceKind, ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   AlertActionLink,
@@ -87,10 +88,17 @@ const HistoryEntryWaiting = () => (
 const GeneralPage = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const context = useSelector((s: State) => s.plugins?.ols?.get('context'));
+  const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
+
+  // Do we have a context that looks like a k8s resource with sufficient information
+  const isK8sResourceContext =
+    context &&
+    typeof context.kind === 'string' &&
+    typeof context.metadata?.name === 'string' &&
+    typeof context.metadata?.namespace === 'string';
 
   let initialQuery = '';
-  if (context && context.metadata && typeof context.kind === 'string') {
+  if (isK8sResourceContext) {
     initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
   }
 
@@ -111,10 +119,9 @@ const GeneralPage = () => {
   const onInsertYAML = (e) => {
     e.preventDefault();
 
-    if (context && promptRef?.current) {
+    if (isK8sResourceContext && promptRef?.current) {
       const { selectionStart, selectionEnd } = promptRef.current;
 
-      console.warn({ selectionStart, selectionEnd });
       let yaml = '';
       try {
         yaml = dump(context, { lineWidth: -1 }).trim();
@@ -155,7 +162,7 @@ const GeneralPage = () => {
       setHistory(newHistory);
       setIsWaiting(true);
 
-      // TODO: Also send the conversation_id ID
+      // TODO: Also send the conversation_id
       const body = JSON.stringify({ query });
       const requestData = { body, method: 'POST', timeout: QUERY_TIMEOUT };
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
@@ -167,10 +174,7 @@ const GeneralPage = () => {
           setIsWaiting(false);
         })
         .catch((error) => {
-          setHistory([
-            ...newHistory,
-            { error: error.toString(), text: undefined, who: 'ai' },
-          ]);
+          setHistory([...newHistory, { error: error.toString(), text: undefined, who: 'ai' }]);
           setIsWaiting(false);
         });
     },
@@ -224,15 +228,32 @@ const GeneralPage = () => {
         </PageSection>
 
         <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
-          {context && typeof context.kind === 'string' && (
+          {isK8sResourceContext && (
             <>
               <Alert
                 className="ols-plugin__alert"
                 isInline
-                title={`You are asking about ${context.kind.toLowerCase()} "${context.metadata.name}"`}
+                title={
+                  <>
+                    Asking about
+                    <ResourceLink inline kind="Namespace" name={context.metadata.namespace} />
+                    /
+                    <ResourceLink
+                      inline
+                      kind={context.kind}
+                      name={context.metadata.name}
+                      title={context.metadata.uid}
+                    />
+                  </>
+                }
                 variant="info"
               >
-                <Button icon={<FileImportIcon />} onClick={onInsertYAML} variant="secondary">
+                <Button
+                  className="ols-plugin__chat-context-action"
+                  icon={<FileImportIcon />}
+                  onClick={onInsertYAML}
+                  variant="secondary"
+                >
                   Insert {context.kind.toLowerCase()} YAML at cursor
                 </Button>
               </Alert>
