@@ -254,7 +254,7 @@ const GeneralPage = () => {
                   onClick={onInsertYAML}
                   variant="secondary"
                 >
-                  Insert {context.kind.toLowerCase()} YAML at cursor
+                  Insert {context.kind} YAML at cursor
                 </Button>
               </Alert>
             </>
