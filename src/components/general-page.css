@@ -9,8 +9,13 @@
   padding-right: 10%;
 
   .ols-plugin__chat-entry {
-    clear: both;
+    --logo-size: 2.5rem;
+
+    background-position: -1px 0;
+    background-repeat: no-repeat;
+    background-size: var(--logo-size);
     padding-bottom: var(--pf-v5-global--spacer--lg);
+    padding-left: calc(var(--logo-size) + var(--pf-v5-global--spacer--md));
   }
 
   .ols-plugin__chat-entry-error {
@@ -18,9 +23,11 @@
   }
 
   .ols-plugin__chat-entry-ai {
+    background-image: url('../assets/logo.svg');
   }
 
   .ols-plugin__chat-entry-user {
+    background-image: url('../assets/user.png');
   }
 
   .ols-plugin__chat-entry-name {
