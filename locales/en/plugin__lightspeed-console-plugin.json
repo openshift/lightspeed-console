@@ -1,5 +1,6 @@
 {
   "Error getting YAML: {{e}}": "Error getting YAML: {{e}}",
   "Hello there. How can I help?": "Hello there. How can I help?",
-  "OpenShift Lightspeed": "OpenShift Lightspeed"
+  "OpenShift Lightspeed": "OpenShift Lightspeed",
+  "Red Hat OpenShift Lightspeed": "Red Hat OpenShift Lightspeed"
 }

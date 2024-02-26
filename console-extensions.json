@@ -9,8 +9,22 @@
   {
     "type": "console.action/provider",
     "properties": {
+      "contextId": "apps~v1~Deployment",
+      "provider": { "$codeRef": "K8sResourceActionsProvider" }
+    }
+  },
+  {
+    "type": "console.action/provider",
+    "properties": {
+      "contextId": "batch~v1~Job",
+      "provider": { "$codeRef": "K8sResourceActionsProvider" }
+    }
+  },
+  {
+    "type": "console.action/provider",
+    "properties": {
       "contextId": "core~v1~Pod",
-      "provider": { "$codeRef": "PodActionsProvider" }
+      "provider": { "$codeRef": "K8sResourceActionsProvider" }
     }
   },
   {
