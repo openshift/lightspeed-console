@@ -179,9 +179,12 @@ const GeneralPage = () => {
       setHistory(newHistory);
       setIsWaiting(true);
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
       // TODO: Also send the conversation_id
       const body = JSON.stringify({ query });
-      const requestData = { body, method: 'POST', timeout: QUERY_TIMEOUT };
+      const requestData = { body, method: 'POST', headers, timeout: QUERY_TIMEOUT };
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
 
       request()
