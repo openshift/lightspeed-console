@@ -27,7 +27,7 @@ import { FileImportIcon, PaperPlaneIcon } from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
-import { dismissPrivacyAlert } from '../redux-actions';
+import { dismissPrivacyAlert, setHistory } from '../redux-actions';
 import { State } from '../redux-reducers';
 
 import './general-page.css';
@@ -92,6 +92,7 @@ const GeneralPage = () => {
   const dispatch = useDispatch();
 
   const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
+  const history: ChatEntry[] = useSelector((s: State) => s.plugins?.ols?.get('history'));
   const isPrivacyAlertDismissed: boolean = useSelector((s: State) =>
     s.plugins?.ols?.get('isPrivacyAlertDismissed'),
   );
@@ -110,16 +111,8 @@ const GeneralPage = () => {
     }" in namespace "${context.metadata.namespace}"?`;
   }
 
-  const initialHistory = [
-    {
-      text: t('Hello there. How can I help?'),
-      who: 'ai',
-    },
-  ];
-
   const [query, setQuery] = React.useState(initialQuery);
   const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
-  const [history, setHistory] = React.useState<ChatEntry[]>(initialHistory);
   const [isWaiting, setIsWaiting] = React.useState(false);
 
   const promptRef = React.useRef(null);
@@ -154,9 +147,9 @@ const GeneralPage = () => {
     }
   };
 
-  const clearChat = (_e) => {
-    setHistory(initialHistory);
-  };
+  const clearChat = React.useCallback(() => {
+    dispatch(setHistory([]));
+  }, [dispatch]);
 
   const hidePrivacyAlertPersistent = React.useCallback(() => {
     hidePrivacyAlert();
@@ -176,7 +169,7 @@ const GeneralPage = () => {
       }
 
       const newHistory = [...history, { text: query, who: 'user' }];
-      setHistory(newHistory);
+      dispatch(setHistory(newHistory));
       setIsWaiting(true);
 
       const headers = {
@@ -190,15 +183,17 @@ const GeneralPage = () => {
       request()
         .then((response: QueryResponse) => {
           // TODO: Also store the conversation_id in history
-          setHistory([...newHistory, { text: response.response, who: 'ai' }]);
+          dispatch(setHistory([...newHistory, { text: response.response, who: 'ai' }]));
           setIsWaiting(false);
         })
         .catch((error) => {
-          setHistory([...newHistory, { error: error.toString(), text: undefined, who: 'ai' }]);
+          dispatch(
+            setHistory([...newHistory, { error: error.toString(), text: undefined, who: 'ai' }]),
+          );
           setIsWaiting(false);
         });
     },
-    [history, query],
+    [dispatch, history, query],
   );
 
   return (
@@ -242,6 +237,7 @@ const GeneralPage = () => {
           )}
 
           <TextContent>
+            <HistoryEntry entry={{ text: t('Hello there. How can I help?'), who: 'ai' }} />
             {history.map((entry, i) => (
               <HistoryEntry key={i} entry={entry} />
             ))}
