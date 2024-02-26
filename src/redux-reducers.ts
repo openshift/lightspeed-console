@@ -3,6 +3,7 @@ import { Map as ImmutableMap } from 'immutable';
 import { ActionType, OLSAction } from './redux-actions';
 
 export type OLSState = ImmutableMap<string, unknown>;
+
 export type State = {
   plugins: {
     ols: OLSState;
@@ -11,10 +12,13 @@ export type State = {
 
 const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
-    return ImmutableMap({ context: null });
+    return ImmutableMap({ context: null, isPrivacyAlertDismissed: false });
   }
 
   switch (action.type) {
+    case ActionType.DismissPrivacyAlert:
+      return state.set('isPrivacyAlertDismissed', true);
+
     case ActionType.SetContext:
       return state.set('context', action.payload.context);
 
