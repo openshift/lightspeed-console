@@ -136,6 +136,10 @@ const GeneralPage = () => {
       // Restore focus back to prompt input with the same cursor position
       // Defer so that this is called after the prompt text is updated
       defer(() => {
+        const el = document.querySelector<HTMLElement>('.ols-plugin__chat-prompt-input');
+        if (el && el.style) {
+          el.style.height = '20rem';
+        }
         promptRef.current.setSelectionRange(selectionStart, selectionStart);
         promptRef.current.focus();
       });
