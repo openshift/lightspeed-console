@@ -33,6 +33,10 @@
   .ols-plugin__chat-entry-name {
     font-weight: bold;
   }
+
+  .ols-plugin__chat-entry-text {
+    white-space: pre-line;
+  }
 }
 
 .ols-plugin__chat-prompt {
