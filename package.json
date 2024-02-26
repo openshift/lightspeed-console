@@ -78,9 +78,12 @@
     "description": "Add UI elements for interacting with OpenShift Lightspeed to the OpenShift web console.",
     "exposedModules": {
       "AlertActionsProvider": "./hooks/useAlertExtension",
+      "NullContextProvider": "./components/NullContextProvider",
       "GeneralPage": "./components/GeneralPage",
       "K8sResourceActionsProvider": "./hooks/useK8sResourceExtension",
-      "OLSReducer": "./redux-reducers"
+      "OLSReducer": "./redux-reducers",
+      "OverviewDetail": "./components/OverviewDetail",
+      "usePopover": "./hooks/usePopover"
     },
     "dependencies": {
       "@console/pluginAPI": "*"

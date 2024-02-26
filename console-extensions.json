@@ -56,6 +56,20 @@
     }
   },
   {
+    "type": "console.context-provider",
+    "properties": {
+      "provider": { "$codeRef": "NullContextProvider" },
+      "useValueHook": { "$codeRef": "usePopover" }
+    }
+  },
+  {
+    "type": "console.dashboards/custom/overview/detail/item",
+    "properties": {
+      "component": { "$codeRef": "OverviewDetail" },
+      "title": "OpenShift Lightspeed version"
+    }
+  },
+  {
     "type": "console.page/route",
     "properties": {
       "exact": true,

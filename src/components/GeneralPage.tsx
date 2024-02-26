@@ -4,7 +4,14 @@ import * as React from 'react';
 import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { K8sResourceKind, ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
+import {
+  GreenCheckCircleIcon,
+  K8sResourceKind,
+  ResourceLink,
+  ResourceStatus,
+  useK8sWatchResource,
+  WatchK8sResource,
+} from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   AlertActionLink,
@@ -23,7 +30,13 @@ import {
   TextContent,
   Title,
 } from '@patternfly/react-core';
-import { FileImportIcon, PaperPlaneIcon } from '@patternfly/react-icons';
+import {
+  CompressIcon,
+  ExpandIcon,
+  FileImportIcon,
+  PaperPlaneIcon,
+  TimesIcon,
+} from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
@@ -86,7 +99,29 @@ const HistoryEntryWaiting = () => (
   </div>
 );
 
-const GeneralPage = () => {
+const Status: React.FC<{ k8sResource: K8sResourceKind }> = ({ k8sResource }) => {
+  if (!k8sResource?.kind || !k8sResource?.status) {
+    return null;
+  }
+  if (k8sResource.kind === 'Job') {
+    const status = k8sResource.status.conditions?.[0]?.type || 'In progress';
+    return (
+      <>
+        {status === 'Complete' && <GreenCheckCircleIcon />}
+        &nbsp;{status}
+      </>
+    );
+  }
+  return null;
+};
+
+type GeneralPageProps = {
+  onClose?: () => void;
+  onCollapse?: () => void;
+  onExpand?: () => void;
+};
+
+const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -105,11 +140,21 @@ const GeneralPage = () => {
     typeof context.metadata?.namespace === 'string';
 
   let initialQuery = '';
+  let watchResource: WatchK8sResource = null;
   if (isK8sResourceContext) {
     initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${
       context.metadata.name
     }" in namespace "${context.metadata.namespace}"?`;
+    watchResource = {
+      isList: false,
+      kind: context.kind,
+      name: context.metadata.name,
+      namespace: context.metadata.namespace,
+    };
   }
+
+  const [resourceData, resourceLoaded, resourceLoadError] =
+    useK8sWatchResource<K8sResourceKind>(watchResource);
 
   const [query, setQuery] = React.useState(initialQuery);
   const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
@@ -211,6 +256,11 @@ const GeneralPage = () => {
       </Helmet>
       <Page>
         <PageSection className="ols-plugin__page-title" variant="light">
+          {onClose && <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />}
+          {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
+          {onCollapse && (
+            <CompressIcon className="ols-plugin__popover-close" onClick={onCollapse} />
+          )}
           <Level>
             <LevelItem>
               <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
@@ -268,14 +318,17 @@ const GeneralPage = () => {
                 title={
                   <>
                     Asking about
-                    <ResourceLink inline kind="Namespace" name={context.metadata.namespace} />
-                    /
                     <ResourceLink
                       inline
                       kind={context.kind}
                       name={context.metadata.name}
                       title={context.metadata.uid}
                     />
+                    {resourceLoaded && !resourceLoadError && (
+                      <ResourceStatus>
+                        <Status k8sResource={resourceData} />
+                      </ResourceStatus>
+                    )}
                   </>
                 }
                 variant="info"

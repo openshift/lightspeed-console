@@ -15,13 +15,20 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     return ImmutableMap({
       context: null,
       history: [],
+      isOpen: false,
       isPrivacyAlertDismissed: false,
     });
   }
 
   switch (action.type) {
+    case ActionType.CloseOLS:
+      return state.set('isOpen', false);
+
     case ActionType.DismissPrivacyAlert:
       return state.set('isPrivacyAlertDismissed', true);
+
+    case ActionType.OpenOLS:
+      return state.set('isOpen', true);
 
     case ActionType.SetContext:
       return state.set('context', action.payload.context);
