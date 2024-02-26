@@ -33,7 +33,7 @@ import { State } from '../redux-reducers';
 import './general-page.css';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
-const QUERY_TIMEOUT = 60 * 1000;
+const QUERY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 type QueryResponse = {
   conversation_id: string;
