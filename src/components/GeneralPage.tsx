@@ -3,7 +3,7 @@ import { defer } from 'lodash';
 import * as React from 'react';
 import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { K8sResourceKind, ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
@@ -27,6 +27,7 @@ import { FileImportIcon, PaperPlaneIcon } from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
+import { dismissPrivacyAlert } from '../redux-actions';
 import { State } from '../redux-reducers';
 
 import './general-page.css';
@@ -88,7 +89,12 @@ const HistoryEntryWaiting = () => (
 const GeneralPage = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
+  const dispatch = useDispatch();
+
   const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
+  const isPrivacyAlertDismissed: boolean = useSelector((s: State) =>
+    s.plugins?.ols?.get('isPrivacyAlertDismissed'),
+  );
 
   // Do we have a context that looks like a k8s resource with sufficient information
   const isK8sResourceContext =
@@ -99,7 +105,9 @@ const GeneralPage = () => {
 
   let initialQuery = '';
   if (isK8sResourceContext) {
-    initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
+    initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${
+      context.metadata.name
+    }" in namespace "${context.metadata.namespace}"?`;
   }
 
   const initialHistory = [
@@ -110,7 +118,7 @@ const GeneralPage = () => {
   ];
 
   const [query, setQuery] = React.useState(initialQuery);
-  const [isPrivacyAlertShown, , , dismissPrivacyAlert] = useBoolean(true);
+  const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
   const [history, setHistory] = React.useState<ChatEntry[]>(initialHistory);
   const [isWaiting, setIsWaiting] = React.useState(false);
 
@@ -149,6 +157,11 @@ const GeneralPage = () => {
   const clearChat = (_e) => {
     setHistory(initialHistory);
   };
+
+  const hidePrivacyAlertPersistent = React.useCallback(() => {
+    hidePrivacyAlert();
+    dispatch(dismissPrivacyAlert());
+  }, [dispatch, hidePrivacyAlert]);
 
   const onChange = React.useCallback((_e, value) => {
     setQuery(value);
@@ -209,8 +222,10 @@ const GeneralPage = () => {
             <Alert
               actionLinks={
                 <>
-                  <AlertActionLink onClick={dismissPrivacyAlert}>Got it</AlertActionLink>
-                  <AlertActionLink onClick={() => {}}>Don&apos;t show again (TODO)</AlertActionLink>
+                  <AlertActionLink onClick={hidePrivacyAlert}>Got it</AlertActionLink>
+                  <AlertActionLink onClick={hidePrivacyAlertPersistent}>
+                    Don&apos;t show again
+                  </AlertActionLink>
                 </>
               }
               className="ols-plugin__alert"
