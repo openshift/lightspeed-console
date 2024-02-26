@@ -64,7 +64,7 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
       return (
         <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
           <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-          {entry.text}
+          <div className="ols-plugin__chat-entry-text">{entry.text}</div>
         </div>
       );
     }
@@ -73,7 +73,7 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry-user">
         <div className="ols-plugin__chat-entry-name">You</div>
-        {entry.text}
+        <div className="ols-plugin__chat-entry-text">{entry.text}</div>
       </div>
     );
   }
