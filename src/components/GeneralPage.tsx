@@ -116,6 +116,11 @@ const GeneralPage = () => {
   const [isWaiting, setIsWaiting] = React.useState(false);
 
   const promptRef = React.useRef(null);
+  const historyEndRef = React.useRef(null);
+
+  const scrollHistoryToBottom = React.useCallback(() => {
+    historyEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   const onInsertYAML = (e) => {
     e.preventDefault();
@@ -170,6 +175,7 @@ const GeneralPage = () => {
 
       const newHistory = [...history, { text: query, who: 'user' }];
       dispatch(setHistory(newHistory));
+      scrollHistoryToBottom();
       setIsWaiting(true);
 
       const headers = {
@@ -184,16 +190,18 @@ const GeneralPage = () => {
         .then((response: QueryResponse) => {
           // TODO: Also store the conversation_id in history
           dispatch(setHistory([...newHistory, { text: response.response, who: 'ai' }]));
+          scrollHistoryToBottom();
           setIsWaiting(false);
         })
         .catch((error) => {
           dispatch(
             setHistory([...newHistory, { error: error.toString(), text: undefined, who: 'ai' }]),
           );
+          scrollHistoryToBottom();
           setIsWaiting(false);
         });
     },
-    [dispatch, history, query],
+    [dispatch, history, query, scrollHistoryToBottom],
   );
 
   return (
@@ -215,7 +223,12 @@ const GeneralPage = () => {
           </Level>
         </PageSection>
 
-        <PageSection className="ols-plugin__chat-history" isFilled variant="light">
+        <PageSection
+          className="ols-plugin__chat-history"
+          hasOverflowScroll
+          isFilled
+          variant="light"
+        >
           {isPrivacyAlertShown && (
             <Alert
               actionLinks={
@@ -242,6 +255,7 @@ const GeneralPage = () => {
               <HistoryEntry key={i} entry={entry} />
             ))}
             {isWaiting && <HistoryEntryWaiting />}
+            <div ref={historyEndRef} />
           </TextContent>
         </PageSection>
 
