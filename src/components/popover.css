@@ -1,0 +1,57 @@
+.ols-plugin__popover-container {
+  --logo-size: 50px;
+  --bottom: calc(2*var(--logo-size) + 0.5rem);
+
+  .ols-plugin__popover, .ols-plugin__popover-button {
+    box-shadow: var(--pf-v5-global--BoxShadow--lg);
+    position: fixed;
+    right: var(--logo-size);
+    z-index: 99;
+  }
+
+  .ols-plugin__popover {
+    border: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
+    border-radius: 1rem;
+    bottom: var(--bottom);
+
+    .pf-v5-c-page {
+      border-radius: 1rem;
+
+      .pf-v5-c-page__main {
+        border-radius: 1rem;
+      }
+    }
+  }
+
+  .ols-plugin__popover--collapsed {
+    height: calc(100% - 2*var(--bottom));
+    width: 35%;
+  }
+
+  .ols-plugin__popover--expanded {
+    height: calc(100% - var(--bottom) - var(--logo-size));
+    width: calc(100% - 2*var(--logo-size));
+  }
+
+  .ols-plugin__popover-close {
+    float: right;
+    height: 1rem;
+    margin-left: var(--pf-v5-global--spacer--md);
+    right: var(--pf-v5-global--spacer--sm);
+    top: var(--pf-v5-global--spacer--sm);
+    width: 1rem;
+  }
+
+  .ols-plugin__popover-button {
+    background-image: url('../assets/logo.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: var(--logo-size);
+    border-radius: 12px;
+    bottom: var(--logo-size);
+    cursor: pointer;
+    height: calc(var(--logo-size) - 3px);
+    right: var(--logo-size);
+    width: calc(var(--logo-size) - 3px);
+  }
+}

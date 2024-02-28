@@ -4,9 +4,9 @@
 
 .ols-plugin__chat-history {
   overflow-y: auto;
-  padding-bottom: 8rem;
-  padding-left: 10%;
-  padding-right: 10%;
+  padding-bottom: 0;
+  padding-left: 8%;
+  padding-right: 8%;
 
   .ols-plugin__chat-entry {
     --logo-size: 2.5rem;
@@ -41,12 +41,7 @@
 
 .ols-plugin__chat-prompt {
   bottom: 0;
-  padding-bottom: var(--pf-v5-global--spacer--sm);
-  padding-top: var(--pf-v5-global--spacer--sm);
-  padding-left: 10%;
-  padding-right: 10%;
-  position: fixed;
-  width: 80%;
+  padding: var(--pf-v5-global--spacer--sm) 8%;
 
   .ols-plugin__chat-prompt-input {
     max-height: 20rem;
