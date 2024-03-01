@@ -1,7 +1,6 @@
 import { dump } from 'js-yaml';
 import { defer } from 'lodash';
 import * as React from 'react';
-import Helmet from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -251,9 +250,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   return (
     <>
-      <Helmet>
-        <title>{t('OpenShift Lightspeed')}</title>
-      </Helmet>
       <Page>
         <PageSection className="ols-plugin__page-title" variant="light">
           {onClose && <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />}

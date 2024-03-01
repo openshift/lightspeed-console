@@ -3,7 +3,6 @@
   "Error getting YAML: {{e}}": "Error getting YAML: {{e}}",
   "Hello there. How can I help?": "Hello there. How can I help?",
   "New chat": "New chat",
-  "OpenShift Lightspeed": "OpenShift Lightspeed",
   "Red Hat OpenShift Lightspeed": "Red Hat OpenShift Lightspeed",
   "Send a message...": "Send a message..."
 }
