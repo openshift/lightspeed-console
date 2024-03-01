@@ -267,7 +267,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             </LevelItem>
             <LevelItem>
               <Button onClick={clearChat} variant="primary">
-                New chat
+                {t('New chat')}
               </Button>
             </LevelItem>
           </Level>
@@ -354,7 +354,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   autoResize
                   className="ols-plugin__chat-prompt-input"
                   onChange={onChange}
-                  placeholder="Send a message..."
+                  placeholder={t('Send a message...')}
                   ref={promptRef}
                   resizeOrientation="vertical"
                   rows={1}
