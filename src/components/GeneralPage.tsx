@@ -39,7 +39,7 @@ import {
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
-import { dismissPrivacyAlert, setHistory } from '../redux-actions';
+import { dismissPrivacyAlert, setContext, setHistory } from '../redux-actions';
 import { State } from '../redux-reducers';
 
 import './general-page.css';
@@ -197,6 +197,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   };
 
   const clearChat = React.useCallback(() => {
+    dispatch(setContext(null));
     dispatch(setHistory([]));
   }, [dispatch]);
 
