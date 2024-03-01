@@ -141,7 +141,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   let initialQuery = '';
   let watchResource: WatchK8sResource = null;
   if (isK8sResourceContext) {
-    initialQuery = `Can you help me with ${context.kind.toLowerCase()} "${
+    initialQuery = `Can you help me with ${context.kind} "${
       context.metadata.name
     }" in namespace "${context.metadata.namespace}"?`;
     watchResource = {
@@ -155,9 +155,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [resourceData, resourceLoaded, resourceLoadError] =
     useK8sWatchResource<K8sResourceKind>(watchResource);
 
-  const [query, setQuery] = React.useState(initialQuery);
   const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
   const [isWaiting, setIsWaiting] = React.useState(false);
+  const [query, setQuery] = React.useState(initialQuery);
 
   const promptRef = React.useRef(null);
   const historyEndRef = React.useRef(null);
@@ -255,7 +255,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   return (
     <>
       <Page>
-        <PageSection className="ols-plugin__page-title" variant="light">
+        <PageSection className="ols-plugin__header" variant="light">
           {onClose && <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />}
           {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
           {onCollapse && (
@@ -317,7 +317,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 isInline
                 title={
                   <>
-                    Asking about
+                    Asking about&nbsp;&nbsp;
                     <ResourceLink
                       inline
                       kind={context.kind}
@@ -370,7 +370,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           </Form>
 
           <HelperText>
-            <HelperTextItem className="ols-plugin__chat-footer" variant="indeterminate">
+            <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
               TODO: Footer info wording
             </HelperTextItem>
           </HelperText>

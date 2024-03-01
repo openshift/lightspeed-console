@@ -40,10 +40,10 @@
 }
 
 .ols-plugin__chat-prompt {
-  bottom: 0;
   padding: var(--pf-v5-global--spacer--sm) 8%;
 
   .ols-plugin__chat-prompt-input {
+    min-height: 2rem;
     max-height: 20rem;
   }
 
@@ -56,11 +56,11 @@
   }
 }
 
-.ols-plugin__chat-footer {
+.ols-plugin__footer {
   margin: var(--pf-v5-global--spacer--sm) auto;
 }
 
-.ols-plugin__page-title {
+.ols-plugin__header {
   --logo-size: var(--pf-v5-global--spacer--2xl);
   --logo-spacer-left: var(--pf-v5-global--spacer--lg);
   --logo-spacer-right: var(--pf-v5-global--spacer--md);
