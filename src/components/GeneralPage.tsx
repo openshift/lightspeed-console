@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   GreenCheckCircleIcon,
   K8sResourceKind,
+  RedExclamationCircleIcon,
   ResourceLink,
   ResourceStatus,
   useK8sWatchResource,
@@ -34,11 +35,13 @@ import {
   ExpandIcon,
   FileImportIcon,
   PaperPlaneIcon,
+  SyncAltIcon,
   TimesIcon,
 } from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
+import { jobStatus, podStatus } from '../k8s';
 import { dismissPrivacyAlert, setContext, setHistory } from '../redux-actions';
 import { State } from '../redux-reducers';
 
@@ -102,11 +105,24 @@ const Status: React.FC<{ k8sResource: K8sResourceKind }> = ({ k8sResource }) => 
   if (!k8sResource?.kind || !k8sResource?.status) {
     return null;
   }
+  if (k8sResource.kind === 'Pod') {
+    const status = podStatus(k8sResource);
+    return (
+      <>
+        {status === 'Completed' && <GreenCheckCircleIcon />}
+        {status === 'CrashLoopBackOff' && <RedExclamationCircleIcon />}
+        {status === 'Failed' && <RedExclamationCircleIcon />}
+        {status === 'Running' && <SyncAltIcon />}
+        &nbsp;{status}
+      </>
+    );
+  }
   if (k8sResource.kind === 'Job') {
-    const status = k8sResource.status.conditions?.[0]?.type || 'In progress';
+    const status = jobStatus(k8sResource);
     return (
       <>
         {status === 'Complete' && <GreenCheckCircleIcon />}
+        {status === 'Failed' && <RedExclamationCircleIcon />}
         &nbsp;{status}
       </>
     );
