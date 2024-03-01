@@ -230,6 +230,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       const requestData = { body, method: 'POST', headers, timeout: QUERY_TIMEOUT };
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
 
+      // Clear prompt input and return focus to it
+      setQuery('');
+      promptRef.current.focus();
+
       request()
         .then((response: QueryResponse) => {
           // TODO: Also store the conversation_id in history
