@@ -70,24 +70,6 @@
     }
   },
   {
-    "type": "console.page/route",
-    "properties": {
-      "exact": true,
-      "path": "/lightspeed",
-      "component": { "$codeRef": "GeneralPage" }
-    }
-  },
-  {
-    "type": "console.navigation/href",
-    "properties": {
-      "id": "LightspeedGeneral",
-      "name": "%plugin__lightspeed-console-plugin~OpenShift Lightspeed%",
-      "href": "/lightspeed",
-      "perspective": "admin",
-      "section": "home"
-    }
-  },
-  {
     "type": "console.redux-reducer",
     "properties": {
       "scope": "ols",
