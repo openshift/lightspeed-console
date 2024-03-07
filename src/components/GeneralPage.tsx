@@ -157,9 +157,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   let initialQuery = '';
   let watchResource: WatchK8sResource = null;
   if (isK8sResourceContext) {
-    initialQuery = `Can you help me with ${context.kind} "${
-      context.metadata.name
-    }" in namespace "${context.metadata.namespace}"?`;
+    initialQuery = `Can you help me with ${context.kind} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
     watchResource = {
       isList: false,
       kind: context.kind,
@@ -171,9 +169,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [resourceData, resourceLoaded, resourceLoadError] =
     useK8sWatchResource<K8sResourceKind>(watchResource);
 
+  const [conversationID, setConversationID] = React.useState<string>();
   const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
-  const [isWaiting, setIsWaiting] = React.useState(false);
-  const [query, setQuery] = React.useState(initialQuery);
+  const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
+  const [query, setQuery] = React.useState<string>(initialQuery);
 
   const promptRef = React.useRef(null);
   const historyEndRef = React.useRef(null);
@@ -215,6 +214,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
     dispatch(setHistory([]));
+    setConversationID(undefined);
   }, [dispatch]);
 
   const hidePrivacyAlertPersistent = React.useCallback(() => {
@@ -237,13 +237,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       const newHistory = [...history, { text: query, who: 'user' }];
       dispatch(setHistory(newHistory));
       scrollHistoryToBottom();
-      setIsWaiting(true);
+      setWaiting();
 
       const headers = {
         'Content-Type': 'application/json',
       };
-      // TODO: Also send the conversation_id
-      const body = JSON.stringify({ query });
+      const body = JSON.stringify({ conversation_id: conversationID, query });
       const requestData = { body, method: 'POST', headers, timeout: QUERY_TIMEOUT };
       const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
 
@@ -253,20 +252,20 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       request()
         .then((response: QueryResponse) => {
-          // TODO: Also store the conversation_id in history
+          setConversationID(response.conversation_id);
           dispatch(setHistory([...newHistory, { text: response.response, who: 'ai' }]));
           scrollHistoryToBottom();
-          setIsWaiting(false);
+          unsetWaiting();
         })
         .catch((error) => {
           dispatch(
             setHistory([...newHistory, { error: error.toString(), text: undefined, who: 'ai' }]),
           );
           scrollHistoryToBottom();
-          setIsWaiting(false);
+          unsetWaiting();
         });
     },
-    [dispatch, history, query, scrollHistoryToBottom],
+    [conversationID, dispatch, history, query, setWaiting, scrollHistoryToBottom, unsetWaiting],
   );
 
   return (
