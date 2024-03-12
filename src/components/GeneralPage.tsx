@@ -16,6 +16,8 @@ import {
   Alert,
   AlertActionLink,
   Button,
+  Chip,
+  ChipGroup,
   Form,
   HelperText,
   HelperTextItem,
@@ -33,6 +35,7 @@ import {
 import {
   CompressIcon,
   ExpandIcon,
+  ExternalLinkAltIcon,
   FileImportIcon,
   PaperPlaneIcon,
   SyncAltIcon,
@@ -53,18 +56,38 @@ const QUERY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 type QueryResponse = {
   conversation_id: string;
   query: string;
+  referenced_documents: Array<string>;
   response: string;
 };
 
-type ChatEntry = {
-  error?: string;
+type ChatEntryUser = {
   text?: string;
-  who: string;
+  who: 'user';
 };
+
+type ChatEntryAI = {
+  error?: string;
+  references?: Array<string>;
+  text?: string;
+  who: 'ai';
+};
+
+type ChatEntry = ChatEntryAI | ChatEntryUser;
 
 type HistoryEntryProps = {
   entry: ChatEntry;
 };
+
+type ExternalLinkProps = {
+  children: React.ReactNode;
+  href: string;
+};
+
+const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer">
+    {children} <ExternalLinkAltIcon />
+  </a>
+);
 
 const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
   if (entry.who === 'ai') {
@@ -80,6 +103,15 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
         <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
           <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
           <div className="ols-plugin__chat-entry-text">{entry.text}</div>
+          {entry.references && (
+            <ChipGroup categoryName="Referenced docs">
+              {entry.references.map((r) => (
+                <Chip isReadOnly key={r}>
+                  <ExternalLink href={r}>{r}</ExternalLink>
+                </Chip>
+              ))}
+            </ChipGroup>
+          )}
         </div>
       );
     }
@@ -97,7 +129,7 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
 
 const HistoryEntryWaiting = () => (
   <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
-    <Spinner size="md" />
+    <Spinner size="lg" />
   </div>
 );
 
@@ -253,7 +285,16 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       request()
         .then((response: QueryResponse) => {
           setConversationID(response.conversation_id);
-          dispatch(setHistory([...newHistory, { text: response.response, who: 'ai' }]));
+          dispatch(
+            setHistory([
+              ...newHistory,
+              {
+                references: response.referenced_documents,
+                text: response.response,
+                who: 'ai',
+              },
+            ]),
+          );
           scrollHistoryToBottom();
           unsetWaiting();
         })
