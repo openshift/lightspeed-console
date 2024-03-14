@@ -42,7 +42,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 
-import { cancellableFetch } from '../cancellable-fetch';
+import { cancellableFetchPOST } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
 import { jobStatus, podStatus } from '../k8s';
 import { dismissPrivacyAlert, setContext, setHistory } from '../redux-actions';
@@ -271,12 +271,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       scrollHistoryToBottom();
       setWaiting();
 
-      const headers = {
-        'Content-Type': 'application/json',
-      };
       const body = JSON.stringify({ conversation_id: conversationID, query });
-      const requestData = { body, method: 'POST', headers, timeout: QUERY_TIMEOUT };
-      const { request } = cancellableFetch<QueryResponse>(QUERY_ENDPOINT, requestData);
+      const requestData = { body, timeout: QUERY_TIMEOUT };
+      const { request } = cancellableFetchPOST<QueryResponse>(QUERY_ENDPOINT, requestData);
 
       // Clear prompt input and return focus to it
       setQuery('');
