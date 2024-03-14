@@ -21,6 +21,7 @@ import {
   Form,
   HelperText,
   HelperTextItem,
+  Label,
   Level,
   LevelItem,
   Page,
@@ -31,21 +32,26 @@ import {
   TextArea,
   TextContent,
   Title,
+  Tooltip,
 } from '@patternfly/react-core';
 import {
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
   FileImportIcon,
+  OutlinedThumbsDownIcon,
+  OutlinedThumbsUpIcon,
   PaperPlaneIcon,
   SyncAltIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
   TimesIcon,
 } from '@patternfly/react-icons';
 
 import { cancellableFetch } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
 import { jobStatus, podStatus } from '../k8s';
-import { dismissPrivacyAlert, setContext, setHistory } from '../redux-actions';
+import { dismissPrivacyAlert, setChatHistory, setContext } from '../redux-actions';
 import { State } from '../redux-reducers';
 
 import './general-page.css';
@@ -74,8 +80,86 @@ type ChatEntryAI = {
 
 type ChatEntry = ChatEntryAI | ChatEntryUser;
 
-type HistoryEntryProps = {
-  entry: ChatEntry;
+const Feedback: React.FC = () => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  const [isClosed, , setClosed, setOpen] = useBoolean(false);
+  const [isThumbsDown, toggleThumbsDown, , unsetThumbsDown] = useBoolean(false);
+  const [isThumbsUp, toggleThumbsUp, , unsetThumbsUp] = useBoolean(false);
+
+  const onThumbsUp = React.useCallback(() => {
+    toggleThumbsUp();
+    unsetThumbsDown();
+    setOpen();
+  }, [setOpen, toggleThumbsUp, unsetThumbsDown]);
+
+  const onThumbsDown = React.useCallback(() => {
+    toggleThumbsDown();
+    unsetThumbsUp();
+    setOpen();
+  }, [setOpen, toggleThumbsDown, unsetThumbsUp]);
+
+  return (
+    <div className="ols-plugin__feedback">
+      <Tooltip content={t('Good response')}>
+        <div
+          className={`ols-plugin__feedback-icon${
+            isThumbsUp ? ' ols-plugin__feedback-icon--selected' : ''
+          }`}
+          onClick={onThumbsUp}
+        >
+          {isThumbsUp ? <ThumbsUpIcon /> : <OutlinedThumbsUpIcon />}
+        </div>
+      </Tooltip>
+      <Tooltip content={t('Bad response')}>
+        <div
+          className={`ols-plugin__feedback-icon${
+            isThumbsDown ? ' ols-plugin__feedback-icon--selected' : ''
+          }`}
+          onClick={onThumbsDown}
+        >
+          {isThumbsDown ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
+        </div>
+      </Tooltip>
+      {!isClosed && (isThumbsDown || isThumbsUp) && (
+        <div className="ols-plugin__feedback-comment">
+          <Title headingLevel="h3">
+            {t('Why did you choose this rating?')}
+            <Chip className="ols-plugin__feedback-optional" isReadOnly>
+              {t('Optional')}
+            </Chip>
+            <TimesIcon className="ols-plugin__popover-close" onClick={setClosed} />
+          </Title>
+          {isThumbsDown && (
+            <>
+              <Label className="ols-plugin__feedback-label">{t('Harmful / Unsafe')}</Label>
+              <Label className="ols-plugin__feedback-label">{t('Not factually correct')}</Label>
+            </>
+          )}
+          {isThumbsUp && (
+            <>
+              <Label className="ols-plugin__feedback-label">{t('Correct')}</Label>
+              <Label className="ols-plugin__feedback-label">{t('Easy to understand')}</Label>
+              <Label className="ols-plugin__feedback-label">{t('Complete')}</Label>
+            </>
+          )}
+          <TextArea
+            aria-label={t('Provide additional feedback')}
+            className="ols-plugin__feedback-input"
+            placeholder={t('Provide additional feedback')}
+            resizeOrientation="vertical"
+            rows={1}
+          />
+          <HelperText>
+            <HelperTextItem className="ols-plugin__feedback-footer" variant="indeterminate">
+              {t('TODO: Feedback privacy warning')}
+            </HelperTextItem>
+          </HelperText>
+          <Button variant="primary">{t('Submit')}</Button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 type ExternalLinkProps = {
@@ -89,32 +173,35 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
   </a>
 );
 
-const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
+type ChatHistoryEntryProps = {
+  entry: ChatEntry;
+  noFeedback?: boolean;
+};
+
+const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, noFeedback = false }) => {
   if (entry.who === 'ai') {
-    if (entry.error) {
-      return (
-        <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
-          <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+    return (
+      <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+        <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+        {entry.error ? (
           <div className="ols-plugin__chat-entry-error">{entry.error}</div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
-          <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-          <div className="ols-plugin__chat-entry-text">{entry.text}</div>
-          {entry.references && (
-            <ChipGroup categoryName="Referenced docs">
-              {entry.references.map((r) => (
-                <Chip isReadOnly key={r}>
-                  <ExternalLink href={r}>{r}</ExternalLink>
-                </Chip>
-              ))}
-            </ChipGroup>
-          )}
-        </div>
-      );
-    }
+        ) : (
+          <>
+            <div className="ols-plugin__chat-entry-text">{entry.text}</div>
+            {entry.references && (
+              <ChipGroup categoryName="Referenced docs">
+                {entry.references.map((r) => (
+                  <Chip isReadOnly key={r}>
+                    <ExternalLink href={r}>{r}</ExternalLink>
+                  </Chip>
+                ))}
+              </ChipGroup>
+            )}
+            {!noFeedback && <Feedback />}
+          </>
+        )}
+      </div>
+    );
   }
   if (entry.who === 'user') {
     return (
@@ -127,8 +214,9 @@ const HistoryEntry: React.FC<HistoryEntryProps> = ({ entry }) => {
   return null;
 };
 
-const HistoryEntryWaiting = () => (
+const ChatHistoryEntryWaiting = () => (
   <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+    <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
     <Spinner size="lg" />
   </div>
 );
@@ -173,8 +261,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const dispatch = useDispatch();
 
+  const chatHistory: ChatEntry[] = useSelector((s: State) => s.plugins?.ols?.get('chatHistory'));
   const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
-  const history: ChatEntry[] = useSelector((s: State) => s.plugins?.ols?.get('history'));
   const isPrivacyAlertDismissed: boolean = useSelector((s: State) =>
     s.plugins?.ols?.get('isPrivacyAlertDismissed'),
   );
@@ -206,11 +294,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
   const [query, setQuery] = React.useState<string>(initialQuery);
 
+  const chatHistoryEndRef = React.useRef(null);
   const promptRef = React.useRef(null);
-  const historyEndRef = React.useRef(null);
 
-  const scrollHistoryToBottom = React.useCallback(() => {
-    historyEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollChatHistoryToBottom = React.useCallback(() => {
+    chatHistoryEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   const onInsertYAML = (e) => {
@@ -245,7 +333,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
-    dispatch(setHistory([]));
+    dispatch(setChatHistory([]));
     setConversationID(undefined);
   }, [dispatch]);
 
@@ -266,9 +354,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         return;
       }
 
-      const newHistory = [...history, { text: query, who: 'user' }];
-      dispatch(setHistory(newHistory));
-      scrollHistoryToBottom();
+      const newChatHistory = [...chatHistory, { text: query, who: 'user' }];
+      dispatch(setChatHistory(newChatHistory));
+      scrollChatHistoryToBottom();
       setWaiting();
 
       const headers = {
@@ -286,8 +374,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         .then((response: QueryResponse) => {
           setConversationID(response.conversation_id);
           dispatch(
-            setHistory([
-              ...newHistory,
+            setChatHistory([
+              ...newChatHistory,
               {
                 references: response.referenced_documents,
                 text: response.response,
@@ -295,18 +383,29 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               },
             ]),
           );
-          scrollHistoryToBottom();
+          scrollChatHistoryToBottom();
           unsetWaiting();
         })
         .catch((error) => {
           dispatch(
-            setHistory([...newHistory, { error: error.toString(), text: undefined, who: 'ai' }]),
+            setChatHistory([
+              ...newChatHistory,
+              { error: error.toString(), text: undefined, who: 'ai' },
+            ]),
           );
-          scrollHistoryToBottom();
+          scrollChatHistoryToBottom();
           unsetWaiting();
         });
     },
-    [conversationID, dispatch, history, query, setWaiting, scrollHistoryToBottom, unsetWaiting],
+    [
+      chatHistory,
+      conversationID,
+      dispatch,
+      query,
+      scrollChatHistoryToBottom,
+      setWaiting,
+      unsetWaiting,
+    ],
   );
 
   return (
@@ -331,6 +430,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         </PageSection>
 
         <PageSection
+          aria-label={t('OpenShift Lightspeed chat history')}
           className="ols-plugin__chat-history"
           hasOverflowScroll
           isFilled
@@ -351,18 +451,21 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               title="Data privacy"
               variant="info"
             >
-              <p>TODO: Data privacy info wording line 1</p>
-              <p>TODO: Data privacy info wording line 2</p>
+              <p>{t('TODO: Data privacy info wording line 1')}</p>
+              <p>{t('TODO: Data privacy info wording line 2')}</p>
             </Alert>
           )}
 
           <TextContent>
-            <HistoryEntry entry={{ text: t('Hello there. How can I help?'), who: 'ai' }} />
-            {history.map((entry, i) => (
-              <HistoryEntry key={i} entry={entry} />
+            <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+              <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+              <div className="ols-plugin__chat-entry-text">{t('Hello there. How can I help?')}</div>
+            </div>
+            {chatHistory.map((entry, i) => (
+              <ChatHistoryEntry key={i} entry={entry} />
             ))}
-            {isWaiting && <HistoryEntryWaiting />}
-            <div ref={historyEndRef} />
+            {isWaiting && <ChatHistoryEntryWaiting />}
+            <div ref={chatHistoryEndRef} />
           </TextContent>
         </PageSection>
 
@@ -406,7 +509,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             <Split hasGutter>
               <SplitItem isFilled>
                 <TextArea
-                  aria-label="OpenShift Lightspeed prompt"
+                  aria-label={t('OpenShift Lightspeed prompt')}
                   autoFocus
                   autoResize
                   className="ols-plugin__chat-prompt-input"
@@ -428,7 +531,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
           <HelperText>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-              TODO: Footer info wording
+              {t('TODO: Footer info wording')}
             </HelperTextItem>
           </HelperText>
         </PageSection>

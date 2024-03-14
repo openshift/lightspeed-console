@@ -13,8 +13,8 @@ export type State = {
 const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
     return ImmutableMap({
+      chatHistory: [],
       context: null,
-      history: [],
       isOpen: false,
       isPrivacyAlertDismissed: false,
     });
@@ -33,8 +33,8 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     case ActionType.SetContext:
       return state.set('context', action.payload.context);
 
-    case ActionType.SetHistory:
-      return state.set('history', action.payload.history);
+    case ActionType.SetChatHistory:
+      return state.set('chatHistory', action.payload.chatHistory);
 
     default:
       break;
