@@ -52,12 +52,3 @@ plugin:
         requests:
           cpu: 10m
           memory: 50Mi
-  proxy:
-    - alias: ols
-      authorization: None
-      endpoint:
-        service:
-          name: lightspeed-w-rag
-          namespace: openshift-lightspeed
-          port: 8443
-        type: Service

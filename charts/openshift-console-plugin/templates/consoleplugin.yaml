@@ -17,4 +17,11 @@ spec:
       port: {{ .Values.plugin.port }}
       basePath: {{ .Values.plugin.basePath }}
   proxy:
-    {{- toYaml .Values.plugin.proxy | nindent 4 }}
+    - alias: ols
+      authorization: None
+      endpoint:
+        service:
+          name: lightspeed-w-rag
+          namespace: {{ .Release.Namespace }}
+          port: 8443
+        type: Service
