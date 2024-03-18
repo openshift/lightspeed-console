@@ -21,7 +21,7 @@ spec:
       authorization: None
       endpoint:
         service:
-          name: lightspeed-w-rag
+          name: lightspeed-app-server
           namespace: {{ .Release.Namespace }}
           port: 8443
         type: Service
