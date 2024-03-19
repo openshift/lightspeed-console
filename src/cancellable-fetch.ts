@@ -25,10 +25,7 @@ class FetchError extends Error {
 export const isFetchError = (error: unknown): error is FetchError =>
   !!(error as FetchError).name && (error as FetchError).name === 'Fetch Error';
 
-export const cancellableFetch = <T>(
-  url: string,
-  init?: RequestInitWithTimeout,
-): CancellableFetch<T> => {
+const cancellableFetch = <T>(url: string, init?: RequestInitWithTimeout): CancellableFetch<T> => {
   const abortController = new AbortController();
   const abort = () => abortController.abort();
 
@@ -58,3 +55,18 @@ export const cancellableFetch = <T>(
 
   return { request, abort };
 };
+
+export const cancellableFetchGET = <T>(
+  url: string,
+  init?: RequestInitWithTimeout,
+): CancellableFetch<T> => cancellableFetch(url, { ...init, method: 'GET' });
+
+export const cancellableFetchPOST = <T>(
+  url: string,
+  init?: RequestInitWithTimeout,
+): CancellableFetch<T> =>
+  cancellableFetch(url, {
+    ...init,
+    headers: { ...init?.headers, 'Content-Type': 'application/json' },
+    method: 'POST',
+  });
