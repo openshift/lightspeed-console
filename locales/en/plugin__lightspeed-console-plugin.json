@@ -1,8 +1,25 @@
 {
   "Ask OpenShift Lightspeed": "Ask OpenShift Lightspeed",
+  "Bad response": "Bad response",
+  "Complete": "Complete",
+  "Correct": "Correct",
+  "Easy to understand": "Easy to understand",
   "Error getting YAML: {{e}}": "Error getting YAML: {{e}}",
+  "Good response": "Good response",
+  "Harmful / Unsafe": "Harmful / Unsafe",
   "Hello there. How can I help?": "Hello there. How can I help?",
   "New chat": "New chat",
+  "Not factually correct": "Not factually correct",
+  "OpenShift Lightspeed chat history": "OpenShift Lightspeed chat history",
+  "OpenShift Lightspeed prompt": "OpenShift Lightspeed prompt",
+  "Optional": "Optional",
+  "Provide additional feedback": "Provide additional feedback",
   "Red Hat OpenShift Lightspeed": "Red Hat OpenShift Lightspeed",
-  "Send a message...": "Send a message..."
+  "Send a message...": "Send a message...",
+  "Submit": "Submit",
+  "TODO: Data privacy info wording line 1": "TODO: Data privacy info wording line 1",
+  "TODO: Data privacy info wording line 2": "TODO: Data privacy info wording line 2",
+  "TODO: Feedback privacy warning": "TODO: Feedback privacy warning",
+  "TODO: Footer info wording": "TODO: Footer info wording",
+  "Why did you choose this rating?": "Why did you choose this rating?"
 }

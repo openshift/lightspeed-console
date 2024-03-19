@@ -4,16 +4,17 @@ export enum ActionType {
   CloseOLS = 'closeOLS',
   DismissPrivacyAlert = 'dismissPrivacyAlert',
   OpenOLS = 'openOLS',
+  SetChatHistory = 'setChatHistory',
   SetContext = 'setContext',
-  SetHistory = 'setHistory',
 }
 
 export const closeOLS = () => action(ActionType.CloseOLS);
 export const dismissPrivacyAlert = () => action(ActionType.DismissPrivacyAlert);
 export const openOLS = () => action(ActionType.OpenOLS);
+export const setChatHistory = (chatHistory: object) =>
+  action(ActionType.SetChatHistory, { chatHistory });
 export const setContext = (context: object) => action(ActionType.SetContext, { context });
-export const setHistory = (history: object) => action(ActionType.SetHistory, { history });
 
-const actions = { closeOLS, dismissPrivacyAlert, openOLS, setContext, setHistory };
+const actions = { closeOLS, dismissPrivacyAlert, openOLS, setChatHistory, setContext };
 
 export type OLSAction = Action<typeof actions>;
