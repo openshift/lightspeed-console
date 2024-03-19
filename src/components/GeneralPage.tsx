@@ -405,6 +405,17 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     ],
   );
 
+  const onKeyDown = React.useCallback(
+    (e) => {
+      // Both Enter+Ctrl and Enter+Meta submit the prompt
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        onSubmit(e);
+      }
+    },
+    [onSubmit],
+  );
+
   return (
     <>
       <Page>
@@ -511,6 +522,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   autoResize
                   className="ols-plugin__chat-prompt-input"
                   onChange={onChange}
+                  onKeyDown={onKeyDown}
                   placeholder={t('Send a message...')}
                   ref={promptRef}
                   resizeOrientation="vertical"
