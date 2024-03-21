@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  consoleFetchJSON,
   GreenCheckCircleIcon,
   K8sResourceKind,
   RedExclamationCircleIcon,
@@ -48,7 +49,6 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 
-import { cancellableFetchPOST } from '../cancellable-fetch';
 import { useBoolean } from '../hooks/useBoolean';
 import { jobStatus, podStatus } from '../k8s';
 import { dismissPrivacyAlert, setChatHistory, setContext } from '../redux-actions';
@@ -359,15 +359,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       scrollChatHistoryToBottom();
       setWaiting();
 
-      const body = JSON.stringify({ conversation_id: conversationID, query });
-      const requestData = { body, timeout: QUERY_TIMEOUT };
-      const { request } = cancellableFetchPOST<QueryResponse>(QUERY_ENDPOINT, requestData);
-
       // Clear prompt input and return focus to it
       setQuery('');
       promptRef.current.focus();
 
-      request()
+      const requestJSON = { conversation_id: conversationID, query };
+
+      consoleFetchJSON.post(QUERY_ENDPOINT, requestJSON, {}, QUERY_TIMEOUT)
         .then((response: QueryResponse) => {
           setConversationID(response.conversation_id);
           dispatch(
