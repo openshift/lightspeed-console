@@ -55,6 +55,7 @@ import { dismissPrivacyAlert, setChatHistory, setContext } from '../redux-action
 import { State } from '../redux-reducers';
 
 import './general-page.css';
+import { getRequestInitwithAuthHeader } from '../hooks/useAuthorization';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
 const QUERY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
@@ -365,7 +366,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       const requestJSON = { conversation_id: conversationID, query };
 
-      consoleFetchJSON.post(QUERY_ENDPOINT, requestJSON, {}, QUERY_TIMEOUT)
+      consoleFetchJSON
+        .post(QUERY_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), QUERY_TIMEOUT)
         .then((response: QueryResponse) => {
           setConversationID(response.conversation_id);
           dispatch(

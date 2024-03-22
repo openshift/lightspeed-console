@@ -4,12 +4,16 @@ import { Configuration as WebpackConfiguration } from "webpack";
 import { Configuration as WebpackDevServerConfiguration } from "webpack-dev-server";
 import * as path from "path";
 import { ConsoleRemotePlugin } from "@openshift-console/dynamic-plugin-sdk-webpack";
+import * as dotenv from "dotenv";
+import { DefinePlugin } from 'webpack';
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 interface Configuration extends WebpackConfiguration {
   devServer?: WebpackDevServerConfiguration;
 }
+
+dotenv.config();
 
 const config: Configuration = {
   mode: "development",
@@ -73,6 +77,9 @@ const config: Configuration = {
     hot: false,
   },
   plugins: [
+    new DefinePlugin({
+      'process.env': JSON.stringify(process.env)
+    }),
     new ConsoleRemotePlugin(), 
     new CopyWebpackPlugin({
       patterns: [{ from: path.resolve(__dirname, 'locales'), to: 'locales' }],
