@@ -18,7 +18,7 @@ spec:
       basePath: {{ .Values.plugin.basePath }}
   proxy:
     - alias: ols
-      authorization: None
+      authorization: UserToken
       endpoint:
         service:
           name: lightspeed-app-server
