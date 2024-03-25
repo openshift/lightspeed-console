@@ -182,10 +182,10 @@ type ChatHistoryEntryProps = {
 const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, noFeedback = false }) => {
   if (entry.who === 'ai') {
     return (
-      <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+      <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
         {entry.error ? (
-          <div className="ols-plugin__chat-entry-error">{entry.error}</div>
+          <div className="ols-plugin__chat-entry--error">{entry.error}</div>
         ) : (
           <>
             <div className="ols-plugin__chat-entry-text">{entry.text}</div>
@@ -206,7 +206,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, noFeedback =
   }
   if (entry.who === 'user') {
     return (
-      <div className="ols-plugin__chat-entry ols-plugin__chat-entry-user">
+      <div className="ols-plugin__chat-entry ols-plugin__chat-entry--user">
         <div className="ols-plugin__chat-entry-name">You</div>
         <div className="ols-plugin__chat-entry-text">{entry.text}</div>
       </div>
@@ -216,7 +216,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, noFeedback =
 };
 
 const ChatHistoryEntryWaiting = () => (
-  <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
+  <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
     <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
     <Spinner size="lg" />
   </div>
@@ -251,8 +251,68 @@ const Status: React.FC<{ k8sResource: K8sResourceKind }> = ({ k8sResource }) => 
   return null;
 };
 
+const PrivacyAlert: React.FC = () => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  const dispatch = useDispatch();
+
+  const isPrivacyAlertDismissed: boolean = useSelector((s: State) =>
+    s.plugins?.ols?.get('isPrivacyAlertDismissed'),
+  );
+
+  const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
+
+  const hidePrivacyAlertPersistent = React.useCallback(() => {
+    hidePrivacyAlert();
+    dispatch(dismissPrivacyAlert());
+  }, [dispatch, hidePrivacyAlert]);
+
+  if (!isPrivacyAlertShown) {
+    return null;
+  }
+
+  return (
+    <Alert
+      actionLinks={
+        <>
+          <AlertActionLink onClick={hidePrivacyAlert}>Got it</AlertActionLink>
+          <AlertActionLink onClick={hidePrivacyAlertPersistent}>
+            Don&apos;t show again
+          </AlertActionLink>
+        </>
+      }
+      className="ols-plugin__alert"
+      isInline
+      title="Data privacy"
+      variant="info"
+    >
+      <p>{t('TODO: Data privacy info wording line 1')}</p>
+      <p>{t('TODO: Data privacy info wording line 2')}</p>
+    </Alert>
+  );
+};
+
+const Welcome: React.FC = () => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  return (
+    <PageSection variant="light">
+      <div className="ols-plugin__welcome-logo"></div>
+      <Title className="pf-v5-u-text-align-center" headingLevel="h1">
+        {t('Red Hat OpenShift Lightspeed')}
+      </Title>
+      <Title className="ols-plugin__welcome-subheading pf-v5-u-text-align-center" headingLevel="h4">
+        {t(
+          'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed',
+        )}
+      </Title>
+      <PrivacyAlert />
+    </PageSection>
+  );
+};
+
 type GeneralPageProps = {
-  onClose?: () => void;
+  onClose: () => void;
   onCollapse?: () => void;
   onExpand?: () => void;
 };
@@ -264,9 +324,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const chatHistory: ChatEntry[] = useSelector((s: State) => s.plugins?.ols?.get('chatHistory'));
   const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
-  const isPrivacyAlertDismissed: boolean = useSelector((s: State) =>
-    s.plugins?.ols?.get('isPrivacyAlertDismissed'),
-  );
 
   // Do we have a context that looks like a k8s resource with sufficient information
   const isK8sResourceContext =
@@ -291,7 +348,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     useK8sWatchResource<K8sResourceKind>(watchResource);
 
   const [conversationID, setConversationID] = React.useState<string>();
-  const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
   const [query, setQuery] = React.useState<string>(initialQuery);
 
@@ -337,11 +393,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     dispatch(setChatHistory([]));
     setConversationID(undefined);
   }, [dispatch]);
-
-  const hidePrivacyAlertPersistent = React.useCallback(() => {
-    hidePrivacyAlert();
-    dispatch(dismissPrivacyAlert());
-  }, [dispatch, hidePrivacyAlert]);
 
   const onChange = React.useCallback((_e, value) => {
     setQuery(value);
@@ -416,25 +467,29 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     [onSubmit],
   );
 
+  const isWelcomePage = chatHistory.length === 0;
+
   return (
     <>
       <Page>
-        <PageSection className="ols-plugin__header" variant="light">
-          {onClose && <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />}
+        <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
+          <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
           {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
           {onCollapse && (
             <CompressIcon className="ols-plugin__popover-close" onClick={onCollapse} />
           )}
-          <Level>
-            <LevelItem>
-              <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
-            </LevelItem>
-            <LevelItem>
-              <Button onClick={clearChat} variant="primary">
-                {t('New chat')}
-              </Button>
-            </LevelItem>
-          </Level>
+          {!isWelcomePage && (
+            <Level>
+              <LevelItem>
+                <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
+              </LevelItem>
+              <LevelItem>
+                <Button onClick={clearChat} variant="primary">
+                  {t('New chat')}
+                </Button>
+              </LevelItem>
+            </Level>
+          )}
         </PageSection>
 
         <PageSection
@@ -444,31 +499,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           isFilled
           variant="light"
         >
-          {isPrivacyAlertShown && (
-            <Alert
-              actionLinks={
-                <>
-                  <AlertActionLink onClick={hidePrivacyAlert}>Got it</AlertActionLink>
-                  <AlertActionLink onClick={hidePrivacyAlertPersistent}>
-                    Don&apos;t show again
-                  </AlertActionLink>
-                </>
-              }
-              className="ols-plugin__alert"
-              isInline
-              title="Data privacy"
-              variant="info"
-            >
-              <p>{t('TODO: Data privacy info wording line 1')}</p>
-              <p>{t('TODO: Data privacy info wording line 2')}</p>
-            </Alert>
-          )}
-
+          {isWelcomePage ? <Welcome /> : <PrivacyAlert />}
           <TextContent>
-            <div className="ols-plugin__chat-entry ols-plugin__chat-entry-ai">
-              <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-              <div className="ols-plugin__chat-entry-text">{t('Hello there. How can I help?')}</div>
-            </div>
             {chatHistory.map((entry, i) => (
               <ChatHistoryEntry key={i} entry={entry} />
             ))}

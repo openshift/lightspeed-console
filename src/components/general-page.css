@@ -18,15 +18,15 @@
     padding-left: calc(var(--logo-size) + var(--pf-v5-global--spacer--md));
   }
 
-  .ols-plugin__chat-entry-error {
-    color: var(--pf-v5-global--palette--red-100);
-  }
-
-  .ols-plugin__chat-entry-ai {
+  .ols-plugin__chat-entry--ai {
     background-image: url('../assets/logo.svg');
   }
 
-  .ols-plugin__chat-entry-user {
+  .ols-plugin__chat-entry--error {
+    color: var(--pf-v5-global--palette--red-100);
+  }
+
+  .ols-plugin__chat-entry--user {
     background-image: url('../assets/user.png');
   }
 
@@ -90,17 +90,17 @@
 .ols-plugin__chat-prompt {
   padding: var(--pf-v5-global--spacer--sm) 8%;
 
-  .ols-plugin__chat-prompt-input {
-    min-height: 2rem;
-    max-height: 20rem;
+  .ols-plugin__chat-context-action {
+    margin-top: var(--pf-v5-global--spacer--sm);
   }
 
   .ols-plugin__chat-prompt-submit {
     align-self: end;
   }
 
-  .ols-plugin__chat-context-action {
-    margin-top: var(--pf-v5-global--spacer--sm);
+  .ols-plugin__chat-prompt-input {
+    min-height: 2rem;
+    max-height: 20rem;
   }
 }
 
@@ -119,4 +119,19 @@
   background-size: var(--logo-size);
   border-bottom: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
   padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
+}
+
+.ols-plugin__welcome-logo {
+  --logo-size: var(--pf-v5-global--spacer--4xl);
+
+  background-image: url('../assets/logo.svg');
+  height: var(--logo-size);
+  margin: var(--pf-v5-global--spacer--2xl) auto var(--pf-v5-global--spacer--lg) auto;
+  width: var(--logo-size);
+}
+
+.ols-plugin__welcome-subheading {
+  color: var(--pf-v5-global--Color--200);
+  margin: var(--pf-v5-global--spacer--lg) auto;
+  max-width: 30rem;
 }
