@@ -11,8 +11,7 @@ at runtime, adding custom pages and other extensions. They are based on
 Plugins are registered with console using the `ConsolePlugin` custom resource
 and enabled in the console operator config by a cluster administrator.
 
-Using the latest `v1` API version of `ConsolePlugin` CRD, requires OpenShift 4.12
-and higher. For using old `v1alpha1` API version us OpenShift version 4.10 or 4.11.
+Requires OpenShift 4.15 or higher.
 
 [Node.js](https://nodejs.org/en/) and [yarn](https://yarnpkg.com) are required
 to build and run the example. To run OpenShift console in a container, either
@@ -121,8 +120,6 @@ Additional parameters can be specified if desired. Consult the chart [values](ch
     $ helm upgrade -i lightspeed-console-plugin charts/openshift-console-plugin -n openshift-lightspeed --set plugin.image=quay.io/openshift/lightspeed-console-plugin:latest
     ```
 
-NOTE: When deploying on OpenShift 4.10, it is recommended to add the parameter `--set plugin.securityContext.enabled=false` which will omit configurations related to Pod Security.
-
 NOTE: When defining i18n namespace, adhere `plugin__<name-of-the-plugin>` format. The name of the plugin should be extracted from the `consolePlugin` declaration within the [package.json](package.json) file.
 
 ## i18n
@@ -165,7 +162,7 @@ This project adds prettier, eslint, and stylelint. Linting can be run with
 `yarn run lint`.
 
 The stylelint config disallows hex colors since these cause problems with dark
-mode (starting in OpenShift console 4.11). You should use the
+mode. You should use the
 [PatternFly global CSS variables](https://patternfly-react-main.surge.sh/developer-resources/global-css-variables#global-css-variables)
 for colors instead.
 
