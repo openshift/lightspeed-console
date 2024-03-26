@@ -124,23 +124,21 @@ NOTE: When defining i18n namespace, adhere `plugin__<name-of-the-plugin>` format
 
 ## i18n
 
-The plugin template demonstrates how you can translate messages in with [react-i18next](https://react.i18next.com/). The i18n namespace must match
-the name of the `ConsolePlugin` resource with the `plugin__` prefix to avoid
-naming conflicts. For example, the plugin template uses the
-`plugin__console-plugin-template` namespace. You can use the `useTranslation` hook
+To avoid naming conflicts, the `plugin__lightspeed-console-plugin` i18n
+namespace is used for all translations. You can use the `useTranslation` hook
 with this namespace as follows:
 
 ```tsx
 conster Header: React.FC = () => {
-  const { t } = useTranslation('plugin__console-plugin-template');
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
   return <h1>{t('Hello, World!')}</h1>;
 };
 ```
 
 For labels in `console-extensions.json`, you can use the format
-`%plugin__console-plugin-template~My Label%`. Console will replace the value with
-the message for the current language from the `plugin__console-plugin-template`
-namespace. For example:
+`%plugin__lightspeed-console-plugin~My Label%`. Console will replace the value
+with the message for the current language from the
+`plugin__lightspeed-console-plugin` namespace. For example:
 
 ```json
   {
@@ -148,13 +146,13 @@ namespace. For example:
     "properties": {
       "id": "admin-demo-section",
       "perspective": "admin",
-      "name": "%plugin__console-plugin-template~Plugin Template%"
+      "name": "%plugin__lightspeed-console-plugin~My Label%"
     }
   }
 ```
 
-Running `yarn i18n` updates the JSON files in the `locales` folder of the
-plugin template when adding or changing messages.
+Running `yarn i18n` updates the JSON files in the `locales` folder when adding
+or changing messages.
 
 ## Linting
 
