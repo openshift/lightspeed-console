@@ -17,6 +17,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       isOpen: false,
       isPrivacyAlertDismissed: false,
+      query: '',
     });
   }
 
@@ -32,6 +33,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.SetContext:
       return state.set('context', action.payload.context);
+
+    case ActionType.SetQuery:
+      return state.set('query', action.payload.query);
 
     case ActionType.SetChatHistory:
       return state.set('chatHistory', action.payload.chatHistory);

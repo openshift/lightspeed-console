@@ -51,7 +51,7 @@ import {
 
 import { useBoolean } from '../hooks/useBoolean';
 import { jobStatus, podStatus } from '../k8s';
-import { dismissPrivacyAlert, setChatHistory, setContext } from '../redux-actions';
+import { dismissPrivacyAlert, setChatHistory, setContext, setQuery } from '../redux-actions';
 import { State } from '../redux-reducers';
 
 import './general-page.css';
@@ -332,10 +332,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     typeof context.metadata?.name === 'string' &&
     typeof context.metadata?.namespace === 'string';
 
-  let initialQuery = '';
+  const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
+
   let watchResource: WatchK8sResource = null;
   if (isK8sResourceContext) {
-    initialQuery = `Can you help me with ${context.kind} "${context.metadata.name}" in namespace "${context.metadata.namespace}"?`;
     watchResource = {
       isList: false,
       kind: context.kind,
@@ -343,13 +343,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       namespace: context.metadata.namespace,
     };
   }
-
   const [resourceData, resourceLoaded, resourceLoadError] =
     useK8sWatchResource<K8sResourceKind>(watchResource);
 
   const [conversationID, setConversationID] = React.useState<string>();
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
-  const [query, setQuery] = React.useState<string>(initialQuery);
 
   const chatHistoryEndRef = React.useRef(null);
   const promptRef = React.useRef(null);
@@ -373,7 +371,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       const textBeforeCursor = query.substring(0, selectionStart);
       const textAfterCursor = query.substring(selectionEnd, query.length);
-      setQuery(textBeforeCursor + yaml + textAfterCursor);
+      dispatch(setQuery(textBeforeCursor + yaml + textAfterCursor));
 
       // Restore focus back to prompt input with the same cursor position
       // Defer so that this is called after the prompt text is updated
@@ -394,9 +392,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     setConversationID(undefined);
   }, [dispatch]);
 
-  const onChange = React.useCallback((_e, value) => {
-    setQuery(value);
-  }, []);
+  const onChange = React.useCallback(
+    (_e, value) => {
+      dispatch(setQuery(value));
+    },
+    [dispatch],
+  );
 
   const onSubmit = React.useCallback(
     (e) => {
@@ -412,7 +413,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       setWaiting();
 
       // Clear prompt input and return focus to it
-      setQuery('');
+      dispatch(setQuery(''));
       promptRef.current.focus();
 
       const requestJSON = { conversation_id: conversationID, query };
@@ -555,6 +556,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   className="ols-plugin__chat-prompt-input"
                   onChange={onChange}
                   onKeyDown={onKeyDown}
+                  onFocus={(e) => {
+                    // Move cursor to the end of the text when popover is closed then reopened
+                    const len = e.currentTarget?.value?.length;
+                    if (len) {
+                      e.currentTarget.setSelectionRange(len, len);
+                    }
+                  }}
                   placeholder={t('Send a message...')}
                   ref={promptRef}
                   resizeOrientation="vertical"
