@@ -22,7 +22,6 @@ import {
   Form,
   HelperText,
   HelperTextItem,
-  Label,
   Level,
   LevelItem,
   Page,
@@ -131,19 +130,6 @@ const Feedback: React.FC = () => {
             </Chip>
             <TimesIcon className="ols-plugin__popover-close" onClick={setClosed} />
           </Title>
-          {isThumbsDown && (
-            <>
-              <Label className="ols-plugin__feedback-label">{t('Harmful / Unsafe')}</Label>
-              <Label className="ols-plugin__feedback-label">{t('Not factually correct')}</Label>
-            </>
-          )}
-          {isThumbsUp && (
-            <>
-              <Label className="ols-plugin__feedback-label">{t('Correct')}</Label>
-              <Label className="ols-plugin__feedback-label">{t('Easy to understand')}</Label>
-              <Label className="ols-plugin__feedback-label">{t('Complete')}</Label>
-            </>
-          )}
           <TextArea
             aria-label={t('Provide additional feedback')}
             className="ols-plugin__feedback-input"
