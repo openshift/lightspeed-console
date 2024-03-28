@@ -37,7 +37,7 @@
     "cypress-multi-reporters": "^1.6.2",
     "dotenv": "^16.4.5",
     "eslint": "^8.10.0",
-    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.29.1",
