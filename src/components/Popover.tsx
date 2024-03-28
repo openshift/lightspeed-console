@@ -29,10 +29,6 @@ const Popover: React.FC = () => {
     dispatch(closeOLS());
   }, [dispatch]);
 
-  if (isExpanded) {
-    return null;
-  }
-
   if (authorizationStatus !== AuthorizationStatus.Authorized) {
     return null;
   }
