@@ -342,35 +342,38 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     chatHistoryEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const onInsertYAML = (e) => {
-    e.preventDefault();
+  const onInsertYAML = React.useCallback(
+    (e) => {
+      e.preventDefault();
 
-    if (isK8sResourceContext && promptRef?.current) {
-      const { selectionStart, selectionEnd } = promptRef.current;
+      if (isK8sResourceContext && promptRef?.current) {
+        const { selectionStart, selectionEnd } = promptRef.current;
 
-      let yaml = '';
-      try {
-        yaml = dump(context, { lineWidth: -1 }).trim();
-      } catch (e) {
-        yaml = t('Error getting YAML: {{e}}', { e });
-      }
-
-      const textBeforeCursor = query.substring(0, selectionStart);
-      const textAfterCursor = query.substring(selectionEnd, query.length);
-      dispatch(setQuery(textBeforeCursor + yaml + textAfterCursor));
-
-      // Restore focus back to prompt input with the same cursor position
-      // Defer so that this is called after the prompt text is updated
-      defer(() => {
-        const el = document.querySelector<HTMLElement>('.ols-plugin__chat-prompt-input');
-        if (el && el.style) {
-          el.style.height = '20rem';
+        let yaml = '';
+        try {
+          yaml = dump(context, { lineWidth: -1 }).trim();
+        } catch (e) {
+          yaml = t('Error getting YAML: {{e}}', { e });
         }
-        promptRef.current.setSelectionRange(selectionStart, selectionStart);
-        promptRef.current.focus();
-      });
-    }
-  };
+
+        const textBeforeCursor = query.substring(0, selectionStart);
+        const textAfterCursor = query.substring(selectionEnd, query.length);
+        dispatch(setQuery(textBeforeCursor + yaml + textAfterCursor));
+
+        // Restore focus back to prompt input with the same cursor position
+        // Defer so that this is called after the prompt text is updated
+        defer(() => {
+          const el = document.querySelector<HTMLElement>('.ols-plugin__chat-prompt-input');
+          if (el && el.style) {
+            el.style.height = '20rem';
+          }
+          promptRef.current.setSelectionRange(selectionStart, selectionStart);
+          promptRef.current.focus();
+        });
+      }
+    },
+    [context, dispatch, isK8sResourceContext, query, t],
+  );
 
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
