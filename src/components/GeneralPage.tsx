@@ -124,11 +124,8 @@ const Feedback: React.FC = () => {
       {!isClosed && (isThumbsDown || isThumbsUp) && (
         <div className="ols-plugin__feedback-comment">
           <Title headingLevel="h3">
-            {t('Why did you choose this rating?')}
-            <Chip className="ols-plugin__feedback-optional" isReadOnly>
-              {t('Optional')}
-            </Chip>
             <TimesIcon className="ols-plugin__popover-close" onClick={setClosed} />
+            {t('Why did you choose this rating?')} <Chip isReadOnly>{t('Optional')}</Chip>
           </Title>
           <TextArea
             aria-label={t('Provide additional feedback')}
