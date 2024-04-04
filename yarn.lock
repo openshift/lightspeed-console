@@ -246,10 +246,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@openshift-console/dynamic-plugin-sdk-webpack@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@openshift-console/dynamic-plugin-sdk-webpack/-/dynamic-plugin-sdk-webpack-1.0.1.tgz#0dbb0cf2f10526439249888c10c25223571f918a"
-  integrity sha512-xUv6obNPSp0T1Nc+ywywobQMvfxxsySraIejwnrjxBYelFMuMp3Tn/4c4ziUp/mftBTxPy0T4Nx4sLRB4gAPsw==
+"@openshift-console/dynamic-plugin-sdk-webpack@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@openshift-console/dynamic-plugin-sdk-webpack/-/dynamic-plugin-sdk-webpack-1.1.0.tgz#d369c37b93cd0792960385728de5cd1f63c2187f"
+  integrity sha512-UukGhZOEGc5u22hoO3H0bP58r+Kw1gDFBe0EEJTkYkzYX6S0og5DNAVw/lzhwUorpbmy00B6cqWIuclmTo1+QA==
   dependencies:
     "@openshift/dynamic-plugin-sdk-webpack" "^4.0.2"
     ajv "^6.12.3"
@@ -262,10 +262,10 @@
     semver "6.x"
     webpack "5.75.0"
 
-"@openshift-console/dynamic-plugin-sdk@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@openshift-console/dynamic-plugin-sdk/-/dynamic-plugin-sdk-1.1.0.tgz#63b525aba54f01231921af23939cae0059e02eaf"
-  integrity sha512-gaNqhGq7nne+cC3QaCxuyK+SPvuC/K5Ww5tV2FabIepgbl3qKkUePrejPgvBJ52tMID1sn8prdW/rImYma6NwQ==
+"@openshift-console/dynamic-plugin-sdk@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@openshift-console/dynamic-plugin-sdk/-/dynamic-plugin-sdk-1.2.0.tgz#8cdc50240f1a171530ce0ddcd2a4f4006043eb1a"
+  integrity sha512-K/BqjyG0kSnPFtBlPQYlmcHa1xhozUX0ZaOB5S4vUN4x3hbvcJEeUy/l4RWMNH/+sW8ciuTaBlXCWTxTCfFAXg==
   dependencies:
     classnames "2.x"
     immutable "3.x"
