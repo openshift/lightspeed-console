@@ -162,10 +162,9 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
 
 type ChatHistoryEntryProps = {
   entry: ChatEntry;
-  noFeedback?: boolean;
 };
 
-const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, noFeedback = false }) => {
+const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry }) => {
   if (entry.who === 'ai') {
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
@@ -184,7 +183,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, noFeedback =
                 ))}
               </ChipGroup>
             )}
-            {!noFeedback && <Feedback />}
+            <Feedback />
           </>
         )}
       </div>
