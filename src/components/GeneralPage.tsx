@@ -565,7 +565,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
           <HelperText>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-              {t('TODO: Footer info wording')}
+              {t('The LLMs may provide inaccurate information. Double-check responses.')}
             </HelperTextItem>
           </HelperText>
         </PageSection>

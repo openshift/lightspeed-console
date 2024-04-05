@@ -102,6 +102,7 @@
 
 .ols-plugin__footer {
   margin: var(--pf-v5-global--spacer--sm) auto;
+  text-align: center;
 }
 
 .ols-plugin__header {
