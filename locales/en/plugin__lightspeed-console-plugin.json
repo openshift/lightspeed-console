@@ -1,10 +1,14 @@
 {
+  "Ask away.": "Ask away.",
   "Ask OpenShift Lightspeed": "Ask OpenShift Lightspeed",
   "Bad response": "Bad response",
+  "Chat history may be reviewed or used to improve our services.": "Chat history may be reviewed or used to improve our services.",
+  "Don't share sensitive information.": "Don't share sensitive information.",
   "Error getting YAML: {{e}}": "Error getting YAML: {{e}}",
   "Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.": "Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.",
   "Good response": "Good response",
   "New chat": "New chat",
+  "OpenShift Lightspeed can answer questions related to OpenShift.": "OpenShift Lightspeed can answer questions related to OpenShift.",
   "OpenShift Lightspeed chat history": "OpenShift Lightspeed chat history",
   "OpenShift Lightspeed prompt": "OpenShift Lightspeed prompt",
   "Optional": "Optional",
@@ -13,8 +17,6 @@
   "Send a message...": "Send a message...",
   "Submit": "Submit",
   "The LLMs may provide inaccurate information. Double-check responses.": "The LLMs may provide inaccurate information. Double-check responses.",
-  "TODO: Data privacy info wording line 1": "TODO: Data privacy info wording line 1",
-  "TODO: Data privacy info wording line 2": "TODO: Data privacy info wording line 2",
   "TODO: Feedback privacy warning": "TODO: Feedback privacy warning",
   "Why did you choose this rating?": "Why did you choose this rating?"
 }
