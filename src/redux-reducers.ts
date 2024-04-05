@@ -1,8 +1,9 @@
-import { Map as ImmutableMap } from 'immutable';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 
 import { ActionType, OLSAction } from './redux-actions';
 
-export type OLSState = ImmutableMap<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type OLSState = ImmutableMap<string, any>;
 
 export type State = {
   plugins: {
@@ -13,7 +14,7 @@ export type State = {
 const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
     return ImmutableMap({
-      chatHistory: [],
+      chatHistory: ImmutableList(),
       context: null,
       isOpen: false,
       isPrivacyAlertDismissed: false,
@@ -22,6 +23,15 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
   }
 
   switch (action.type) {
+    case ActionType.ChatHistoryClear:
+      return state.set('chatHistory', ImmutableList());
+
+    case ActionType.ChatHistoryPush:
+      return state.set(
+        'chatHistory',
+        state.get('chatHistory').push(ImmutableMap(action.payload.entry)),
+      );
+
     case ActionType.CloseOLS:
       return state.set('isOpen', false);
 
@@ -37,8 +47,29 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     case ActionType.SetQuery:
       return state.set('query', action.payload.query);
 
-    case ActionType.SetChatHistory:
-      return state.set('chatHistory', action.payload.chatHistory);
+    case ActionType.UserFeedbackClose:
+      return state.setIn(
+        ['chatHistory', action.payload.entryIndex, 'userFeedback', 'isOpen'],
+        false,
+      );
+
+    case ActionType.UserFeedbackOpen:
+      return state.setIn(
+        ['chatHistory', action.payload.entryIndex, 'userFeedback', 'isOpen'],
+        true,
+      );
+
+    case ActionType.UserFeedbackSetSentiment:
+      return state.setIn(
+        ['chatHistory', action.payload.entryIndex, 'userFeedback', 'sentiment'],
+        action.payload.sentiment,
+      );
+
+    case ActionType.UserFeedbackSetText:
+      return state.setIn(
+        ['chatHistory', action.payload.entryIndex, 'userFeedback', 'text'],
+        action.payload.text,
+      );
 
     default:
       break;
