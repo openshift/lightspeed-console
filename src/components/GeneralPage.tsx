@@ -268,8 +268,8 @@ const PrivacyAlert: React.FC = () => {
       title="Data privacy"
       variant="info"
     >
-      <p>{t('TODO: Data privacy info wording line 1')}</p>
-      <p>{t('TODO: Data privacy info wording line 2')}</p>
+      <p><strong>{t('Ask away.')}</strong> {t('OpenShift Lightspeed can answer questions related to OpenShift.')}</p>
+      <p><strong>{t('Don\'t share sensitive information.')}</strong> {t('Chat history may be reviewed or used to improve our services.')}</p>
     </Alert>
   );
 };
