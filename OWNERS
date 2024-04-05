@@ -1,6 +1,6 @@
 approvers:
   - bparees
   - kyoto
+
+# Anyone in the OpenShift org can /lgtm a PR, so leaving this empty
 reviewers:
-  - bparees
-  - kyoto
