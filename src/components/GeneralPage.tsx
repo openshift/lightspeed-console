@@ -278,7 +278,7 @@ const Welcome: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   return (
-    <PageSection variant="light">
+    <>
       <div className="ols-plugin__welcome-logo"></div>
       <Title className="pf-v5-u-text-align-center" headingLevel="h1">
         {t('Red Hat OpenShift Lightspeed')}
@@ -288,8 +288,7 @@ const Welcome: React.FC = () => {
           'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
         )}
       </Title>
-      <PrivacyAlert />
-    </PageSection>
+    </>
   );
 };
 
@@ -485,7 +484,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           isFilled
           variant="light"
         >
-          {isWelcomePage ? <Welcome /> : <PrivacyAlert />}
+          {isWelcomePage && <Welcome />}
+          <PrivacyAlert />
           <TextContent>
             {chatHistory.map((entry, i) => (
               <ChatHistoryEntry key={i} entry={entry} />
