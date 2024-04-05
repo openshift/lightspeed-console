@@ -1,3 +1,4 @@
+import { List } from 'immutable';
 import { dump } from 'js-yaml';
 import { defer } from 'lodash';
 import * as React from 'react';
@@ -50,14 +51,26 @@ import {
 
 import { useBoolean } from '../hooks/useBoolean';
 import { jobStatus, podStatus } from '../k8s';
-import { dismissPrivacyAlert, setChatHistory, setContext, setQuery } from '../redux-actions';
+import {
+  chatHistoryClear,
+  chatHistoryPush,
+  dismissPrivacyAlert,
+  setContext,
+  setQuery,
+  userFeedbackClose,
+  userFeedbackOpen,
+  userFeedbackSetSentiment,
+  userFeedbackSetText,
+} from '../redux-actions';
 import { State } from '../redux-reducers';
+import { ChatEntry } from '../types';
 
 import './general-page.css';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuthorization';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
-const QUERY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+
+const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 type QueryResponse = {
   conversation_id: string;
@@ -66,73 +79,87 @@ type QueryResponse = {
   response: string;
 };
 
-type ChatEntryUser = {
-  text?: string;
-  who: 'user';
+const THUMBS_DOWN = -1;
+const THUMBS_UP = 1;
+
+type FeedbackProps = {
+  entryIndex: number;
 };
 
-type ChatEntryAI = {
-  error?: string;
-  references?: Array<string>;
-  text?: string;
-  who: 'ai';
-};
-
-type ChatEntry = ChatEntryAI | ChatEntryUser;
-
-const Feedback: React.FC = () => {
+const Feedback: React.FC<FeedbackProps> = ({ entryIndex }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const [isClosed, , setClosed, setOpen] = useBoolean(false);
-  const [isThumbsDown, toggleThumbsDown, , unsetThumbsDown] = useBoolean(false);
-  const [isThumbsUp, toggleThumbsUp, , unsetThumbsUp] = useBoolean(false);
+  const dispatch = useDispatch();
 
-  const onThumbsUp = React.useCallback(() => {
-    toggleThumbsUp();
-    unsetThumbsDown();
-    setOpen();
-  }, [setOpen, toggleThumbsUp, unsetThumbsDown]);
+  const isOpen: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'isOpen']),
+  );
+  const sentiment: number = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
+  );
+  const text: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'text']),
+  );
+
+  const onClose = React.useCallback(() => {
+    dispatch(userFeedbackClose(entryIndex));
+  }, [dispatch, entryIndex]);
 
   const onThumbsDown = React.useCallback(() => {
-    toggleThumbsDown();
-    unsetThumbsUp();
-    setOpen();
-  }, [setOpen, toggleThumbsDown, unsetThumbsUp]);
+    dispatch(userFeedbackOpen(entryIndex));
+    dispatch(
+      userFeedbackSetSentiment(entryIndex, sentiment === THUMBS_DOWN ? undefined : THUMBS_DOWN),
+    );
+  }, [dispatch, entryIndex, sentiment]);
+
+  const onThumbsUp = React.useCallback(() => {
+    dispatch(userFeedbackOpen(entryIndex));
+    dispatch(userFeedbackSetSentiment(entryIndex, sentiment === THUMBS_UP ? undefined : THUMBS_UP));
+  }, [dispatch, entryIndex, sentiment]);
+
+  const onTextChange = React.useCallback(
+    (_e, text) => {
+      dispatch(userFeedbackSetText(entryIndex, text));
+    },
+    [dispatch, entryIndex],
+  );
 
   return (
     <div className="ols-plugin__feedback">
       <Tooltip content={t('Good response')}>
         <div
           className={`ols-plugin__feedback-icon${
-            isThumbsUp ? ' ols-plugin__feedback-icon--selected' : ''
+            sentiment === THUMBS_UP ? ' ols-plugin__feedback-icon--selected' : ''
           }`}
           onClick={onThumbsUp}
         >
-          {isThumbsUp ? <ThumbsUpIcon /> : <OutlinedThumbsUpIcon />}
+          {sentiment === THUMBS_UP ? <ThumbsUpIcon /> : <OutlinedThumbsUpIcon />}
         </div>
       </Tooltip>
       <Tooltip content={t('Bad response')}>
         <div
           className={`ols-plugin__feedback-icon${
-            isThumbsDown ? ' ols-plugin__feedback-icon--selected' : ''
+            sentiment === THUMBS_DOWN ? ' ols-plugin__feedback-icon--selected' : ''
           }`}
           onClick={onThumbsDown}
         >
-          {isThumbsDown ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
+          {sentiment === THUMBS_DOWN ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
         </div>
       </Tooltip>
-      {!isClosed && (isThumbsDown || isThumbsUp) && (
+      {isOpen && sentiment !== undefined && (
         <div className="ols-plugin__feedback-comment">
           <Title headingLevel="h3">
-            <TimesIcon className="ols-plugin__popover-close" onClick={setClosed} />
+            <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
             {t('Why did you choose this rating?')} <Chip isReadOnly>{t('Optional')}</Chip>
           </Title>
           <TextArea
             aria-label={t('Provide additional feedback')}
             className="ols-plugin__feedback-input"
+            onChange={onTextChange}
             placeholder={t('Provide additional feedback')}
             resizeOrientation="vertical"
             rows={1}
+            value={text}
           />
           <HelperText>
             <HelperTextItem className="ols-plugin__feedback-footer" variant="indeterminate">
@@ -159,9 +186,10 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
 
 type ChatHistoryEntryProps = {
   entry: ChatEntry;
+  entryIndex: number;
 };
 
-const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry }) => {
+const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, entryIndex }) => {
   if (entry.who === 'ai') {
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
@@ -180,7 +208,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry }) => {
                 ))}
               </ChipGroup>
             )}
-            <Feedback />
+            <Feedback entryIndex={entryIndex} />
           </>
         )}
       </div>
@@ -268,8 +296,14 @@ const PrivacyAlert: React.FC = () => {
       title="Data privacy"
       variant="info"
     >
-      <p><strong>{t('Ask away.')}</strong> {t('OpenShift Lightspeed can answer questions related to OpenShift.')}</p>
-      <p><strong>{t('Don\'t share sensitive information.')}</strong> {t('Chat history may be reviewed or used to improve our services.')}</p>
+      <p>
+        <strong>{t('Ask away.')}</strong>{' '}
+        {t('OpenShift Lightspeed can answer questions related to OpenShift.')}
+      </p>
+      <p>
+        <strong>{t("Don't share sensitive information.")}</strong>{' '}
+        {t('Chat history may be reviewed or used to improve our services.')}
+      </p>
     </Alert>
   );
 };
@@ -303,7 +337,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const dispatch = useDispatch();
 
-  const chatHistory: ChatEntry[] = useSelector((s: State) => s.plugins?.ols?.get('chatHistory'));
+  const chatHistory: List<ChatEntry> = useSelector((s: State) =>
+    s.plugins?.ols?.get('chatHistory'),
+  );
   const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
 
   // Do we have a context that looks like a k8s resource with sufficient information
@@ -372,7 +408,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
-    dispatch(setChatHistory([]));
+    dispatch(chatHistoryClear());
     setConversationID(undefined);
   }, [dispatch]);
 
@@ -391,8 +427,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         return;
       }
 
-      const newChatHistory = [...chatHistory, { text: query, who: 'user' }];
-      dispatch(setChatHistory(newChatHistory));
+      dispatch(chatHistoryPush({ text: query, who: 'user' }));
       scrollChatHistoryToBottom();
       setWaiting();
 
@@ -403,42 +438,26 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       const requestJSON = { conversation_id: conversationID, query };
 
       consoleFetchJSON
-        .post(QUERY_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), QUERY_TIMEOUT)
+        .post(QUERY_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
         .then((response: QueryResponse) => {
           setConversationID(response.conversation_id);
           dispatch(
-            setChatHistory([
-              ...newChatHistory,
-              {
-                references: response.referenced_documents,
-                text: response.response,
-                who: 'ai',
-              },
-            ]),
+            chatHistoryPush({
+              references: response.referenced_documents,
+              text: response.response,
+              who: 'ai',
+            }),
           );
           scrollChatHistoryToBottom();
           unsetWaiting();
         })
         .catch((error) => {
-          dispatch(
-            setChatHistory([
-              ...newChatHistory,
-              { error: error.toString(), text: undefined, who: 'ai' },
-            ]),
-          );
+          dispatch(chatHistoryPush({ error: error.toString(), text: undefined, who: 'ai' }));
           scrollChatHistoryToBottom();
           unsetWaiting();
         });
     },
-    [
-      chatHistory,
-      conversationID,
-      dispatch,
-      query,
-      scrollChatHistoryToBottom,
-      setWaiting,
-      unsetWaiting,
-    ],
+    [conversationID, dispatch, query, scrollChatHistoryToBottom, setWaiting, unsetWaiting],
   );
 
   const onKeyDown = React.useCallback(
@@ -452,7 +471,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     [onSubmit],
   );
 
-  const isWelcomePage = chatHistory.length === 0;
+  const isWelcomePage = chatHistory.size === 0;
 
   return (
     <>
@@ -487,8 +506,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           {isWelcomePage && <Welcome />}
           <PrivacyAlert />
           <TextContent>
-            {chatHistory.map((entry, i) => (
-              <ChatHistoryEntry key={i} entry={entry} />
+            {chatHistory.toJS().map((entry, i) => (
+              <ChatHistoryEntry key={i} entry={entry} entryIndex={i} />
             ))}
             {isWaiting && <ChatHistoryEntryWaiting />}
             <div ref={chatHistoryEndRef} />
