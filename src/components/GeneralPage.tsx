@@ -151,7 +151,7 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
         setSubmitted(true);
       })
       .catch((error) => {
-        setError(error.response?.response || error.message || 'Feedback POST failed');
+        setError(error.response?.detail || error.message || 'Feedback POST failed');
         setSubmitted(false);
       });
   }, [conversationID, dispatch, entryIndex, query, response, sentiment, text]);
