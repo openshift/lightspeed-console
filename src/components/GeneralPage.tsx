@@ -23,6 +23,7 @@ import {
   Form,
   HelperText,
   HelperTextItem,
+  Label,
   Level,
   LevelItem,
   Page,
@@ -68,6 +69,7 @@ import './general-page.css';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuthorization';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
+const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
 
 const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
@@ -82,10 +84,11 @@ const THUMBS_DOWN = -1;
 const THUMBS_UP = 1;
 
 type FeedbackProps = {
+  conversationID: string;
   entryIndex: number;
 };
 
-const Feedback: React.FC<FeedbackProps> = ({ entryIndex }) => {
+const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -93,12 +96,21 @@ const Feedback: React.FC<FeedbackProps> = ({ entryIndex }) => {
   const isOpen: string = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'isOpen']),
   );
+  const query: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
+  );
+  const response: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'text']),
+  );
   const sentiment: number = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
   );
   const text: string = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'text']),
   );
+
+  const [error, setError] = React.useState<string>();
+  const [submitted, setSubmitted] = React.useState(false);
 
   const onClose = React.useCallback(() => {
     dispatch(userFeedbackClose(entryIndex));
@@ -123,52 +135,85 @@ const Feedback: React.FC<FeedbackProps> = ({ entryIndex }) => {
     [dispatch, entryIndex],
   );
 
+  const onSubmit = React.useCallback(() => {
+    const requestJSON = {
+      conversation_id: conversationID,
+      llm_response: response,
+      sentiment: sentiment,
+      user_feedback: text,
+      user_question: query,
+    };
+
+    consoleFetchJSON
+      .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
+      .then(() => {
+        dispatch(userFeedbackClose(entryIndex));
+        setSubmitted(true);
+      })
+      .catch((error) => {
+        setError(error.response?.response || error.message || 'Feedback POST failed');
+        setSubmitted(false);
+      });
+  }, [conversationID, dispatch, entryIndex, query, response, sentiment, text]);
+
   return (
-    <div className="ols-plugin__feedback">
-      <Tooltip content={t('Good response')}>
-        <div
-          className={`ols-plugin__feedback-icon${
-            sentiment === THUMBS_UP ? ' ols-plugin__feedback-icon--selected' : ''
-          }`}
-          onClick={onThumbsUp}
-        >
-          {sentiment === THUMBS_UP ? <ThumbsUpIcon /> : <OutlinedThumbsUpIcon />}
-        </div>
-      </Tooltip>
-      <Tooltip content={t('Bad response')}>
-        <div
-          className={`ols-plugin__feedback-icon${
-            sentiment === THUMBS_DOWN ? ' ols-plugin__feedback-icon--selected' : ''
-          }`}
-          onClick={onThumbsDown}
-        >
-          {sentiment === THUMBS_DOWN ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
-        </div>
-      </Tooltip>
-      {isOpen && sentiment !== undefined && (
-        <div className="ols-plugin__feedback-comment">
-          <Title headingLevel="h3">
-            <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
-            {t('Why did you choose this rating?')} <Chip isReadOnly>{t('Optional')}</Chip>
-          </Title>
-          <TextArea
-            aria-label={t('Provide additional feedback')}
-            className="ols-plugin__feedback-input"
-            onChange={onTextChange}
-            placeholder={t('Provide additional feedback')}
-            resizeOrientation="vertical"
-            rows={1}
-            value={text}
-          />
-          <HelperText>
-            <HelperTextItem className="ols-plugin__feedback-footer" variant="indeterminate">
-              {t('Please refrain from sharing any sensitive information. All feedback may be reviewed and used to enhance the service.')}
-            </HelperTextItem>
-          </HelperText>
-          <Button variant="primary">{t('Submit')}</Button>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="ols-plugin__feedback">
+        <Tooltip content={t('Good response')}>
+          <div
+            className={`ols-plugin__feedback-icon${
+              sentiment === THUMBS_UP ? ' ols-plugin__feedback-icon--selected' : ''
+            }`}
+            onClick={onThumbsUp}
+          >
+            {sentiment === THUMBS_UP ? <ThumbsUpIcon /> : <OutlinedThumbsUpIcon />}
+          </div>
+        </Tooltip>
+        <Tooltip content={t('Bad response')}>
+          <div
+            className={`ols-plugin__feedback-icon${
+              sentiment === THUMBS_DOWN ? ' ols-plugin__feedback-icon--selected' : ''
+            }`}
+            onClick={onThumbsDown}
+          >
+            {sentiment === THUMBS_DOWN ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
+          </div>
+        </Tooltip>
+        {isOpen && sentiment !== undefined && (
+          <div className="ols-plugin__feedback-comment">
+            <Title headingLevel="h3">
+              <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
+              {t('Why did you choose this rating?')} <Chip isReadOnly>{t('Optional')}</Chip>
+            </Title>
+            <TextArea
+              aria-label={t('Provide additional feedback')}
+              className="ols-plugin__feedback-input"
+              onChange={onTextChange}
+              placeholder={t('Provide additional feedback')}
+              resizeOrientation="vertical"
+              rows={1}
+              value={text}
+            />
+            <HelperText>
+              <HelperTextItem className="ols-plugin__feedback-footer" variant="indeterminate">
+                {t(
+                  'Please refrain from sharing any sensitive information. All feedback may be reviewed and used to enhance the service.',
+                )}
+              </HelperTextItem>
+            </HelperText>
+            {error && (
+              <Alert className="ols-plugin__alert" isInline title={t('Error')} variant="danger">
+                {error}
+              </Alert>
+            )}
+            <Button onClick={onSubmit} variant="primary">
+              {t('Submit')}
+            </Button>
+          </div>
+        )}
+      </div>
+      {submitted && <Label color="blue">{t('Thank you for your feedback!')}</Label>}
+    </>
   );
 };
 
@@ -184,11 +229,16 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
 );
 
 type ChatHistoryEntryProps = {
+  conversationID: string;
   entry: ChatEntry;
   entryIndex: number;
 };
 
-const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, entryIndex }) => {
+const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
+  conversationID,
+  entry,
+  entryIndex,
+}) => {
   if (entry.who === 'ai') {
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
@@ -207,7 +257,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({ entry, entryIndex }
                 ))}
               </ChipGroup>
             )}
-            <Feedback entryIndex={entryIndex} />
+            <Feedback conversationID={conversationID} entryIndex={entryIndex} />
           </>
         )}
       </div>
@@ -292,7 +342,7 @@ const PrivacyAlert: React.FC = () => {
       }
       className="ols-plugin__alert"
       isInline
-      title="Data privacy"
+      title={t('Data privacy')}
       variant="info"
     >
       <p>
@@ -505,7 +555,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           {isWelcomePage && <Welcome />}
           <PrivacyAlert />
           {chatHistory.toJS().map((entry, i) => (
-            <ChatHistoryEntry key={i} entry={entry} entryIndex={i} />
+            <ChatHistoryEntry
+              key={i}
+              conversationID={conversationID}
+              entry={entry}
+              entryIndex={i}
+            />
           ))}
           {isWaiting && <ChatHistoryEntryWaiting />}
           <div ref={chatHistoryEndRef} />
