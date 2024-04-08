@@ -31,7 +31,6 @@ import {
   Split,
   SplitItem,
   TextArea,
-  TextContent,
   Title,
   Tooltip,
 } from '@patternfly/react-core';
@@ -505,13 +504,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         >
           {isWelcomePage && <Welcome />}
           <PrivacyAlert />
-          <TextContent>
-            {chatHistory.toJS().map((entry, i) => (
-              <ChatHistoryEntry key={i} entry={entry} entryIndex={i} />
-            ))}
-            {isWaiting && <ChatHistoryEntryWaiting />}
-            <div ref={chatHistoryEndRef} />
-          </TextContent>
+          {chatHistory.toJS().map((entry, i) => (
+            <ChatHistoryEntry key={i} entry={entry} entryIndex={i} />
+          ))}
+          {isWaiting && <ChatHistoryEntryWaiting />}
+          <div ref={chatHistoryEndRef} />
         </PageSection>
 
         <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
