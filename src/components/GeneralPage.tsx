@@ -162,7 +162,7 @@ const Feedback: React.FC<FeedbackProps> = ({ entryIndex }) => {
           />
           <HelperText>
             <HelperTextItem className="ols-plugin__feedback-footer" variant="indeterminate">
-              {t('TODO: Feedback privacy warning')}
+              {t('Please refrain from sharing any sensitive information. All feedback may be reviewed and used to enhance the service.')}
             </HelperTextItem>
           </HelperText>
           <Button variant="primary">{t('Submit')}</Button>
