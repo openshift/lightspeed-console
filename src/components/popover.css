@@ -13,14 +13,7 @@
     border: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
     border-radius: 1rem;
     bottom: var(--bottom);
-
-    .pf-v5-c-page {
-      border-radius: 1rem;
-
-      .pf-v5-c-page__main {
-        border-radius: 1rem;
-      }
-    }
+    overflow: hidden;
   }
 
   .ols-plugin__popover--collapsed {
