@@ -501,7 +501,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           unsetWaiting();
         })
         .catch((error) => {
-          dispatch(chatHistoryPush({ error: error.toString(), text: undefined, who: 'ai' }));
+          const errorMessage = error.response?.detail || error.message || 'Query POST failed';
+          dispatch(chatHistoryPush({ error: errorMessage, text: undefined, who: 'ai' }));
           scrollChatHistoryToBottom();
           unsetWaiting();
         });
