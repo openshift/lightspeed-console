@@ -55,7 +55,7 @@
     "react-dom": "^17.0.1",
     "react-i18next": "^11.7.3",
     "react-redux": "7.2.2",
-    "react-router": "5.3.x",
+    "react-router": "6.22.x",
     "react-router-dom": "5.3.x",
     "style-loader": "^3.3.1",
     "stylelint": "^15.3.0",
