@@ -202,7 +202,12 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
               </HelperTextItem>
             </HelperText>
             {error && (
-              <Alert className="ols-plugin__alert" isInline title={t('Error')} variant="danger">
+              <Alert
+                className="ols-plugin__alert"
+                isInline
+                title={t('Error submitting feedback')}
+                variant="danger"
+              >
                 {error}
               </Alert>
             )}
@@ -239,12 +244,16 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   entry,
   entryIndex,
 }) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
   if (entry.who === 'ai') {
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
         {entry.error ? (
-          <div className="ols-plugin__chat-entry--error">{entry.error}</div>
+          <Alert isInline title={t('Error submitting query')} variant="danger">
+            {entry.error}
+          </Alert>
         ) : (
           <>
             <div className="ols-plugin__chat-entry-text">{entry.text}</div>

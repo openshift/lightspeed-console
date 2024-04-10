@@ -22,10 +22,6 @@
     background-image: url('../assets/logo.svg');
   }
 
-  .ols-plugin__chat-entry--error {
-    color: var(--pf-v5-global--palette--red-100);
-  }
-
   .ols-plugin__chat-entry--user {
     background-image: url('../assets/user.png');
   }
