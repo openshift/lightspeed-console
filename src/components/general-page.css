@@ -72,11 +72,6 @@
     margin-bottom: var(--pf-v5-global--spacer--md);
     margin-top: var(--pf-v5-global--spacer--lg);
   }
-
-  .ols-plugin__feedback-label {
-    margin-right: var(--pf-v5-global--spacer--sm);
-    margin-top: var(--pf-v5-global--spacer--md);
-  }
 }
 
 .ols-plugin__chat-prompt {
