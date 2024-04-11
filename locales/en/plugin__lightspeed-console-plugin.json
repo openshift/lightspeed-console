@@ -18,6 +18,9 @@
   "Good response": "Good response",
   "History truncated": "History truncated",
   "New chat": "New chat",
+  "Not authenticated": "Not authenticated",
+  "Not authorized": "Not authorized",
+  "OpenShift Lightspeed authentication failed. Contact your system administrator for more information.": "OpenShift Lightspeed authentication failed. Contact your system administrator for more information.",
   "OpenShift Lightspeed can answer questions related to OpenShift.": "OpenShift Lightspeed can answer questions related to OpenShift.",
   "OpenShift Lightspeed chat history": "OpenShift Lightspeed chat history",
   "OpenShift Lightspeed prompt": "OpenShift Lightspeed prompt",
@@ -29,5 +32,6 @@
   "Submit": "Submit",
   "Thank you for your feedback!": "Thank you for your feedback!",
   "The LLMs may provide inaccurate information. Double-check responses.": "The LLMs may provide inaccurate information. Double-check responses.",
-  "Why did you choose this rating?": "Why did you choose this rating?"
+  "Why did you choose this rating?": "Why did you choose this rating?",
+  "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.": "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information."
 }

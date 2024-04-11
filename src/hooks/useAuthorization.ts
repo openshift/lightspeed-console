@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
-export enum AuthorizationStatus {
-  Authorized = 'authorized',
-  AuthorizedError = 'authorizedError',
-  AuthorizedLoading = 'authorizedLoading',
+export enum AuthStatus {
+  Authorized = 'Authorized',
+  AuthorizedError = 'AuthorizedError',
+  AuthorizedLoading = 'AuthorizedLoading',
+  NotAuthenticated = 'NotAuthenticated',
+  NotAuthorized = 'NotAuthorized',
 }
 
 const AUTHORIZATION_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/authorized';
@@ -23,9 +25,9 @@ export const getRequestInitwithAuthHeader = (): RequestInit => {
   return init;
 };
 
-export const useAuthorization = (): [AuthorizationStatus] => {
-  const [authorizationStatus, setAuthorizationStatus] = React.useState<AuthorizationStatus>(
-    AuthorizationStatus.AuthorizedLoading,
+export const useAuth = (): [AuthStatus] => {
+  const [authStatus, setAuthorizationStatus] = React.useState<AuthStatus>(
+    AuthStatus.AuthorizedLoading,
   );
 
   React.useEffect(() => {
@@ -33,12 +35,20 @@ export const useAuthorization = (): [AuthorizationStatus] => {
       .post(AUTHORIZATION_ENDPOINT, {}, getRequestInitwithAuthHeader())
       .then((response: AuthorizationResponse) => {
         if (response) {
-          setAuthorizationStatus(AuthorizationStatus.Authorized);
+          setAuthorizationStatus(AuthStatus.Authorized);
         }
       })
-      .catch(() => {
-        setAuthorizationStatus(AuthorizationStatus.AuthorizedError);
+      .catch((error) => {
+        console.warn(error.response);
+        if (error.response?.status === 401) {
+          setAuthorizationStatus(AuthStatus.NotAuthenticated);
+        } else if (error.response?.status === 403) {
+          setAuthorizationStatus(AuthStatus.NotAuthorized);
+        } else {
+          setAuthorizationStatus(AuthStatus.AuthorizedError);
+        }
       });
   }, []);
-  return [authorizationStatus];
+
+  return [authStatus];
 };
