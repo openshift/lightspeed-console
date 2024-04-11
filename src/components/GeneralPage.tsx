@@ -218,7 +218,11 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
           </div>
         )}
       </div>
-      {submitted && <Label color="blue">{t('Thank you for your feedback!')}</Label>}
+      {submitted && (
+        <Label className="ols-plugin__feedback-submitted" color="blue">
+          {t('Thank you for your feedback!')}
+        </Label>
+      )}
     </>
   );
 };
