@@ -40,7 +40,7 @@
 
   .ols-plugin__feedback-comment {
     border: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
-    margin-top: var(--pf-v5-global--spacer--lg);
+    margin-top: var(--pf-v5-global--spacer--md);
     padding: var(--pf-v5-global--spacer--lg);
   }
 
@@ -72,6 +72,10 @@
     margin-bottom: var(--pf-v5-global--spacer--md);
     margin-top: var(--pf-v5-global--spacer--lg);
   }
+}
+
+.ols-plugin__feedback-submitted {
+  margin-top: var(--pf-v5-global--spacer--md);
 }
 
 .ols-plugin__chat-prompt {
