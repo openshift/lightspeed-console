@@ -78,6 +78,7 @@ type QueryResponse = {
   query: string;
   referenced_documents: Array<string>;
   response: string;
+  truncated: boolean;
 };
 
 const THUMBS_DOWN = -1;
@@ -257,6 +258,11 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         ) : (
           <>
             <div className="ols-plugin__chat-entry-text">{entry.text}</div>
+            {entry.isTruncated && (
+              <Alert isInline title={t('History truncated')} variant="warning">
+                {t('Conversation history has been truncated to fit within context window.')}
+              </Alert>
+            )}
             {entry.references && (
               <ChipGroup categoryName="Referenced docs">
                 {entry.references.map((r) => (
@@ -501,6 +507,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           setConversationID(response.conversation_id);
           dispatch(
             chatHistoryPush({
+              isTruncated: response.truncated === true,
               references: response.referenced_documents,
               text: response.response,
               who: 'ai',
@@ -511,7 +518,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         })
         .catch((error) => {
           const errorMessage = error.response?.detail || error.message || 'Query POST failed';
-          dispatch(chatHistoryPush({ error: errorMessage, text: undefined, who: 'ai' }));
+          dispatch(chatHistoryPush({ error: errorMessage, isTruncated: false, who: 'ai' }));
           scrollChatHistoryToBottom();
           unsetWaiting();
         });

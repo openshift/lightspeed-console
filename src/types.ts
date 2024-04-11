@@ -7,8 +7,9 @@ type ChatEntryUser = {
 
 type ChatEntryAI = {
   error?: string;
+  isTruncated: boolean;
   references?: Array<string>;
-  text: string;
+  text?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userFeedback?: ImmutableMap<string, any>;
   who: 'ai';
