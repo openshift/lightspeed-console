@@ -1,12 +1,13 @@
 .ols-plugin__popover-container {
-  --logo-size: 50px;
-  --popover-bottom: calc(2*var(--logo-size) + 0.5rem);
+  --logo-size: 48px;
+  --margin: calc(var(--logo-size) / 2);
+  --popover-bottom: calc(var(--logo-size) + var(--margin) + 8px);
 
   .ols-plugin__popover, .ols-plugin__popover-button {
     border-radius: 12px;
     box-shadow: var(--pf-v5-global--BoxShadow--lg);
     position: fixed;
-    right: var(--logo-size);
+    right: var(--margin);
     z-index: 99;
   }
 
@@ -22,8 +23,8 @@
   }
 
   .ols-plugin__popover--expanded {
-    height: calc(100% - var(--popover-bottom) - var(--logo-size));
-    width: calc(100% - 2*var(--logo-size));
+    height: calc(100% - var(--popover-bottom) - var(--margin));
+    width: calc(100% - 2*var(--margin));
   }
 
   .ols-plugin__popover-close {
@@ -39,11 +40,10 @@
     background-image: url('../assets/logo.svg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: var(--logo-size);
-    bottom: var(--logo-size);
+    background-size: calc(var(--logo-size) + 3px);
+    bottom: var(--margin);
     cursor: pointer;
-    height: calc(var(--logo-size) - 3px);
-    right: var(--logo-size);
-    width: calc(var(--logo-size) - 3px);
+    height: var(--logo-size);
+    width: var(--logo-size);
   }
 }
