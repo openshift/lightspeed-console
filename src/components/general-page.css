@@ -85,13 +85,20 @@
     margin-top: var(--pf-v5-global--spacer--sm);
   }
 
+  --prompt-start-height: 36px;
+
   .ols-plugin__chat-prompt-submit {
     align-self: end;
   }
 
+  .ols-plugin__chat-prompt-button {
+    height: var(--prompt-start-height);
+    padding: 0;
+    width: var(--prompt-start-height);
+  }
+
   .ols-plugin__chat-prompt-input {
-    min-height: 2rem;
-    max-height: 20rem;
+    min-height: var(--prompt-start-height);
   }
 }
 

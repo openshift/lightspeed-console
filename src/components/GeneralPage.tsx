@@ -502,7 +502,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       // Clear prompt input and return focus to it
       dispatch(setQuery(''));
-      promptRef.current.focus();
+      promptRef.current?.focus();
 
       const requestJSON = { conversation_id: conversationID, query };
 
@@ -630,7 +630,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 <TextArea
                   aria-label={t('OpenShift Lightspeed prompt')}
                   autoFocus
-                  autoResize
                   className="ols-plugin__chat-prompt-input"
                   onChange={onChange}
                   onKeyDown={onKeyDown}
@@ -644,12 +643,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   placeholder={t('Send a message...')}
                   ref={promptRef}
                   resizeOrientation="vertical"
-                  rows={1}
+                  rows={Math.min(query.split('\n').length, 12)}
                   value={query}
                 />
               </SplitItem>
               <SplitItem className="ols-plugin__chat-prompt-submit">
-                <Button type="submit" variant="primary">
+                <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">
                   <PaperPlaneIcon />
                 </Button>
               </SplitItem>
