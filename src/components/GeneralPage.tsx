@@ -497,7 +497,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       }
 
       dispatch(chatHistoryPush({ text: query, who: 'user' }));
-      scrollChatHistoryToBottom();
+      defer(() => {
+        scrollChatHistoryToBottom();
+      });
       setWaiting();
 
       // Clear prompt input and return focus to it
