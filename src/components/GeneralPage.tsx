@@ -310,6 +310,7 @@ const Status: React.FC<{ k8sResource: K8sResourceKind }> = ({ k8sResource }) => 
       <>
         {status === 'Completed' && <GreenCheckCircleIcon />}
         {status === 'CrashLoopBackOff' && <RedExclamationCircleIcon />}
+        {status === 'Error' && <RedExclamationCircleIcon />}
         {status === 'Failed' && <RedExclamationCircleIcon />}
         {status === 'Running' && <SyncAltIcon />}
         &nbsp;{status}
