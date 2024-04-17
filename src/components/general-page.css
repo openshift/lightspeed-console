@@ -113,6 +113,10 @@
   padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
 }
 
+.ols-plugin__references {
+  margin-top: 1rem;
+}
+
 .ols-plugin__welcome-logo {
   --logo-size: var(--pf-v5-global--spacer--4xl);
 

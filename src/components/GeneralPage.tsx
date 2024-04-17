@@ -268,7 +268,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
               </Alert>
             )}
             {entry.references && (
-              <ChipGroup categoryName="Referenced docs">
+              <ChipGroup categoryName="Referenced docs" className="ols-plugin__references">
                 {entry.references.map((r) => (
                   <Chip isReadOnly key={r}>
                     <ExternalLink href={r}>{r}</ExternalLink>
