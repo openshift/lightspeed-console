@@ -3,6 +3,8 @@ import { action, ActionType as Action } from 'typesafe-actions';
 import { ChatEntry } from './types';
 
 export enum ActionType {
+  AttachmentAdd = 'attachmentAdd',
+  AttachmentDelete = 'attachmentDelete',
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
   CloseOLS = 'closeOLS',
@@ -16,6 +18,14 @@ export enum ActionType {
   UserFeedbackSetText = 'userFeedbackSetText',
 }
 
+export const attachmentAdd = (
+  attachmentType: string,
+  kind: string,
+  name: string,
+  namespace: string,
+  value: string,
+) => action(ActionType.AttachmentAdd, { attachmentType, kind, name, namespace, value });
+export const attachmentDelete = (id: string) => action(ActionType.AttachmentDelete, { id });
 export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 export const closeOLS = () => action(ActionType.CloseOLS);
@@ -33,6 +43,8 @@ export const userFeedbackSetText = (entryIndex: number, text: string) =>
   action(ActionType.UserFeedbackSetText, { entryIndex, text });
 
 const actions = {
+  attachmentAdd,
+  attachmentDelete,
   chatHistoryClear,
   chatHistoryPush,
   closeOLS,

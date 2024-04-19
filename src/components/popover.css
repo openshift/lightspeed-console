@@ -29,11 +29,11 @@
 
   .ols-plugin__popover-close {
     float: right;
-    height: 1rem;
+    height: var(--pf-v5-global--spacer--md);
     margin-left: var(--pf-v5-global--spacer--md);
     right: var(--pf-v5-global--spacer--sm);
     top: var(--pf-v5-global--spacer--sm);
-    width: 1rem;
+    width: var(--pf-v5-global--spacer--md);
   }
 
   .ols-plugin__popover-button {

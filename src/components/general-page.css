@@ -79,16 +79,22 @@
 }
 
 .ols-plugin__chat-prompt {
+  --prompt-start-height: 36px;
+
   padding: var(--pf-v5-global--spacer--sm) 8%;
+
+  .ols-plugin__attach-menu {
+    height: var(--prompt-start-height);
+    padding: 0;
+    text-align: left;
+  }
 
   .ols-plugin__chat-context-action {
     margin-top: var(--pf-v5-global--spacer--sm);
   }
 
-  --prompt-start-height: 36px;
-
   .ols-plugin__chat-prompt-submit {
-    align-self: end;
+    align-self: start;
   }
 
   .ols-plugin__chat-prompt-button {
@@ -99,6 +105,24 @@
 
   .ols-plugin__chat-prompt-input {
     min-height: var(--prompt-start-height);
+  }
+}
+
+.ols-plugin__context-label {
+  font-weight: var(--pf-v5-global--FontWeight--bold);
+  margin-right: var(--pf-v5-global--spacer--sm);
+  margin-top: var(--pf-v5-global--spacer--sm);
+}
+
+.ols-plugin__context-menu {
+  padding: var(--pf-v5-global--spacer--md);
+
+  .ols-plugin__context-menu-heading {
+    color: var(--pf-v5-global--Color--400);
+  }
+
+  .ols-plugin__context-label {
+    margin-bottom: var(--pf-v5-global--spacer--md);
   }
 }
 
@@ -121,7 +145,7 @@
 }
 
 .ols-plugin__references {
-  margin-top: 1rem;
+  margin-top: var(--pf-v5-global--spacer--md);
 }
 
 .ols-plugin__welcome-logo {

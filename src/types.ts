@@ -1,6 +1,15 @@
 import { Map as ImmutableMap } from 'immutable';
 
+export type Attachment = {
+  attachmentType: string;
+  kind: string;
+  name: string;
+  namespace: string;
+  value: object;
+};
+
 type ChatEntryUser = {
+  attachments: ImmutableMap<string, string>;
   text: string;
   who: 'user';
 };
@@ -10,8 +19,7 @@ type ChatEntryAI = {
   isTruncated: boolean;
   references?: Array<string>;
   text?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  userFeedback?: ImmutableMap<string, any>;
+  userFeedback?: ImmutableMap<string, object>;
   who: 'ai';
 };
 
