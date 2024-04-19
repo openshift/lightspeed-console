@@ -1,18 +1,14 @@
-import { List } from 'immutable';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 import { dump } from 'js-yaml';
-import { defer } from 'lodash';
+import { cloneDeep, defer } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   consoleFetchJSON,
-  GreenCheckCircleIcon,
   K8sResourceKind,
-  RedExclamationCircleIcon,
-  ResourceLink,
-  ResourceStatus,
+  ResourceIcon,
   useK8sWatchResource,
-  WatchK8sResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
@@ -23,11 +19,16 @@ import {
   Form,
   HelperText,
   HelperTextItem,
+  Icon,
   Label,
   Level,
   LevelItem,
+  MenuToggle,
   Page,
   PageSection,
+  Select,
+  SelectList,
+  SelectOption,
   Spinner,
   Split,
   SplitItem,
@@ -39,19 +40,21 @@ import {
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
-  FileImportIcon,
+  FileCodeIcon,
   OutlinedThumbsDownIcon,
   OutlinedThumbsUpIcon,
   PaperPlaneIcon,
-  SyncAltIcon,
+  PlusCircleIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
   TimesIcon,
 } from '@patternfly/react-icons';
 
 import { useBoolean } from '../hooks/useBoolean';
-import { jobStatus, podStatus } from '../k8s';
+import { useLocationContext } from '../hooks/useLocationContext';
 import {
+  attachmentAdd,
+  attachmentDelete,
   chatHistoryClear,
   chatHistoryPush,
   dismissPrivacyAlert,
@@ -63,7 +66,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { ChatEntry } from '../types';
+import { Attachment, ChatEntry } from '../types';
 
 import './general-page.css';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuthorization';
@@ -300,36 +303,6 @@ const ChatHistoryEntryWaiting = () => (
   </div>
 );
 
-const Status: React.FC<{ k8sResource: K8sResourceKind }> = ({ k8sResource }) => {
-  if (!k8sResource?.kind || !k8sResource?.status) {
-    return null;
-  }
-  if (k8sResource.kind === 'Pod') {
-    const status = podStatus(k8sResource);
-    return (
-      <>
-        {status === 'Completed' && <GreenCheckCircleIcon />}
-        {status === 'CrashLoopBackOff' && <RedExclamationCircleIcon />}
-        {status === 'Error' && <RedExclamationCircleIcon />}
-        {status === 'Failed' && <RedExclamationCircleIcon />}
-        {status === 'Running' && <SyncAltIcon />}
-        &nbsp;{status}
-      </>
-    );
-  }
-  if (k8sResource.kind === 'Job') {
-    const status = jobStatus(k8sResource);
-    return (
-      <>
-        {status === 'Complete' && <GreenCheckCircleIcon />}
-        {status === 'Failed' && <RedExclamationCircleIcon />}
-        &nbsp;{status}
-      </>
-    );
-  }
-  return null;
-};
-
 const PrivacyAlert: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -395,6 +368,153 @@ const Welcome: React.FC = () => {
   );
 };
 
+enum AttachmentTypes {
+  YAML = 'YAML',
+  YAMLStatus = 'YAML Status',
+}
+
+type AttachMenuProps = {
+  context: K8sResourceKind;
+};
+
+const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  const dispatch = useDispatch();
+
+  const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+
+  const [error, setError] = React.useState<string>();
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const onToggleClick = React.useCallback(() => {
+    setIsOpen(!isOpen);
+  }, [isOpen]);
+
+  const kind = context?.kind;
+  const name = context?.metadata?.name;
+  const namespace = context?.metadata?.namespace;
+
+  const onSelect = React.useCallback(
+    (_e: React.MouseEvent | undefined, attachmentType: string) => {
+      const id = `${attachmentType}_${kind}_${name}`;
+      if (attachments.has(id)) {
+        dispatch(attachmentDelete(id));
+      } else {
+        let data;
+        if (attachmentType === AttachmentTypes.YAML) {
+          data = cloneDeep(context);
+          delete data.metadata.managedFields;
+        } else if (attachmentType === AttachmentTypes.YAMLStatus) {
+          data = { status: context.status };
+        }
+        try {
+          const yaml = dump(data, { lineWidth: -1 }).trim();
+          dispatch(attachmentAdd(attachmentType, kind, name, namespace, yaml));
+        } catch (e) {
+          setError(t('Error getting YAML: {{e}}', { e }));
+        }
+      }
+    },
+    [attachments, context, dispatch, kind, name, namespace, t],
+  );
+
+  if (!kind || !name) {
+    return null;
+  }
+
+  return (
+    <>
+      {error && (
+        <Alert
+          className="ols-plugin__alert"
+          isInline
+          title={t('Failed to attach context')}
+          variant="danger"
+        >
+          {error}
+        </Alert>
+      )}
+
+      <Select
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        onSelect={onSelect}
+        toggle={(toggleRef) => (
+          <Tooltip content={t('Attach context')} position="left">
+            <MenuToggle
+              className="ols-plugin__attach-menu"
+              isExpanded={isOpen}
+              onClick={onToggleClick}
+              ref={toggleRef}
+              variant="plain"
+            >
+              <Icon size="lg">
+                <PlusCircleIcon />
+              </Icon>
+            </MenuToggle>
+          </Tooltip>
+        )}
+      >
+        <SelectList className="ols-plugin__context-menu">
+          <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+            {t('Currently viewing')}
+          </Title>
+          <Label
+            className="ols-plugin__context-label"
+            textMaxWidth="10rem"
+            title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
+          >
+            <ResourceIcon kind={kind} /> {name}
+          </Label>
+
+          <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+            {t('Attach')}
+          </Title>
+          <SelectOption
+            isSelected={attachments.has(AttachmentTypes.YAML)}
+            value={AttachmentTypes.YAML}
+          >
+            <FileCodeIcon /> YAML
+          </SelectOption>
+          <SelectOption
+            isSelected={attachments.has(AttachmentTypes.YAMLStatus)}
+            value={AttachmentTypes.YAMLStatus}
+          >
+            <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> only
+          </SelectOption>
+        </SelectList>
+      </Select>
+    </>
+  );
+};
+
+const buildQuery = (query: string, attachments: ImmutableMap<string, Attachment>): string => {
+  let fullQuery = query;
+
+  attachments.forEach((attachment: Attachment) => {
+    if (attachment.attachmentType === AttachmentTypes.YAML) {
+      fullQuery += `
+
+For reference, here is the full resource YAML for ${attachment.kind} '${attachment.name}':
+\`\`\`yaml
+${attachment.value}
+\`\`\``;
+    }
+
+    if (attachment.attachmentType === AttachmentTypes.YAMLStatus) {
+      fullQuery += `
+
+For reference, here is the resource's 'status' section YAML for ${attachment.kind} '${attachment.name}':
+\`\`\`yaml
+${attachment.value}
+\`\`\``;
+    }
+  });
+
+  return fullQuery;
+};
+
 type GeneralPageProps = {
   onClose: () => void;
   onCollapse?: () => void;
@@ -406,7 +526,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const dispatch = useDispatch();
 
-  const chatHistory: List<ChatEntry> = useSelector((s: State) =>
+  const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+  const chatHistory: ImmutableList<ChatEntry> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
   const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
@@ -418,19 +539,22 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     typeof context.metadata?.name === 'string' &&
     typeof context.metadata?.namespace === 'string';
 
+  const [selectedContext] = useK8sWatchResource<K8sResourceKind>(
+    isK8sResourceContext
+      ? {
+          isList: false,
+          kind: context.kind,
+          name: context.metadata?.name,
+          namespace: context.metadata?.namespace,
+        }
+      : null,
+  );
+
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
-  let watchResource: WatchK8sResource = null;
-  if (isK8sResourceContext) {
-    watchResource = {
-      isList: false,
-      kind: context.kind,
-      name: context.metadata.name,
-      namespace: context.metadata.namespace,
-    };
-  }
-  const [resourceData, resourceLoaded, resourceLoadError] =
-    useK8sWatchResource<K8sResourceKind>(watchResource);
+  const [pageContext] = useLocationContext();
+
+  const attachContext = pageContext || selectedContext;
 
   const [conversationID, setConversationID] = React.useState<string>();
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
@@ -441,39 +565,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const scrollChatHistoryToBottom = React.useCallback(() => {
     chatHistoryEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
-
-  const onInsertYAML = React.useCallback(
-    (e) => {
-      e.preventDefault();
-
-      if (isK8sResourceContext && promptRef?.current) {
-        const { selectionStart, selectionEnd } = promptRef.current;
-
-        let yaml = '';
-        try {
-          yaml = dump(context, { lineWidth: -1 }).trim();
-        } catch (e) {
-          yaml = t('Error getting YAML: {{e}}', { e });
-        }
-
-        const textBeforeCursor = query.substring(0, selectionStart);
-        const textAfterCursor = query.substring(selectionEnd, query.length);
-        dispatch(setQuery(textBeforeCursor + yaml + textAfterCursor));
-
-        // Restore focus back to prompt input with the same cursor position
-        // Defer so that this is called after the prompt text is updated
-        defer(() => {
-          const el = document.querySelector<HTMLElement>('.ols-plugin__chat-prompt-input');
-          if (el && el.style) {
-            el.style.height = '20rem';
-          }
-          promptRef.current.setSelectionRange(selectionStart, selectionStart);
-          promptRef.current.focus();
-        });
-      }
-    },
-    [context, dispatch, isK8sResourceContext, query, t],
-  );
 
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
@@ -496,7 +587,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         return;
       }
 
-      dispatch(chatHistoryPush({ text: query, who: 'user' }));
+      dispatch(chatHistoryPush({ attachments, text: query, who: 'user' }));
       defer(() => {
         scrollChatHistoryToBottom();
       });
@@ -506,7 +597,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       dispatch(setQuery(''));
       promptRef.current?.focus();
 
-      const requestJSON = { conversation_id: conversationID, query };
+      const requestJSON = {
+        conversation_id: conversationID,
+        query: buildQuery(query, attachments),
+      };
 
       consoleFetchJSON
         .post(QUERY_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
@@ -530,7 +624,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           unsetWaiting();
         });
     },
-    [conversationID, dispatch, query, scrollChatHistoryToBottom, setWaiting, unsetWaiting],
+    [
+      attachments,
+      conversationID,
+      dispatch,
+      query,
+      scrollChatHistoryToBottom,
+      setWaiting,
+      unsetWaiting,
+    ],
   );
 
   const onKeyDown = React.useCallback(
@@ -591,43 +693,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         </PageSection>
 
         <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
-          {isK8sResourceContext && (
-            <>
-              <Alert
-                className="ols-plugin__alert"
-                isInline
-                title={
-                  <>
-                    Asking about&nbsp;&nbsp;
-                    <ResourceLink
-                      inline
-                      kind={context.kind}
-                      name={context.metadata.name}
-                      title={context.metadata.uid}
-                    />
-                    {resourceLoaded && !resourceLoadError && (
-                      <ResourceStatus>
-                        <Status k8sResource={resourceData} />
-                      </ResourceStatus>
-                    )}
-                  </>
-                }
-                variant="info"
-              >
-                <Button
-                  className="ols-plugin__chat-context-action"
-                  icon={<FileImportIcon />}
-                  onClick={onInsertYAML}
-                  variant="secondary"
-                >
-                  Insert {context.kind} YAML at cursor
-                </Button>
-              </Alert>
-            </>
-          )}
-
           <Form onSubmit={onSubmit}>
             <Split hasGutter>
+              <SplitItem>{attachContext && <AttachMenu context={attachContext} />}</SplitItem>
               <SplitItem isFilled>
                 <TextArea
                   aria-label={t('OpenShift Lightspeed prompt')}
@@ -648,6 +716,30 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   rows={Math.min(query.split('\n').length, 12)}
                   value={query}
                 />
+                <>
+                  {attachments.keySeq().map((id: string) => {
+                    const attachment: Attachment = attachments.get(id);
+                    if (!attachment) {
+                      return null;
+                    }
+                    return (
+                      <Label
+                        className="ols-plugin__context-label"
+                        key={id}
+                        onClose={() => dispatch(attachmentDelete(id))}
+                        textMaxWidth="16rem"
+                        title={t('{{kind}} {{name}} in namespace {{namespace}}', {
+                          kind: attachment.kind,
+                          name: attachment.name,
+                          namespace: attachment.namespace,
+                        })}
+                      >
+                        <ResourceIcon kind={attachment.kind} /> {attachment.name}{' '}
+                        <Label>{attachment.attachmentType}</Label>
+                      </Label>
+                    );
+                  })}
+                </>
               </SplitItem>
               <SplitItem className="ols-plugin__chat-prompt-submit">
                 <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">

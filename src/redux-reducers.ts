@@ -1,6 +1,7 @@
 import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 
 import { ActionType, OLSAction } from './redux-actions';
+import { Attachment } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OLSState = ImmutableMap<string, any>;
@@ -14,6 +15,7 @@ export type State = {
 const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
     return ImmutableMap({
+      attachments: ImmutableMap<string, Attachment>(),
       chatHistory: ImmutableList(),
       context: null,
       isOpen: false,
@@ -23,6 +25,14 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
   }
 
   switch (action.type) {
+    case ActionType.AttachmentAdd: {
+      const id = `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}`;
+      return state.setIn(['attachments', id], action.payload);
+    }
+
+    case ActionType.AttachmentDelete:
+      return state.deleteIn(['attachments', action.payload.id]);
+
     case ActionType.ChatHistoryClear:
       return state.set('chatHistory', ImmutableList());
 
