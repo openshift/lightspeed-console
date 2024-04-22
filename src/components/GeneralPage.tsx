@@ -698,7 +698,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
               </LevelItem>
               <LevelItem>
-                <Button onClick={clearChat} variant="primary">
+                <Button className="ols-plugin__new-chat" onClick={clearChat} variant="primary">
                   {t('New chat')}
                 </Button>
               </LevelItem>

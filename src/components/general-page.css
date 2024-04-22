@@ -144,6 +144,10 @@
   padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
 }
 
+.ols-plugin__new-chat {
+  margin-left: var(--pf-v5-global--spacer--md);
+}
+
 .ols-plugin__references {
   margin-top: var(--pf-v5-global--spacer--md);
 }
