@@ -377,6 +377,9 @@ type AttachMenuProps = {
   context: K8sResourceKind;
 };
 
+const getAttachmentID = (attachmentType: string, kind: string, name: string): string =>
+  `${attachmentType}_${kind}_${name}`;
+
 const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -397,7 +400,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent | undefined, attachmentType: string) => {
-      const id = `${attachmentType}_${kind}_${name}`;
+      const id = getAttachmentID(attachmentType, kind, name);
       if (attachments.has(id)) {
         dispatch(attachmentDelete(id));
       } else {
@@ -472,13 +475,13 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
             {t('Attach')}
           </Title>
           <SelectOption
-            isSelected={attachments.has(AttachmentTypes.YAML)}
+            isSelected={attachments.has(getAttachmentID(AttachmentTypes.YAML, kind, name))}
             value={AttachmentTypes.YAML}
           >
             <FileCodeIcon /> YAML
           </SelectOption>
           <SelectOption
-            isSelected={attachments.has(AttachmentTypes.YAMLStatus)}
+            isSelected={attachments.has(getAttachmentID(AttachmentTypes.YAMLStatus, kind, name))}
             value={AttachmentTypes.YAMLStatus}
           >
             <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> only
