@@ -9,7 +9,6 @@ import { State } from '../redux-reducers';
 import GeneralPage from './GeneralPage';
 
 import './popover.css';
-import { AuthorizationStatus, useAuthorization } from '../hooks/useAuthorization';
 
 const Popover: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -19,7 +18,6 @@ const Popover: React.FC = () => {
   const isOpen = useSelector((s: State) => s.plugins?.ols?.get('isOpen'));
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
-  const [authorizationStatus] = useAuthorization();
 
   const open = React.useCallback(() => {
     dispatch(openOLS());
@@ -28,10 +26,6 @@ const Popover: React.FC = () => {
   const close = React.useCallback(() => {
     dispatch(closeOLS());
   }, [dispatch]);
-
-  if (authorizationStatus !== AuthorizationStatus.Authorized) {
-    return null;
-  }
 
   return (
     <div aria-label={t('Red Hat OpenShift Lightspeed')} className="ols-plugin__popover-container">

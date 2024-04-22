@@ -50,6 +50,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 
+import { AuthStatus, getRequestInitwithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import {
@@ -69,7 +70,6 @@ import { State } from '../redux-reducers';
 import { Attachment, ChatEntry } from '../types';
 
 import './general-page.css';
-import { getRequestInitwithAuthHeader } from '../hooks/useAuthorization';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
@@ -302,6 +302,36 @@ const ChatHistoryEntryWaiting = () => (
     <Spinner size="lg" />
   </div>
 );
+
+type AuthAlertProps = {
+  authStatus: AuthStatus;
+};
+
+const AuthAlert: React.FC<AuthAlertProps> = ({ authStatus }) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  if (authStatus === AuthStatus.NotAuthenticated) {
+    return (
+      <Alert className="ols-plugin__alert" isInline title={t('Not authenticated')} variant="danger">
+        {t(
+          'OpenShift Lightspeed authentication failed. Contact your system administrator for more information.',
+        )}
+      </Alert>
+    );
+  }
+
+  if (authStatus === AuthStatus.NotAuthorized) {
+    return (
+      <Alert className="ols-plugin__alert" isInline title={t('Not authorized')} variant="danger">
+        {t(
+          'You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.',
+        )}
+      </Alert>
+    );
+  }
+
+  return null;
+};
 
 const PrivacyAlert: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -557,6 +587,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const [pageContext] = useLocationContext();
 
+  const [authStatus] = useAuth();
+
   const attachContext = pageContext || selectedContext;
 
   const [conversationID, setConversationID] = React.useState<string>();
@@ -682,6 +714,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           variant="light"
         >
           {isWelcomePage && <Welcome />}
+          <AuthAlert authStatus={authStatus} />
           <PrivacyAlert />
           {chatHistory.toJS().map((entry, i) => (
             <ChatHistoryEntry
@@ -695,69 +728,75 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           <div ref={chatHistoryEndRef} />
         </PageSection>
 
-        <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
-          <Form onSubmit={onSubmit}>
-            <Split hasGutter>
-              <SplitItem>{attachContext && <AttachMenu context={attachContext} />}</SplitItem>
-              <SplitItem isFilled>
-                <TextArea
-                  aria-label={t('OpenShift Lightspeed prompt')}
-                  autoFocus
-                  className="ols-plugin__chat-prompt-input"
-                  onChange={onChange}
-                  onKeyDown={onKeyDown}
-                  onFocus={(e) => {
-                    // Move cursor to the end of the text when popover is closed then reopened
-                    const len = e.currentTarget?.value?.length;
-                    if (len) {
-                      e.currentTarget.setSelectionRange(len, len);
-                    }
-                  }}
-                  placeholder={t('Send a message...')}
-                  ref={promptRef}
-                  resizeOrientation="vertical"
-                  rows={Math.min(query.split('\n').length, 12)}
-                  value={query}
-                />
-                <>
-                  {attachments.keySeq().map((id: string) => {
-                    const attachment: Attachment = attachments.get(id);
-                    if (!attachment) {
-                      return null;
-                    }
-                    return (
-                      <Label
-                        className="ols-plugin__context-label"
-                        key={id}
-                        onClose={() => dispatch(attachmentDelete(id))}
-                        textMaxWidth="16rem"
-                        title={t('{{kind}} {{name}} in namespace {{namespace}}', {
-                          kind: attachment.kind,
-                          name: attachment.name,
-                          namespace: attachment.namespace,
-                        })}
-                      >
-                        <ResourceIcon kind={attachment.kind} /> {attachment.name}{' '}
-                        <Label>{attachment.attachmentType}</Label>
-                      </Label>
-                    );
-                  })}
-                </>
-              </SplitItem>
-              <SplitItem className="ols-plugin__chat-prompt-submit">
-                <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">
-                  <PaperPlaneIcon />
-                </Button>
-              </SplitItem>
-            </Split>
-          </Form>
+        {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
+          <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
+            <Form onSubmit={onSubmit}>
+              <Split hasGutter>
+                <SplitItem>{attachContext && <AttachMenu context={attachContext} />}</SplitItem>
+                <SplitItem isFilled>
+                  <TextArea
+                    aria-label={t('OpenShift Lightspeed prompt')}
+                    autoFocus
+                    className="ols-plugin__chat-prompt-input"
+                    onChange={onChange}
+                    onKeyDown={onKeyDown}
+                    onFocus={(e) => {
+                      // Move cursor to the end of the text when popover is closed then reopened
+                      const len = e.currentTarget?.value?.length;
+                      if (len) {
+                        e.currentTarget.setSelectionRange(len, len);
+                      }
+                    }}
+                    placeholder={t('Send a message...')}
+                    ref={promptRef}
+                    resizeOrientation="vertical"
+                    rows={Math.min(query.split('\n').length, 12)}
+                    value={query}
+                  />
+                  <>
+                    {attachments.keySeq().map((id: string) => {
+                      const attachment: Attachment = attachments.get(id);
+                      if (!attachment) {
+                        return null;
+                      }
+                      return (
+                        <Label
+                          className="ols-plugin__context-label"
+                          key={id}
+                          onClose={() => dispatch(attachmentDelete(id))}
+                          textMaxWidth="16rem"
+                          title={t('{{kind}} {{name}} in namespace {{namespace}}', {
+                            kind: attachment.kind,
+                            name: attachment.name,
+                            namespace: attachment.namespace,
+                          })}
+                        >
+                          <ResourceIcon kind={attachment.kind} /> {attachment.name}{' '}
+                          <Label>{attachment.attachmentType}</Label>
+                        </Label>
+                      );
+                    })}
+                  </>
+                </SplitItem>
+                <SplitItem className="ols-plugin__chat-prompt-submit">
+                  <Button
+                    className="ols-plugin__chat-prompt-button"
+                    type="submit"
+                    variant="primary"
+                  >
+                    <PaperPlaneIcon />
+                  </Button>
+                </SplitItem>
+              </Split>
+            </Form>
 
-          <HelperText>
-            <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-              {t('The LLMs may provide inaccurate information. Double-check responses.')}
-            </HelperTextItem>
-          </HelperText>
-        </PageSection>
+            <HelperText>
+              <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
+                {t('The LLMs may provide inaccurate information. Double-check responses.')}
+              </HelperTextItem>
+            </HelperText>
+          </PageSection>
+        )}
       </Page>
     </>
   );
