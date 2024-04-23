@@ -709,10 +709,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           {!isWelcomePage && (
             <Level>
               <LevelItem>
-                <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
+                <Title className="ols-plugin__heading" headingLevel="h1">
+                  {t('Red Hat OpenShift Lightspeed')}
+                </Title>
               </LevelItem>
               <LevelItem>
-                <Button className="ols-plugin__new-chat" onClick={clearChat} variant="primary">
+                <Button onClick={clearChat} variant="primary">
                   {t('New chat')}
                 </Button>
               </LevelItem>
