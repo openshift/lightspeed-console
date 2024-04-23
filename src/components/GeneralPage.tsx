@@ -56,6 +56,7 @@ import { useLocationContext } from '../hooks/useLocationContext';
 import {
   attachmentAdd,
   attachmentDelete,
+  attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
   dismissPrivacyAlert,
@@ -642,10 +643,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       });
       setWaiting();
 
-      // Clear prompt input and return focus to it
-      dispatch(setQuery(''));
-      promptRef.current?.focus();
-
       const requestJSON = {
         conversation_id: conversationID,
         query: buildQuery(query, attachments),
@@ -672,6 +669,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           scrollChatHistoryToBottom();
           unsetWaiting();
         });
+
+      // Clear prompt input and return focus to it
+      dispatch(setQuery(''));
+      dispatch(attachmentsClear());
+      promptRef.current?.focus();
     },
     [
       attachments,
