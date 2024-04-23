@@ -12,6 +12,7 @@ export enum ActionType {
   DismissPrivacyAlert = 'dismissPrivacyAlert',
   OpenOLS = 'openOLS',
   SetContext = 'setContext',
+  SetConversationID = 'setConversationID',
   SetQuery = 'setQuery',
   UserFeedbackClose = 'userFeedbackClose',
   UserFeedbackOpen = 'userFeedbackOpen',
@@ -34,6 +35,7 @@ export const closeOLS = () => action(ActionType.CloseOLS);
 export const dismissPrivacyAlert = () => action(ActionType.DismissPrivacyAlert);
 export const openOLS = () => action(ActionType.OpenOLS);
 export const setContext = (context: object) => action(ActionType.SetContext, { context });
+export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
 export const setQuery = (query: string) => action(ActionType.SetQuery, { query });
 export const userFeedbackClose = (entryIndex: number) =>
   action(ActionType.UserFeedbackClose, { entryIndex });
@@ -54,6 +56,7 @@ const actions = {
   dismissPrivacyAlert,
   openOLS,
   setContext,
+  setConversationID,
   setQuery,
   userFeedbackClose,
   userFeedbackOpen,

@@ -18,6 +18,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       attachments: ImmutableMap<string, Attachment>(),
       chatHistory: ImmutableList(),
       context: null,
+      conversationID: null,
       isOpen: false,
       isPrivacyAlertDismissed: false,
       query: '',
@@ -56,6 +57,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.SetContext:
       return state.set('context', action.payload.context);
+
+    case ActionType.SetConversationID:
+      return state.set('conversationID', action.payload.id);
 
     case ActionType.SetQuery:
       return state.set('query', action.payload.query);

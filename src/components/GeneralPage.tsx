@@ -61,6 +61,7 @@ import {
   chatHistoryPush,
   dismissPrivacyAlert,
   setContext,
+  setConversationID,
   setQuery,
   userFeedbackClose,
   userFeedbackOpen,
@@ -598,6 +599,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       : null,
   );
 
+  const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
   const [pageContext] = useLocationContext();
@@ -606,7 +608,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const attachContext = pageContext || selectedContext;
 
-  const [conversationID, setConversationID] = React.useState<string>();
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
@@ -618,8 +619,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
+    dispatch(setConversationID(null));
     dispatch(chatHistoryClear());
-    setConversationID(undefined);
   }, [dispatch]);
 
   const onChange = React.useCallback(
@@ -651,7 +652,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       consoleFetchJSON
         .post(QUERY_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
         .then((response: QueryResponse) => {
-          setConversationID(response.conversation_id);
+          dispatch(setConversationID(response.conversation_id));
           dispatch(
             chatHistoryPush({
               isTruncated: response.truncated === true,
