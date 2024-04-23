@@ -39,7 +39,6 @@ export const useAuth = (): [AuthStatus] => {
         }
       })
       .catch((error) => {
-        console.warn(error.response);
         if (error.response?.status === 401) {
           setAuthorizationStatus(AuthStatus.NotAuthenticated);
         } else if (error.response?.status === 403) {
