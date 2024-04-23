@@ -617,6 +617,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     chatHistoryEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
+  // Scroll to bottom of chat after first render (when opening UI that already has chat history)
+  React.useEffect(() => {
+    scrollChatHistoryToBottom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const clearChat = React.useCallback(() => {
     dispatch(setContext(null));
     dispatch(setConversationID(null));
