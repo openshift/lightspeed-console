@@ -621,6 +621,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     dispatch(setContext(null));
     dispatch(setConversationID(null));
     dispatch(chatHistoryClear());
+    dispatch(attachmentsClear());
   }, [dispatch]);
 
   const onChange = React.useCallback(
