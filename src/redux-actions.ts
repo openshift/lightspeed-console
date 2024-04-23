@@ -5,6 +5,7 @@ import { ChatEntry } from './types';
 export enum ActionType {
   AttachmentAdd = 'attachmentAdd',
   AttachmentDelete = 'attachmentDelete',
+  AttachmentsClear = 'attachmentsClear',
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
   CloseOLS = 'closeOLS',
@@ -26,6 +27,7 @@ export const attachmentAdd = (
   value: string,
 ) => action(ActionType.AttachmentAdd, { attachmentType, kind, name, namespace, value });
 export const attachmentDelete = (id: string) => action(ActionType.AttachmentDelete, { id });
+export const attachmentsClear = () => action(ActionType.AttachmentsClear);
 export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 export const closeOLS = () => action(ActionType.CloseOLS);
@@ -45,6 +47,7 @@ export const userFeedbackSetText = (entryIndex: number, text: string) =>
 const actions = {
   attachmentAdd,
   attachmentDelete,
+  attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
   closeOLS,

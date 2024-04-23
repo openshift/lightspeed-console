@@ -33,6 +33,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     case ActionType.AttachmentDelete:
       return state.deleteIn(['attachments', action.payload.id]);
 
+    case ActionType.AttachmentsClear:
+      return state.set('attachments', ImmutableMap());
+
     case ActionType.ChatHistoryClear:
       return state.set('chatHistory', ImmutableList());
 
