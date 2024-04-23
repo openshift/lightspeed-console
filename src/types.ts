@@ -8,6 +8,11 @@ export type Attachment = {
   value: object;
 };
 
+export type ReferencedDoc = {
+  docs_url: string;
+  title: string;
+};
+
 type ChatEntryUser = {
   attachments: ImmutableMap<string, string>;
   text: string;
@@ -17,7 +22,7 @@ type ChatEntryUser = {
 type ChatEntryAI = {
   error?: string;
   isTruncated: boolean;
-  references?: Array<string>;
+  references?: Array<ReferencedDoc>;
   text?: string;
   userFeedback?: ImmutableMap<string, object>;
   who: 'ai';

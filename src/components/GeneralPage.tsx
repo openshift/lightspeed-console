@@ -67,7 +67,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry } from '../types';
+import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 
 import './general-page.css';
 
@@ -79,7 +79,7 @@ const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 type QueryResponse = {
   conversation_id: string;
   query: string;
-  referenced_documents: Array<string>;
+  referenced_documents: Array<ReferencedDoc>;
   response: string;
   truncated: boolean;
 };
@@ -241,6 +241,22 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
   </a>
 );
 
+type DocLinkProps = {
+  reference: ReferencedDoc;
+};
+
+const DocLink: React.FC<DocLinkProps> = ({ reference }) => {
+  if (!reference || typeof reference.docs_url !== 'string' || typeof reference.title !== 'string') {
+    return null;
+  }
+
+  return (
+    <Chip isReadOnly textMaxWidth="16rem">
+      <ExternalLink href={reference.docs_url}>{reference.title}</ExternalLink>
+    </Chip>
+  );
+};
+
 type ChatHistoryEntryProps = {
   conversationID: string;
   entry: ChatEntry;
@@ -272,10 +288,8 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             )}
             {entry.references && (
               <ChipGroup categoryName="Referenced docs" className="ols-plugin__references">
-                {entry.references.map((r) => (
-                  <Chip isReadOnly key={r}>
-                    <ExternalLink href={r}>{r}</ExternalLink>
-                  </Chip>
+                {entry.references.map((r, i) => (
+                  <DocLink reference={r} key={i} />
                 ))}
               </ChipGroup>
             )}
