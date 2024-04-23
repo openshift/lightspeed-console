@@ -696,8 +696,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const onKeyDown = React.useCallback(
     (e) => {
-      // Both Enter+Ctrl and Enter+Meta submit the prompt
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      // Enter key alone submits the prompt, Shift+Enter inserts a newline
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         onSubmit(e);
       }
