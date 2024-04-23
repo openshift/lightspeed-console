@@ -1,49 +1,49 @@
-.ols-plugin__popover-container {
-  --logo-size: 48px;
-  --margin: calc(var(--logo-size) / 2);
-  --popover-bottom: calc(var(--logo-size) + var(--margin) + 8px);
+:root {
+  --popover-button-size: 48px;
+  --popover-margin: calc(var(--popover-button-size) / 2);
+  --popover-bottom: calc(var(--popover-button-size) + var(--popover-margin) + 8px);
+}
 
-  .ols-plugin__popover, .ols-plugin__popover-button {
-    border-radius: 12px;
-    box-shadow: var(--pf-v5-global--BoxShadow--lg);
-    position: fixed;
-    right: var(--margin);
-    z-index: 99;
-  }
+.ols-plugin__popover, .ols-plugin__popover-button {
+  border-radius: 12px;
+  box-shadow: var(--pf-v5-global--BoxShadow--lg);
+  position: fixed;
+  right: var(--popover-margin);
+  z-index: 99;
+}
 
-  .ols-plugin__popover {
-    border: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
-    bottom: var(--popover-bottom);
-    overflow: hidden;
-  }
+.ols-plugin__popover {
+  border: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
+  bottom: var(--popover-bottom);
+  overflow: hidden;
+}
 
-  .ols-plugin__popover--collapsed {
-    height: calc(100% - 2*var(--popover-bottom));
-    width: 35%;
-  }
+.ols-plugin__popover--collapsed {
+  height: calc(100% - 2*var(--popover-bottom));
+  width: 35%;
+}
 
-  .ols-plugin__popover--expanded {
-    height: calc(100% - var(--popover-bottom) - var(--margin));
-    width: calc(100% - 2*var(--margin));
-  }
+.ols-plugin__popover--expanded {
+  height: calc(100% - var(--popover-bottom) - var(--popover-margin));
+  width: calc(100% - 2*var(--popover-margin));
+}
 
-  .ols-plugin__popover-close {
-    float: right;
-    height: var(--pf-v5-global--spacer--md);
-    margin-left: var(--pf-v5-global--spacer--md);
-    right: var(--pf-v5-global--spacer--sm);
-    top: var(--pf-v5-global--spacer--sm);
-    width: var(--pf-v5-global--spacer--md);
-  }
+.ols-plugin__popover-close {
+  float: right;
+  height: var(--pf-v5-global--spacer--md);
+  margin-left: var(--pf-v5-global--spacer--md);
+  right: var(--pf-v5-global--spacer--sm);
+  top: var(--pf-v5-global--spacer--sm);
+  width: var(--pf-v5-global--spacer--md);
+}
 
-  .ols-plugin__popover-button {
-    background-image: url('../assets/logo.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: calc(var(--logo-size) + 3px);
-    bottom: var(--margin);
-    cursor: pointer;
-    height: var(--logo-size);
-    width: var(--logo-size);
-  }
+.ols-plugin__popover-button {
+  background-image: url('../assets/logo.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: calc(var(--popover-button-size) + 3px);
+  bottom: var(--popover-margin);
+  cursor: pointer;
+  height: var(--popover-button-size);
+  width: var(--popover-button-size);
 }
