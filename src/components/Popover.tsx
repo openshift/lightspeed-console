@@ -6,6 +6,7 @@ import { Tooltip } from '@patternfly/react-core';
 import { useBoolean } from '../hooks/useBoolean';
 import { closeOLS, openOLS } from '../redux-actions';
 import { State } from '../redux-reducers';
+import ErrorBoundary from './ErrorBoundary';
 import GeneralPage from './GeneralPage';
 
 import './popover.css';
@@ -53,4 +54,10 @@ const Popover: React.FC = () => {
   );
 };
 
-export default Popover;
+const PopoverWithErrorBoundary: React.FC = () => (
+  <ErrorBoundary>
+    <Popover />
+  </ErrorBoundary>
+);
+
+export default PopoverWithErrorBoundary;
