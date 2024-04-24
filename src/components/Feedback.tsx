@@ -30,6 +30,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
+import ErrorBoundary from './ErrorBoundary';
 
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
 
@@ -181,4 +182,10 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
   );
 };
 
-export default Feedback;
+const FeedbackWithErrorBoundary: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => (
+  <ErrorBoundary>
+    <Feedback conversationID={conversationID} entryIndex={entryIndex} />
+  </ErrorBoundary>
+);
+
+export default FeedbackWithErrorBoundary;
