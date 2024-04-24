@@ -602,6 +602,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
+  const [validated, setValidated] = React.useState<'default' | 'error'>('default');
+
   const [pageContext] = useLocationContext();
 
   const [authStatus] = useAuth();
@@ -632,6 +634,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const onChange = React.useCallback(
     (_e, value) => {
+      if (value.trim().length > 0) {
+        setValidated('default');
+      }
       dispatch(setQuery(value));
     },
     [dispatch],
@@ -641,7 +646,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     (e) => {
       e.preventDefault();
 
-      if (!query) {
+      if (!query || query.trim().length === 0) {
+        setValidated('error');
         return;
       }
 
@@ -777,6 +783,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                     ref={promptRef}
                     resizeOrientation="vertical"
                     rows={Math.min(query.split('\n').length, 12)}
+                    validated={validated}
                     value={query}
                   />
                   <>
