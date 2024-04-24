@@ -157,7 +157,7 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
         setSubmitted(true);
       })
       .catch((error) => {
-        setError(error.response?.detail || error.message || 'Feedback POST failed');
+        setError(error.json?.detail || error.message || 'Feedback POST failed');
         setSubmitted(false);
       });
   }, [conversationID, dispatch, entryIndex, query, response, sentiment, text]);
@@ -672,7 +672,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           unsetWaiting();
         })
         .catch((error) => {
-          const errorMessage = error.response?.detail || error.message || 'Query POST failed';
+          const errorMessage = error.json?.detail || error.message || 'Query POST failed';
           dispatch(chatHistoryPush({ error: errorMessage, isTruncated: false, who: 'ai' }));
           scrollChatHistoryToBottom();
           unsetWaiting();
