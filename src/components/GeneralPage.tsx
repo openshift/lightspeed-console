@@ -109,12 +109,14 @@ type ChatHistoryEntryProps = {
   conversationID: string;
   entry: ChatEntry;
   entryIndex: number;
+  scrollIntoView: () => void;
 };
 
 const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   conversationID,
   entry,
   entryIndex,
+  scrollIntoView,
 }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -141,7 +143,11 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
                 ))}
               </ChipGroup>
             )}
-            <Feedback conversationID={conversationID} entryIndex={entryIndex} />
+            <Feedback
+              conversationID={conversationID}
+              entryIndex={entryIndex}
+              scrollIntoView={scrollIntoView}
+            />
           </>
         )}
       </div>
@@ -461,13 +467,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const chatHistoryEndRef = React.useRef(null);
   const promptRef = React.useRef(null);
 
-  const scrollChatHistoryToBottom = React.useCallback((behavior = 'smooth') => {
-    chatHistoryEndRef?.current?.scrollIntoView({ behavior });
+  const scrollIntoView = React.useCallback((behavior = 'smooth') => {
+    defer(() => {
+      chatHistoryEndRef?.current?.scrollIntoView({ behavior });
+    });
   }, []);
 
   // Scroll to bottom of chat after first render (when opening UI that already has chat history)
   React.useEffect(() => {
-    scrollChatHistoryToBottom('instant');
+    scrollIntoView('instant');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -498,9 +506,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       }
 
       dispatch(chatHistoryPush({ attachments, text: query, who: 'user' }));
-      defer(() => {
-        scrollChatHistoryToBottom();
-      });
+      scrollIntoView();
       setWaiting();
 
       const requestJSON = {
@@ -520,13 +526,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               who: 'ai',
             }),
           );
-          scrollChatHistoryToBottom();
+          scrollIntoView();
           unsetWaiting();
         })
         .catch((error) => {
           const errorMessage = error.json?.detail || error.message || 'Query POST failed';
           dispatch(chatHistoryPush({ error: errorMessage, isTruncated: false, who: 'ai' }));
-          scrollChatHistoryToBottom();
+          scrollIntoView();
           unsetWaiting();
         });
 
@@ -535,15 +541,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [
-      attachments,
-      conversationID,
-      dispatch,
-      query,
-      scrollChatHistoryToBottom,
-      setWaiting,
-      unsetWaiting,
-    ],
+    [attachments, conversationID, dispatch, query, scrollIntoView, setWaiting, unsetWaiting],
   );
 
   const onKeyDown = React.useCallback(
@@ -600,6 +598,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               conversationID={conversationID}
               entry={entry}
               entryIndex={i}
+              scrollIntoView={scrollIntoView}
             />
           ))}
           {isWaiting && <ChatHistoryEntryWaiting />}

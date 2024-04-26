@@ -42,9 +42,10 @@ const THUMBS_UP = 1;
 type FeedbackProps = {
   conversationID: string;
   entryIndex: number;
+  scrollIntoView: () => void;
 };
 
-const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
+const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollIntoView }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -77,12 +78,14 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
     dispatch(
       userFeedbackSetSentiment(entryIndex, sentiment === THUMBS_DOWN ? undefined : THUMBS_DOWN),
     );
-  }, [dispatch, entryIndex, sentiment]);
+    scrollIntoView();
+  }, [dispatch, entryIndex, scrollIntoView, sentiment]);
 
   const onThumbsUp = React.useCallback(() => {
     dispatch(userFeedbackOpen(entryIndex));
     dispatch(userFeedbackSetSentiment(entryIndex, sentiment === THUMBS_UP ? undefined : THUMBS_UP));
-  }, [dispatch, entryIndex, sentiment]);
+    scrollIntoView();
+  }, [dispatch, entryIndex, scrollIntoView, sentiment]);
 
   const onTextChange = React.useCallback(
     (_e, text) => {
@@ -182,9 +185,17 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => {
   );
 };
 
-const FeedbackWithErrorBoundary: React.FC<FeedbackProps> = ({ conversationID, entryIndex }) => (
+const FeedbackWithErrorBoundary: React.FC<FeedbackProps> = ({
+  conversationID,
+  entryIndex,
+  scrollIntoView,
+}) => (
   <ErrorBoundary>
-    <Feedback conversationID={conversationID} entryIndex={entryIndex} />
+    <Feedback
+      conversationID={conversationID}
+      entryIndex={entryIndex}
+      scrollIntoView={scrollIntoView}
+    />
   </ErrorBoundary>
 );
 
