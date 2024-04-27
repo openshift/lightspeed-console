@@ -12,7 +12,6 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
-  AlertActionLink,
   Button,
   Chip,
   ChipGroup,
@@ -55,7 +54,6 @@ import {
   attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
-  dismissPrivacyAlert,
   setContext,
   setConversationID,
   setQuery,
@@ -204,38 +202,8 @@ const AuthAlert: React.FC<AuthAlertProps> = ({ authStatus }) => {
 const PrivacyAlert: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const dispatch = useDispatch();
-
-  const isPrivacyAlertDismissed: boolean = useSelector((s: State) =>
-    s.plugins?.ols?.get('isPrivacyAlertDismissed'),
-  );
-
-  const [isPrivacyAlertShown, , , hidePrivacyAlert] = useBoolean(!isPrivacyAlertDismissed);
-
-  const hidePrivacyAlertPersistent = React.useCallback(() => {
-    hidePrivacyAlert();
-    dispatch(dismissPrivacyAlert());
-  }, [dispatch, hidePrivacyAlert]);
-
-  if (!isPrivacyAlertShown) {
-    return null;
-  }
-
   return (
-    <Alert
-      actionLinks={
-        <>
-          <AlertActionLink onClick={hidePrivacyAlert}>Got it</AlertActionLink>
-          <AlertActionLink onClick={hidePrivacyAlertPersistent}>
-            Don&apos;t show again
-          </AlertActionLink>
-        </>
-      }
-      className="ols-plugin__alert"
-      isInline
-      title={t('Data privacy')}
-      variant="info"
-    >
+    <Alert className="ols-plugin__alert" isInline title={t('Data privacy')} variant="info">
       <p>
         <strong>{t('Ask away.')}</strong>{' '}
         {t('OpenShift Lightspeed can answer questions related to OpenShift.')}

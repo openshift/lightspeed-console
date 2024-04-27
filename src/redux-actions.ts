@@ -9,7 +9,6 @@ export enum ActionType {
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
   CloseOLS = 'closeOLS',
-  DismissPrivacyAlert = 'dismissPrivacyAlert',
   OpenOLS = 'openOLS',
   SetContext = 'setContext',
   SetConversationID = 'setConversationID',
@@ -32,7 +31,6 @@ export const attachmentsClear = () => action(ActionType.AttachmentsClear);
 export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 export const closeOLS = () => action(ActionType.CloseOLS);
-export const dismissPrivacyAlert = () => action(ActionType.DismissPrivacyAlert);
 export const openOLS = () => action(ActionType.OpenOLS);
 export const setContext = (context: object) => action(ActionType.SetContext, { context });
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
@@ -53,7 +51,6 @@ const actions = {
   chatHistoryClear,
   chatHistoryPush,
   closeOLS,
-  dismissPrivacyAlert,
   openOLS,
   setContext,
   setConversationID,
