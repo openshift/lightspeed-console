@@ -20,7 +20,6 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       conversationID: null,
       isOpen: false,
-      isPrivacyAlertDismissed: false,
       query: '',
     });
   }
