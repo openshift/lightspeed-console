@@ -203,15 +203,10 @@ const PrivacyAlert: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   return (
-    <Alert className="ols-plugin__alert" isInline title={t('Data privacy')} variant="info">
-      <p>
-        <strong>{t('Ask away.')}</strong>{' '}
-        {t('OpenShift Lightspeed can answer questions related to OpenShift.')}
-      </p>
-      <p>
-        <strong>{t("Don't share sensitive information.")}</strong>{' '}
-        {t('Chat history may be reviewed or used to improve our services.')}
-      </p>
+    <Alert className="ols-plugin__alert" isInline title={t('Important')} variant="info">
+      {t(
+        'OpenShift Lightspeed can answer questions related to OpenShift. Do not include personal or business sensitive information in your input. Interactions with OpenShift Lightspeed may be reviewed and used to improve our products and services.',
+      )}
     </Alert>
   );
 };
