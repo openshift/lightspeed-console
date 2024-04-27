@@ -31,7 +31,7 @@
   "Send a message...": "Send a message...",
   "Submit": "Submit",
   "Thank you for your feedback!": "Thank you for your feedback!",
-  "The LLMs may provide inaccurate information. Double-check responses.": "The LLMs may provide inaccurate information. Double-check responses.",
+  "Always check AI/LLM generated responses for accuracy prior to use.": "Always check AI/LLM generated responses for accuracy prior to use.",
   "Why did you choose this rating?": "Why did you choose this rating?",
   "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.": "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information."
 }

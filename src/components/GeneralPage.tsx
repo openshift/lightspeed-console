@@ -670,7 +670,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
             <HelperText>
               <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-                {t('The LLMs may provide inaccurate information. Double-check responses.')}
+                {t('Always check AI/LLM generated responses for accuracy prior to use.')}
               </HelperTextItem>
             </HelperText>
           </PageSection>
