@@ -1,5 +1,6 @@
 {
   "{{kind}} {{name}} in namespace {{namespace}}": "{{kind}} {{name}} in namespace {{namespace}}",
+  "Always check AI/LLM generated responses for accuracy prior to use.": "Always check AI/LLM generated responses for accuracy prior to use.",
   "Ask away.": "Ask away.",
   "Ask OpenShift Lightspeed": "Ask OpenShift Lightspeed",
   "Attach": "Attach",
@@ -9,6 +10,7 @@
   "Conversation history has been truncated to fit within context window.": "Conversation history has been truncated to fit within context window.",
   "Currently viewing": "Currently viewing",
   "Data privacy": "Data privacy",
+  "Do not share any personal or business sensitive information. The information you provide may be used to improve our products and services.": "Do not share any personal or business sensitive information. The information you provide may be used to improve our products and services.",
   "Don't share sensitive information.": "Don't share sensitive information.",
   "Error getting YAML: {{e}}": "Error getting YAML: {{e}}",
   "Error submitting feedback": "Error submitting feedback",
@@ -25,13 +27,11 @@
   "OpenShift Lightspeed chat history": "OpenShift Lightspeed chat history",
   "OpenShift Lightspeed prompt": "OpenShift Lightspeed prompt",
   "Optional": "Optional",
-  "Please refrain from sharing any sensitive information. All feedback may be reviewed and used to enhance the service.": "Please refrain from sharing any sensitive information. All feedback may be reviewed and used to enhance the service.",
   "Provide additional feedback": "Provide additional feedback",
   "Red Hat OpenShift Lightspeed": "Red Hat OpenShift Lightspeed",
   "Send a message...": "Send a message...",
   "Submit": "Submit",
   "Thank you for your feedback!": "Thank you for your feedback!",
-  "Always check AI/LLM generated responses for accuracy prior to use.": "Always check AI/LLM generated responses for accuracy prior to use.",
   "Why did you choose this rating?": "Why did you choose this rating?",
   "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.": "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information."
 }
