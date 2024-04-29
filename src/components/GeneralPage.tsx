@@ -3,6 +3,7 @@ import { dump } from 'js-yaml';
 import { cloneDeep, defer } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   consoleFetchJSON,
@@ -130,7 +131,9 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
           </Alert>
         ) : (
           <>
-            <div className="ols-plugin__chat-entry-text">{entry.text}</div>
+            <div className="ols-plugin__chat-entry-text">
+              <Markdown>{entry.text}</Markdown>
+            </div>
             {entry.isTruncated && (
               <Alert isInline title={t('History truncated')} variant="warning">
                 {t('Conversation history has been truncated to fit within context window.')}
