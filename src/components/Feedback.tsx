@@ -22,6 +22,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 
+import { buildQuery } from '../attachments';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuth';
 import {
   userFeedbackClose,
@@ -30,6 +31,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
+import { Attachments } from '../types';
 import ErrorBoundary from './ErrorBoundary';
 
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
@@ -55,6 +57,9 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollI
   );
   const query: string = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
+  );
+  const queryAttachments: Attachments = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
   );
   const response: string = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'text']),
@@ -100,7 +105,7 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollI
       llm_response: response,
       sentiment: sentiment,
       user_feedback: text,
-      user_question: query,
+      user_question: buildQuery(query, queryAttachments),
     };
 
     consoleFetchJSON
@@ -113,7 +118,7 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollI
         setError(error.json?.detail || error.message || 'Feedback POST failed');
         setSubmitted(false);
       });
-  }, [conversationID, dispatch, entryIndex, query, response, sentiment, text]);
+  }, [conversationID, dispatch, entryIndex, query, queryAttachments, response, sentiment, text]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
+import { List as ImmutableList } from 'immutable';
 import { dump } from 'js-yaml';
 import { cloneDeep, defer } from 'lodash';
 import * as React from 'react';
@@ -45,6 +45,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 
+import { AttachmentTypes, buildQuery } from '../attachments';
 import { AuthStatus, getRequestInitwithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
@@ -59,7 +60,7 @@ import {
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import { Attachment, Attachments, ChatEntry, ReferencedDoc } from '../types';
 import Feedback from './Feedback';
 
 import './general-page.css';
@@ -229,11 +230,6 @@ const Welcome: React.FC = () => {
   );
 };
 
-enum AttachmentTypes {
-  YAML = 'YAML',
-  YAMLStatus = 'YAML Status',
-}
-
 type AttachMenuProps = {
   context: K8sResourceKind;
 };
@@ -246,7 +242,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const dispatch = useDispatch();
 
-  const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+  const attachments: Attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
 
   const [error, setError] = React.useState<string>();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -351,32 +347,6 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
       </Select>
     </>
   );
-};
-
-const buildQuery = (query: string, attachments: ImmutableMap<string, Attachment>): string => {
-  let fullQuery = query;
-
-  attachments.forEach((attachment: Attachment) => {
-    if (attachment.attachmentType === AttachmentTypes.YAML) {
-      fullQuery += `
-
-For reference, here is the full resource YAML for ${attachment.kind} '${attachment.name}':
-\`\`\`yaml
-${attachment.value}
-\`\`\``;
-    }
-
-    if (attachment.attachmentType === AttachmentTypes.YAMLStatus) {
-      fullQuery += `
-
-For reference, here is the resource's 'status' section YAML for ${attachment.kind} '${attachment.name}':
-\`\`\`yaml
-${attachment.value}
-\`\`\``;
-    }
-  });
-
-  return fullQuery;
 };
 
 type GeneralPageProps = {

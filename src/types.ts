@@ -8,13 +8,15 @@ export type Attachment = {
   value: object;
 };
 
+export type Attachments = ImmutableMap<string, Attachment>;
+
 export type ReferencedDoc = {
   docs_url: string;
   title: string;
 };
 
 type ChatEntryUser = {
-  attachments: ImmutableMap<string, string>;
+  attachments: Attachments;
   text: string;
   who: 'user';
 };
