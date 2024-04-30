@@ -1,4 +1,4 @@
-import { List as ImmutableList } from 'immutable';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 import { dump } from 'js-yaml';
 import { cloneDeep, defer } from 'lodash';
 import * as React from 'react';
@@ -13,10 +13,13 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
+  Badge,
   Button,
   Chip,
   ChipGroup,
   CodeBlock,
+  CodeBlockCode,
+  ExpandableSection,
   Form,
   HelperText,
   HelperTextItem,
@@ -27,6 +30,7 @@ import {
   MenuToggle,
   Page,
   PageSection,
+  Popover,
   Select,
   SelectList,
   SelectOption,
@@ -62,7 +66,7 @@ import {
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, Attachments, ChatEntry, ReferencedDoc } from '../types';
+import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import Feedback from './Feedback';
 
 import './general-page.css';
@@ -113,6 +117,47 @@ type CodeProps = {
 const Code: React.FC<CodeProps> = (props) =>
   String(props.children).includes('\n') ? <CodeBlock {...props} /> : <code {...props} />;
 
+type AttachmentLabelProps = {
+  attachment: Attachment;
+  onClose?: () => void;
+};
+
+const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  if (!attachment) {
+    return null;
+  }
+
+  return (
+    <Popover
+      bodyContent={
+        <CodeBlock>
+          <CodeBlockCode className="ols-plugin__context-code-block-code">
+            {attachment.value}
+          </CodeBlockCode>
+        </CodeBlock>
+      }
+      headerContent={
+        <Title headingLevel="h5">
+          {t('{{kind}} {{name}} in namespace {{namespace}}', {
+            kind: attachment.kind,
+            name: attachment.name,
+            namespace: attachment.namespace,
+          })}
+        </Title>
+      }
+      maxWidth="28%"
+      position="left"
+    >
+      <Label className="ols-plugin__context-label" onClose={onClose} textMaxWidth="16rem">
+        <ResourceIcon kind={attachment.kind} /> {attachment.name}
+        <Label className="ols-plugin__context-label-type">{attachment.attachmentType}</Label>
+      </Label>
+    </Popover>
+  );
+};
+
 type ChatHistoryEntryProps = {
   conversationID: string;
   entry: ChatEntry;
@@ -127,6 +172,8 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   scrollIntoView,
 }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  const [isContextExpanded, toggleContextExpanded] = useBoolean(false);
 
   if (entry.who === 'ai') {
     return (
@@ -168,6 +215,26 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--user">
         <div className="ols-plugin__chat-entry-name">You</div>
         <div className="ols-plugin__chat-entry-text">{entry.text}</div>
+        {entry.attachments && Object.keys(entry.attachments).length > 0 && (
+          <ExpandableSection
+            className="ols-plugin__chat-history-context"
+            isExpanded={isContextExpanded}
+            onToggle={toggleContextExpanded}
+            toggleContent={
+              <>
+                Context
+                <Badge className="ols-plugin__chat-history-context-count">
+                  {Object.keys(entry.attachments).length}
+                </Badge>
+              </>
+            }
+          >
+            {Object.keys(entry.attachments).map((key: string) => {
+              const attachment: Attachment = entry.attachments[key];
+              return <AttachmentLabel attachment={attachment} key={key} />;
+            })}
+          </ExpandableSection>
+        )}
       </div>
     );
   }
@@ -253,7 +320,9 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const dispatch = useDispatch();
 
-  const attachments: Attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+  const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
+    s.plugins?.ols?.get('attachments'),
+  );
 
   const [error, setError] = React.useState<string>();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -578,24 +647,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   <>
                     {attachments.keySeq().map((id: string) => {
                       const attachment: Attachment = attachments.get(id);
-                      if (!attachment) {
-                        return null;
-                      }
                       return (
-                        <Label
-                          className="ols-plugin__context-label"
+                        <AttachmentLabel
+                          attachment={attachment}
                           key={id}
                           onClose={() => dispatch(attachmentDelete(id))}
-                          textMaxWidth="16rem"
-                          title={t('{{kind}} {{name}} in namespace {{namespace}}', {
-                            kind: attachment.kind,
-                            name: attachment.name,
-                            namespace: attachment.namespace,
-                          })}
-                        >
-                          <ResourceIcon kind={attachment.kind} /> {attachment.name}{' '}
-                          <Label>{attachment.attachmentType}</Label>
-                        </Label>
+                        />
                       );
                     })}
                   </>

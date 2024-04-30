@@ -5,10 +5,8 @@ export type Attachment = {
   kind: string;
   name: string;
   namespace: string;
-  value: object;
+  value: string;
 };
-
-export type Attachments = ImmutableMap<string, Attachment>;
 
 export type ReferencedDoc = {
   docs_url: string;
@@ -16,7 +14,7 @@ export type ReferencedDoc = {
 };
 
 type ChatEntryUser = {
-  attachments: Attachments;
+  attachments: { [key: string]: Attachment };
   text: string;
   who: 'user';
 };

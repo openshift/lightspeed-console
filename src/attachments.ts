@@ -1,11 +1,16 @@
-import { Attachment, Attachments } from './types';
+import { Map as ImmutableMap } from 'immutable';
+
+import { Attachment } from './types';
 
 export enum AttachmentTypes {
   YAML = 'YAML',
   YAMLStatus = 'YAML Status',
 }
 
-export const buildQuery = (query: string, attachments: Attachments): string => {
+export const buildQuery = (
+  query: string,
+  attachments: ImmutableMap<string, Attachment>,
+): string => {
   let fullQuery = query;
 
   attachments.forEach((attachment: Attachment) => {

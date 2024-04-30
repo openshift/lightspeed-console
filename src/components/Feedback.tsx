@@ -1,3 +1,4 @@
+import { Map as ImmutableMap } from 'immutable';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -31,7 +32,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachments } from '../types';
+import { Attachment } from '../types';
 import ErrorBoundary from './ErrorBoundary';
 
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
@@ -58,7 +59,7 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollI
   const query: string = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
   );
-  const queryAttachments: Attachments = useSelector((s: State) =>
+  const queryAttachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
   );
   const response: string = useSelector((s: State) =>
