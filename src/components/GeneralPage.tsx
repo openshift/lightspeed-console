@@ -16,6 +16,7 @@ import {
   Button,
   Chip,
   ChipGroup,
+  CodeBlock,
   Form,
   HelperText,
   HelperTextItem,
@@ -105,6 +106,13 @@ const DocLink: React.FC<DocLinkProps> = ({ reference }) => {
   );
 };
 
+type CodeProps = {
+  children: React.ReactNode;
+};
+
+const Code: React.FC<CodeProps> = (props) =>
+  String(props.children).includes('\n') ? <CodeBlock {...props} /> : <code {...props} />;
+
 type ChatHistoryEntryProps = {
   conversationID: string;
   entry: ChatEntry;
@@ -131,7 +139,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         ) : (
           <>
             <div className="ols-plugin__chat-entry-text">
-              <Markdown>{entry.text}</Markdown>
+              <Markdown components={{ code: Code }}>{entry.text}</Markdown>
             </div>
             {entry.isTruncated && (
               <Alert isInline title={t('History truncated')} variant="warning">
