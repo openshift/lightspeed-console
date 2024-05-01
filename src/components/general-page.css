@@ -6,13 +6,6 @@
   margin-bottom: var(--pf-v5-global--spacer--lg);
 }
 
-.ols-plugin__chat-history {
-  overflow-y: auto;
-  padding-bottom: 0;
-  padding-left: 8%;
-  padding-right: 8%;
-}
-
 .ols-plugin__chat-entry {
   --logo-size: 2.5rem;
 
@@ -37,6 +30,30 @@
 
 .ols-plugin__chat-entry-text {
   white-space: pre-line;
+}
+
+.ols-plugin__chat-history {
+  overflow-y: auto;
+  padding-bottom: 0;
+  padding-left: 8%;
+  padding-right: 8%;
+}
+
+.ols-plugin__chat-history-context {
+  background-color: var(--pf-v5-global--BackgroundColor--200);
+  box-shadow: 3px 0 0 0 var(--pf-v5-global--primary-color--100) inset;
+  margin-top: var(--pf-global--spacer--md);
+  padding: var(--pf-global--spacer--sm);
+}
+
+.ols-plugin__chat-history-context-count {
+  margin-left: var(--pf-global--spacer--sm);
+}
+
+.ols-plugin__context-code-block-code {
+  font-size: 12px;
+  max-height: 10rem;
+  overflow: auto;
 }
 
 .ols-plugin__feedback {
@@ -111,9 +128,14 @@
 }
 
 .ols-plugin__context-label {
+  cursor: pointer;
   font-weight: var(--pf-v5-global--FontWeight--bold);
   margin-right: var(--pf-v5-global--spacer--sm);
   margin-top: var(--pf-v5-global--spacer--sm);
+}
+
+.ols-plugin__context-label-type {
+  margin-left: var(--pf-global--spacer--sm);
 }
 
 .ols-plugin__context-menu {
