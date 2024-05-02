@@ -2,13 +2,6 @@
   {
     "type": "console.action/provider",
     "properties": {
-      "contextId": "monitoring-alert-list-item",
-      "provider": { "$codeRef": "AlertActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
       "contextId": "batch~v1~CronJob",
       "provider": { "$codeRef": "K8sResourceActionsProvider" }
     }
