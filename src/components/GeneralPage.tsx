@@ -115,7 +115,11 @@ type CodeProps = {
 };
 
 const Code: React.FC<CodeProps> = (props) =>
-  String(props.children).includes('\n') ? <CodeBlock {...props} /> : <code {...props} />;
+  String(props.children).includes('\n') ? (
+    <CodeBlock className="ols-plugin__code-block" {...props} />
+  ) : (
+    <code {...props} />
+  );
 
 type AttachmentLabelProps = {
   attachment: Attachment;

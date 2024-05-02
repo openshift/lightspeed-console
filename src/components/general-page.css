@@ -50,6 +50,10 @@
   margin-left: var(--pf-global--spacer--sm);
 }
 
+.ols-plugin__code-block {
+  overflow: auto;
+}
+
 .ols-plugin__context-code-block-code {
   font-size: 12px;
   max-height: 10rem;
