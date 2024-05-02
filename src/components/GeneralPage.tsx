@@ -543,7 +543,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           unsetWaiting();
         })
         .catch((error) => {
-          const errorMessage = error.json?.detail || error.message || 'Query POST failed';
+          const errorDetail = error.json?.detail;
+          const errorMessage =
+            typeof errorDetail?.response === 'string' && typeof errorDetail?.cause === 'string'
+              ? `${errorDetail.response}: ${errorDetail.cause}`
+              : error.json?.message || 'Query POST failed';
           dispatch(chatHistoryPush({ error: errorMessage, isTruncated: false, who: 'ai' }));
           scrollIntoView();
           unsetWaiting();
