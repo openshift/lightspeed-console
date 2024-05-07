@@ -132,7 +132,6 @@
 }
 
 .ols-plugin__context-label {
-  cursor: pointer;
   font-weight: var(--pf-v5-global--FontWeight--bold);
   margin-right: var(--pf-v5-global--spacer--sm);
   margin-top: var(--pf-v5-global--spacer--sm);
