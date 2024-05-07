@@ -155,8 +155,9 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
       position="left"
       triggerAction="hover"
     >
-      <Label className="ols-plugin__context-label" onClose={onClose} textMaxWidth="16rem">
-        <ResourceIcon kind={attachment.kind} /> {attachment.name}
+      <Label className="ols-plugin__context-label" onClose={onClose}>
+        <ResourceIcon kind={attachment.kind} />
+        <span className="ols-plugin__context-label-text">{attachment.name}</span>{' '}
         <Label className="ols-plugin__context-label-type">{attachment.attachmentType}</Label>
       </Label>
     </Popover>
