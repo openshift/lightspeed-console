@@ -153,6 +153,7 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
       }
       maxWidth="28%"
       position="left"
+      triggerAction="hover"
     >
       <Label className="ols-plugin__context-label" onClose={onClose} textMaxWidth="16rem">
         <ResourceIcon kind={attachment.kind} /> {attachment.name}
