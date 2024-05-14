@@ -567,7 +567,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     [attachments, conversationID, dispatch, query, scrollIntoView, setWaiting, unsetWaiting],
   );
 
-  const onKeyDown = React.useCallback(
+  // We use keypress instead of keydown even though keypress is deprecated to work around a problem
+  // with IME (input method editor) input. A cleaner solution would be to use the isComposing
+  // property, but unfortunately the Safari implementation differs making it unusable for our case.
+  const onKeyPress = React.useCallback(
     (e) => {
       // Enter key alone submits the prompt, Shift+Enter inserts a newline
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -639,7 +642,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                     autoFocus
                     className="ols-plugin__chat-prompt-input"
                     onChange={onChange}
-                    onKeyDown={onKeyDown}
+                    onKeyPress={onKeyPress}
                     onFocus={(e) => {
                       // Move cursor to the end of the text when popover is closed then reopened
                       const len = e.currentTarget?.value?.length;
