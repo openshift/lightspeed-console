@@ -48,7 +48,7 @@ import {
   FileCodeIcon,
   PaperPlaneIcon,
   PlusCircleIcon,
-  TimesIcon,
+  WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
 import { AttachmentTypes, buildQuery } from '../attachments';
@@ -587,11 +587,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     <>
       <Page>
         <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
-          <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
           {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
           {onCollapse && (
             <CompressIcon className="ols-plugin__popover-close" onClick={onCollapse} />
           )}
+          <WindowMinimizeIcon className="ols-plugin__popover-close" onClick={onClose} />
           {!isWelcomePage && (
             <Level>
               <LevelItem>
