@@ -152,12 +152,16 @@
   padding: var(--pf-v5-global--spacer--md);
 }
 
+.ols-plugin__context-menu .ols-plugin__context-label {
+  margin-bottom: var(--pf-v5-global--spacer--md);
+}
+
 .ols-plugin__context-menu-heading {
   color: var(--pf-v5-global--Color--400);
 }
 
-.ols-plugin__context-menu .ols-plugin__context-label {
-  margin-bottom: var(--pf-v5-global--spacer--md);
+.ols-plugin__context-menu-icon--active {
+  color: var(--pf-v5-global--primary-color--100);
 }
 
 .ols-plugin__footer {

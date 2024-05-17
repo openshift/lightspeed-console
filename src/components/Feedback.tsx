@@ -42,13 +42,13 @@ const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 const THUMBS_DOWN = -1;
 const THUMBS_UP = 1;
 
-type FeedbackProps = {
+type Props = {
   conversationID: string;
   entryIndex: number;
   scrollIntoView: () => void;
 };
 
-const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollIntoView }) => {
+const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -191,7 +191,7 @@ const Feedback: React.FC<FeedbackProps> = ({ conversationID, entryIndex, scrollI
   );
 };
 
-const FeedbackWithErrorBoundary: React.FC<FeedbackProps> = ({
+const FeedbackWithErrorBoundary: React.FC<Props> = ({
   conversationID,
   entryIndex,
   scrollIntoView,
