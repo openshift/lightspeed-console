@@ -1,6 +1,6 @@
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
+import { List as ImmutableList } from 'immutable';
 import { dump } from 'js-yaml';
-import { cloneDeep, defer } from 'lodash';
+import { cloneDeep, defer, map as lodashMap } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -48,6 +48,7 @@ import {
   FileCodeIcon,
   PaperPlaneIcon,
   PlusCircleIcon,
+  TaskIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
@@ -67,6 +68,7 @@ import {
 } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import AttachLogModal from './AttachLogModal';
 import Feedback from './Feedback';
 
 import './general-page.css';
@@ -133,32 +135,39 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
     return null;
   }
 
+  const { attachmentType, kind, name, namespace, options, value } = attachment;
+
   return (
     <Popover
       bodyContent={
         <CodeBlock>
-          <CodeBlockCode className="ols-plugin__context-code-block-code">
-            {attachment.value}
+          <CodeBlockCode
+            className="ols-plugin__context-code-block-code"
+            style={attachmentType === AttachmentTypes.Log ? { whiteSpace: 'pre' } : undefined}
+          >
+            {value}
           </CodeBlockCode>
         </CodeBlock>
       }
       headerContent={
         <Title headingLevel="h5">
-          {t('{{kind}} {{name}} in namespace {{namespace}}', {
-            kind: attachment.kind,
-            name: attachment.name,
-            namespace: attachment.namespace,
-          })}
+          {kind === 'Container'
+            ? t('Container {{name}} of {{owner}} in namespace {{namespace}}', {
+                name,
+                namespace,
+                owner: options?.owner,
+              })
+            : t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
         </Title>
       }
-      maxWidth="28%"
+      maxWidth="35%"
       position="left"
       triggerAction="hover"
     >
       <Label className="ols-plugin__context-label" onClose={onClose}>
-        <ResourceIcon kind={attachment.kind} />
-        <span className="ols-plugin__context-label-text">{attachment.name}</span>{' '}
-        <Label className="ols-plugin__context-label-type">{attachment.attachmentType}</Label>
+        <ResourceIcon kind={kind} />
+        <span className="ols-plugin__context-label-text">{name}</span>{' '}
+        <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
       </Label>
     </Popover>
   );
@@ -318,24 +327,14 @@ type AttachMenuProps = {
   context: K8sResourceKind;
 };
 
-const getAttachmentID = (attachmentType: string, kind: string, name: string): string =>
-  `${attachmentType}_${kind}_${name}`;
-
 const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
 
-  const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
-    s.plugins?.ols?.get('attachments'),
-  );
-
   const [error, setError] = React.useState<string>();
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const onToggleClick = React.useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
+  const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
+  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
   const kind = context?.kind;
   const name = context?.metadata?.name;
@@ -343,9 +342,14 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent | undefined, attachmentType: string) => {
-      const id = getAttachmentID(attachmentType, kind, name);
-      if (attachments.has(id)) {
-        dispatch(attachmentDelete(id));
+      if (!name || !namespace) {
+        setError(t('Could not get context name and namespace'));
+        return;
+      }
+
+      if (attachmentType === AttachmentTypes.Log) {
+        openLogModal();
+        close();
       } else {
         let data;
         if (attachmentType === AttachmentTypes.YAML) {
@@ -357,12 +361,13 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         try {
           const yaml = dump(data, { lineWidth: -1 }).trim();
           dispatch(attachmentAdd(attachmentType, kind, name, namespace, yaml));
+          close();
         } catch (e) {
           setError(t('Error getting YAML: {{e}}', { e }));
         }
       }
     },
-    [attachments, context, dispatch, kind, name, namespace, t],
+    [close, context, dispatch, kind, name, namespace, openLogModal, t],
   );
 
   if (!kind || !name) {
@@ -382,24 +387,37 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         </Alert>
       )}
 
+      <AttachLogModal
+        containers={lodashMap(context?.spec?.containers, 'name')}
+        isOpen={isLogModalOpen}
+        kind={kind}
+        namespace={namespace}
+        onClose={closeLogModal}
+        pod={name}
+      />
+
       <Select
         isOpen={isOpen}
         onOpenChange={setIsOpen}
         onSelect={onSelect}
         toggle={(toggleRef) => (
-          <Tooltip content={t('Attach context')} position="left">
-            <MenuToggle
-              className="ols-plugin__attach-menu"
-              isExpanded={isOpen}
-              onClick={onToggleClick}
-              ref={toggleRef}
-              variant="plain"
-            >
-              <Icon size="lg">
-                <PlusCircleIcon />
-              </Icon>
-            </MenuToggle>
-          </Tooltip>
+          <MenuToggle
+            className="ols-plugin__attach-menu"
+            isExpanded={isOpen}
+            onClick={toggleIsOpen}
+            ref={toggleRef}
+            variant="plain"
+          >
+            <Icon size="md">
+              {isOpen ? (
+                <PlusCircleIcon className="ols-plugin__context-menu-icon--active" />
+              ) : (
+                <Tooltip content={t('Attach context')}>
+                  <PlusCircleIcon />
+                </Tooltip>
+              )}
+            </Icon>
+          </MenuToggle>
         )}
       >
         <SelectList className="ols-plugin__context-menu">
@@ -417,18 +435,17 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
           <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
             {t('Attach')}
           </Title>
-          <SelectOption
-            isSelected={attachments.has(getAttachmentID(AttachmentTypes.YAML, kind, name))}
-            value={AttachmentTypes.YAML}
-          >
+          <SelectOption value={AttachmentTypes.YAML}>
             <FileCodeIcon /> YAML
           </SelectOption>
-          <SelectOption
-            isSelected={attachments.has(getAttachmentID(AttachmentTypes.YAMLStatus, kind, name))}
-            value={AttachmentTypes.YAMLStatus}
-          >
+          <SelectOption value={AttachmentTypes.YAMLStatus}>
             <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> only
           </SelectOption>
+          {kind === 'Pod' && (
+            <SelectOption value={AttachmentTypes.Log}>
+              <TaskIcon /> Logs
+            </SelectOption>
+          )}
         </SelectList>
       </Select>
     </>

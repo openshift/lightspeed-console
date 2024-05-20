@@ -3,6 +3,7 @@ import { Map as ImmutableMap } from 'immutable';
 import { Attachment } from './types';
 
 export enum AttachmentTypes {
+  Log = 'Log',
   YAML = 'YAML',
   YAMLStatus = 'YAML Status',
 }
@@ -28,6 +29,15 @@ ${attachment.value}
 
 For reference, here is the resource's 'status' section YAML for ${attachment.kind} '${attachment.name}':
 \`\`\`yaml
+${attachment.value}
+\`\`\``;
+    }
+
+    if (attachment.attachmentType === AttachmentTypes.Log) {
+      fullQuery += `
+
+For reference, here are the most recent lines from the log for ${attachment.kind} '${attachment.name}':
+\`\`\`
 ${attachment.value}
 \`\`\``;
     }
