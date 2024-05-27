@@ -370,10 +370,6 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
     [close, context, dispatch, kind, name, namespace, openLogModal, t],
   );
 
-  if (!kind || !name) {
-    return null;
-  }
-
   return (
     <>
       {error && (
@@ -421,30 +417,38 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         )}
       >
         <SelectList className="ols-plugin__context-menu">
-          <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-            {t('Currently viewing')}
-          </Title>
-          <Label
-            className="ols-plugin__context-label"
-            textMaxWidth="10rem"
-            title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
-          >
-            <ResourceIcon kind={kind} /> {name}
-          </Label>
+          {!kind || !name ? (
+            <Alert isInline isPlain variant="info" title="No context found">
+              <p>The current page your are viewing does not contain any supported context.</p>
+            </Alert>
+          ) : (
+            <>
+              <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+                {t('Currently viewing')}
+              </Title>
+              <Label
+                className="ols-plugin__context-label"
+                textMaxWidth="10rem"
+                title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
+              >
+                <ResourceIcon kind={kind} /> {name}
+              </Label>
 
-          <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-            {t('Attach')}
-          </Title>
-          <SelectOption value={AttachmentTypes.YAML}>
-            <FileCodeIcon /> YAML
-          </SelectOption>
-          <SelectOption value={AttachmentTypes.YAMLStatus}>
-            <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> only
-          </SelectOption>
-          {kind === 'Pod' && (
-            <SelectOption value={AttachmentTypes.Log}>
-              <TaskIcon /> Logs
-            </SelectOption>
+              <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+                {t('Attach')}
+              </Title>
+              <SelectOption value={AttachmentTypes.YAML}>
+                <FileCodeIcon /> YAML
+              </SelectOption>
+              <SelectOption value={AttachmentTypes.YAMLStatus}>
+                <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> only
+              </SelectOption>
+              {kind === 'Pod' && (
+                <SelectOption value={AttachmentTypes.Log}>
+                  <TaskIcon /> Logs
+                </SelectOption>
+              )}
+            </>
           )}
         </SelectList>
       </Select>
@@ -652,7 +656,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
             <Form onSubmit={onSubmit}>
               <Split hasGutter>
-                <SplitItem>{attachContext && <AttachMenu context={attachContext} />}</SplitItem>
+                <SplitItem>
+                  <AttachMenu context={attachContext} />
+                </SplitItem>
                 <SplitItem isFilled>
                   <TextArea
                     aria-label={t('OpenShift Lightspeed prompt')}

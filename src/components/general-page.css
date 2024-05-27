@@ -149,6 +149,7 @@
 }
 
 .ols-plugin__context-menu {
+  max-width: 16rem;
   padding: var(--pf-v5-global--spacer--md);
 }
 
