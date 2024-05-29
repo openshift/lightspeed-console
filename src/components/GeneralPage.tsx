@@ -209,7 +209,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
               </Alert>
             )}
             {entry.references && (
-              <ChipGroup categoryName="Referenced docs" className="ols-plugin__references">
+              <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
                 {entry.references.map((r, i) => (
                   <DocLink reference={r} key={i} />
                 ))}
