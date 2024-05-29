@@ -42,7 +42,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.29.1",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "i18next-parser": "^3.11.0",
+    "i18next-parser": "^8.13.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "mocha-junit-reporter": "^2.2.0",
