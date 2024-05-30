@@ -1,6 +1,6 @@
 import { List as ImmutableList } from 'immutable';
 import { dump } from 'js-yaml';
-import { cloneDeep, defer, map as lodashMap } from 'lodash';
+import { cloneDeep, each, defer, isMatch, map as lodashMap } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   consoleFetchJSON,
   K8sResourceKind,
-  ResourceIcon,
+  ResourceIcon as SDKResourceIcon,
   useK8sWatchResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -76,6 +76,7 @@ import Feedback from './Feedback';
 import './general-page.css';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
+const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
 
 const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
@@ -113,6 +114,14 @@ const DocLink: React.FC<DocLinkProps> = ({ reference }) => {
     </Chip>
   );
 };
+
+type ResourceIconProps = {
+  kind: string;
+};
+
+const ResourceIcon: React.FC<ResourceIconProps> = ({ kind }) => (
+  <SDKResourceIcon kind={kind === 'Alert' ? 'AL' : kind} />
+);
 
 type CodeProps = {
   children: React.ReactNode;
@@ -360,6 +369,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const [error, setError] = React.useState<string>();
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
+  const [isLoading, , setLoading, setLoaded] = useBoolean(false);
   const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
   const kind = context?.kind;
@@ -368,14 +378,48 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent | undefined, attachmentType: string) => {
-      if (!name || !namespace) {
-        setError(t('Could not get context name and namespace'));
+      if (!kind || !name || !namespace) {
+        setError(t('Could not get context'));
         return;
       }
 
       if (attachmentType === AttachmentTypes.Log) {
         openLogModal();
         close();
+      } else if (kind === 'Alert') {
+        setLoading();
+        const labels = Object.fromEntries(new URLSearchParams(location.search));
+        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
+          .then((response) => {
+            let alert;
+            each(response?.data?.groups, (group) => {
+              each(group.rules, (rule) => {
+                alert = rule.alerts?.find((a) => isMatch(labels, a.labels));
+                if (alert) {
+                  return false;
+                }
+              });
+              if (alert) {
+                return false;
+              }
+            });
+            if (alert) {
+              try {
+                const yaml = dump(alert, { lineWidth: -1 }).trim();
+                dispatch(attachmentAdd(AttachmentTypes.YAML, kind, name, namespace, yaml));
+                close();
+              } catch (e) {
+                setError(t('Error getting YAML: {{e}}', { e }));
+              }
+            } else {
+              setError(t('Failed to find definition YAML for alert'));
+            }
+            setLoaded();
+          })
+          .catch((error) => {
+            setError(t('Error fetching alerting rules: {{error}}', { error }));
+            setLoaded();
+          });
       } else {
         let data;
         if (attachmentType === AttachmentTypes.YAML) {
@@ -393,22 +437,11 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         }
       }
     },
-    [close, context, dispatch, kind, name, namespace, openLogModal, t],
+    [close, context, dispatch, kind, name, namespace, openLogModal, setLoaded, setLoading, t],
   );
 
   return (
     <>
-      {error && (
-        <Alert
-          className="ols-plugin__alert"
-          isInline
-          title={t('Failed to attach context')}
-          variant="danger"
-        >
-          {error}
-        </Alert>
-      )}
-
       <AttachLogModal
         containers={lodashMap(context?.spec?.containers, 'name')?.sort()}
         isOpen={isLogModalOpen}
@@ -463,18 +496,38 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
               <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
                 {t('Attach')}
               </Title>
-              <SelectOption value={AttachmentTypes.YAML}>
-                <FileCodeIcon /> YAML
-              </SelectOption>
-              <SelectOption value={AttachmentTypes.YAMLStatus}>
-                <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> only
-              </SelectOption>
-              {kind === 'Pod' && (
-                <SelectOption value={AttachmentTypes.Log}>
-                  <TaskIcon /> Logs
+
+              {kind === 'Alert' ? (
+                <SelectOption value={AttachmentTypes.YAML}>
+                  <FileCodeIcon /> {t('Alert')} {isLoading && <Spinner size="md" />}
                 </SelectOption>
+              ) : (
+                <>
+                  <SelectOption value={AttachmentTypes.YAML}>
+                    <FileCodeIcon /> YAML
+                  </SelectOption>
+                  <SelectOption value={AttachmentTypes.YAMLStatus}>
+                    <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
+                  </SelectOption>
+                  {kind === 'Pod' && (
+                    <SelectOption value={AttachmentTypes.Log}>
+                      <TaskIcon /> {t('Logs')}
+                    </SelectOption>
+                  )}
+                </>
               )}
             </>
+          )}
+
+          {error && (
+            <Alert
+              className="ols-plugin__alert"
+              isInline
+              title={t('Failed to attach context')}
+              variant="danger"
+            >
+              {error}
+            </Alert>
           )}
         </SelectList>
       </Select>
@@ -497,36 +550,43 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const chatHistory: ImmutableList<ChatEntry> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
-  const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
 
-  // Do we have a context that looks like a k8s resource with sufficient information
-  const isK8sResourceContext =
+  let k8sWatchOptions;
+
+  // Do we have a context in Redux that looks like a k8s resource with sufficient information
+  const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
+  if (
     context &&
     typeof context.kind === 'string' &&
     typeof context.metadata?.name === 'string' &&
-    typeof context.metadata?.namespace === 'string';
+    typeof context.metadata?.namespace === 'string'
+  ) {
+    k8sWatchOptions = {
+      isList: false,
+      kind: context.kind,
+      name: context.metadata?.name,
+      namespace: context.metadata?.namespace,
+    };
+  }
 
-  const [selectedContext] = useK8sWatchResource<K8sResourceKind>(
-    isK8sResourceContext
-      ? {
-          isList: false,
-          kind: context.kind,
-          name: context.metadata?.name,
-          namespace: context.metadata?.namespace,
-        }
-      : null,
-  );
+  const [kind, name, namespace] = useLocationContext();
+
+  // If we didn't get a k8s resource context from Redux, can we get one from the current page?
+  if (!k8sWatchOptions && kind && kind !== 'Alert' && name) {
+    k8sWatchOptions = { isList: false, kind, name, namespace };
+  }
+
+  const k8sContext = useK8sWatchResource<K8sResourceKind>(k8sWatchOptions ?? null);
+
+  const [attachContext] =
+    kind === 'Alert' && name && namespace ? [{ kind, metadata: { name, namespace } }] : k8sContext;
 
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
 
-  const [pageContext] = useLocationContext();
-
   const [authStatus] = useAuth();
-
-  const attachContext = pageContext || selectedContext;
 
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
 

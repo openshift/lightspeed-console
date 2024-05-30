@@ -15,30 +15,32 @@ export const buildQuery = (
   let fullQuery = query;
 
   attachments.forEach((attachment: Attachment) => {
-    if (attachment.attachmentType === AttachmentTypes.YAML) {
+    const { attachmentType, kind, name, value } = attachment;
+
+    if (attachmentType === AttachmentTypes.YAML) {
       fullQuery += `
 
-For reference, here is the full resource YAML for ${attachment.kind} '${attachment.name}':
+For reference, here is the full resource YAML for ${kind} '${name}':
 \`\`\`yaml
-${attachment.value}
+${value}
 \`\`\``;
     }
 
-    if (attachment.attachmentType === AttachmentTypes.YAMLStatus) {
+    if (attachmentType === AttachmentTypes.YAMLStatus) {
       fullQuery += `
 
-For reference, here is the resource's 'status' section YAML for ${attachment.kind} '${attachment.name}':
+For reference, here is the resource's 'status' section YAML for ${kind} '${name}':
 \`\`\`yaml
-${attachment.value}
+${value}
 \`\`\``;
     }
 
-    if (attachment.attachmentType === AttachmentTypes.Log) {
+    if (attachmentType === AttachmentTypes.Log) {
       fullQuery += `
 
-For reference, here are the most recent lines from the log for ${attachment.kind} '${attachment.name}':
+For reference, here are the most recent lines from the log for ${kind} '${name}':
 \`\`\`
-${attachment.value}
+${value}
 \`\`\``;
     }
   });
