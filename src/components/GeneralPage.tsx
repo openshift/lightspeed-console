@@ -384,7 +384,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
       )}
 
       <AttachLogModal
-        containers={lodashMap(context?.spec?.containers, 'name')}
+        containers={lodashMap(context?.spec?.containers, 'name')?.sort()}
         isOpen={isLogModalOpen}
         kind={kind}
         namespace={namespace}
