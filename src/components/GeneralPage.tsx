@@ -17,7 +17,9 @@ import {
   Button,
   Chip,
   ChipGroup,
+  ClipboardCopyButton,
   CodeBlock,
+  CodeBlockAction,
   CodeBlockCode,
   ExpandableSection,
   Form,
@@ -116,12 +118,36 @@ type CodeProps = {
   children: React.ReactNode;
 };
 
-const Code: React.FC<CodeProps> = (props) =>
-  String(props.children).includes('\n') ? (
-    <CodeBlock className="ols-plugin__code-block" {...props} />
-  ) : (
-    <code {...props} />
+const Code: React.FC<CodeProps> = (props) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
+
+  if (!String(props.children).includes('\n')) {
+    return <code {...props} />;
+  }
+
+  const actions = (
+    <CodeBlockAction>
+      <ClipboardCopyButton
+        aria-label={t('Copy to clipboard')}
+        exitDelay={isCopied ? 1500 : 600}
+        id="basic-copy-button"
+        onClick={() => {
+          navigator.clipboard.writeText(props.children.toString());
+          setCopied();
+        }}
+        onTooltipHidden={setNotCopied}
+        textId="code-content"
+        variant="plain"
+      >
+        {isCopied ? t('Copied') : t('Copy to clipboard')}
+      </ClipboardCopyButton>
+    </CodeBlockAction>
   );
+
+  return <CodeBlock actions={actions} className="ols-plugin__code-block" {...props} />;
+};
 
 type AttachmentLabelProps = {
   attachment: Attachment;

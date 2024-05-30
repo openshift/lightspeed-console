@@ -7,6 +7,8 @@
   "Bad response": "Bad response",
   "Container {{name}} of {{owner}} in namespace {{namespace}}": "Container {{name}} of {{owner}} in namespace {{namespace}}",
   "Conversation history has been truncated to fit within context window.": "Conversation history has been truncated to fit within context window.",
+  "Copied": "Copied",
+  "Copy to clipboard": "Copy to clipboard",
   "Could not get context name and namespace": "Could not get context name and namespace",
   "Currently viewing": "Currently viewing",
   "Do not share any personal or business sensitive information. The information you provide may be used to improve our products and services.": "Do not share any personal or business sensitive information. The information you provide may be used to improve our products and services.",
