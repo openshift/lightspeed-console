@@ -85,10 +85,18 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
 
   const dispatch = useDispatch();
 
-  const [container, setContainer] = React.useState<string>(containers?.[0]);
+  const firstContainer = containers?.[0];
+
+  const [container, setContainer] = React.useState<string>(firstContainer);
   const [error, setError] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState(false);
   const [lines, setLines] = React.useState<number>(DEFAULT_LOG_LINES);
+
+  React.useEffect(() => {
+    if (firstContainer && container === undefined) {
+      setContainer(firstContainer);
+    }
+  }, [firstContainer]);
 
   const onSubmit = React.useCallback(
     (e) => {
