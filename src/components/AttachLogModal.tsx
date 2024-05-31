@@ -85,18 +85,20 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
 
   const dispatch = useDispatch();
 
-  const firstContainer = containers?.[0];
+  const defaultContainer = containers?.[0];
 
-  const [container, setContainer] = React.useState<string>(firstContainer);
+  const [container, setContainer] = React.useState<string>(defaultContainer);
   const [error, setError] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState(false);
   const [lines, setLines] = React.useState<number>(DEFAULT_LOG_LINES);
 
   React.useEffect(() => {
-    if (firstContainer && container === undefined) {
-      setContainer(firstContainer);
+    if (defaultContainer && container === undefined) {
+      setContainer(defaultContainer);
     }
-  }, [firstContainer]);
+    // Only trigger when the default container changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultContainer]);
 
   const onSubmit = React.useCallback(
     (e) => {
