@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
-import { K8sResourceKind, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk';
 
 const resourcePluralToKind = (plural: string) => {
   switch (plural) {
@@ -59,13 +58,21 @@ export const useLocationContext = () => {
         return;
       }
 
+      if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
+        const params = new URLSearchParams(location.search);
+        if (params.has('alertname') && params.has('namespace')) {
+          setKind('Alert');
+          setName(params.get('alertname'));
+          setNamespace(params.get('namespace'));
+          return;
+        }
+      }
+
       setKind(undefined);
       setName(undefined);
       setNamespace(undefined);
     }
-  }, [path]);
+  }, [location.search, path]);
 
-  return useK8sWatchResource<K8sResourceKind>(
-    kind && name ? { isList: false, kind, name, namespace } : null,
-  );
+  return [kind, name, namespace];
 };
