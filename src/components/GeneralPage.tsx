@@ -202,7 +202,9 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
       <Label className="ols-plugin__context-label" onClose={onClose}>
         <ResourceIcon kind={kind} />
         <span className="ols-plugin__context-label-text">{name}</span>{' '}
-        <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
+        {kind !== 'Alert' && (
+          <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
+        )}
       </Label>
     </Popover>
   );
