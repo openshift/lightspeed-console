@@ -21,7 +21,7 @@
     "cypress-postreport": "yarn cypress-merge && yarn cypress-generate"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^5.15.5",
+    "@cypress/webpack-preprocessor": "^6.0.1",
     "@openshift-console/dynamic-plugin-sdk": "1.2.0",
     "@openshift-console/dynamic-plugin-sdk-webpack": "1.1.0",
     "@patternfly/react-core": "5.2.2",
@@ -33,12 +33,12 @@
     "@typescript-eslint/parser": "^5.14.0",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^6.10.0",
-    "cypress": "^13.10.0",
+    "cypress": "^13.11.0",
     "cypress-multi-reporters": "^1.6.2",
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-cypress": "^2.12.1",
+    "eslint-plugin-cypress": "^3.3.0",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-react": "^7.29.1",
     "eslint-plugin-react-hooks": "^4.6.0",
