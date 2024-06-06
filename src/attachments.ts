@@ -3,6 +3,7 @@ import { Map as ImmutableMap } from 'immutable';
 import { Attachment } from './types';
 
 export enum AttachmentTypes {
+  Events = 'Events',
   Log = 'Log',
   YAML = 'YAML',
   YAMLStatus = 'YAML Status',
@@ -15,7 +16,7 @@ export const buildQuery = (
   let fullQuery = query;
 
   attachments.forEach((attachment: Attachment) => {
-    const { attachmentType, kind, name, value } = attachment;
+    const { attachmentType, kind, name, options, value } = attachment;
 
     if (attachmentType === AttachmentTypes.YAML) {
       fullQuery += `
@@ -35,10 +36,19 @@ ${value}
 \`\`\``;
     }
 
+    if (attachmentType === AttachmentTypes.Events) {
+      fullQuery += `
+
+For reference, here are the most recent ${options?.lines} events for ${kind} '${name}':
+\`\`\`
+${value}
+\`\`\``;
+    }
+
     if (attachmentType === AttachmentTypes.Log) {
       fullQuery += `
 
-For reference, here are the most recent lines from the log for ${kind} '${name}':
+For reference, here are the most recent ${options?.lines} lines from the log for ${kind} '${name}':
 \`\`\`
 ${value}
 \`\`\``;
