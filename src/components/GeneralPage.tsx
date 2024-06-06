@@ -70,6 +70,7 @@ import {
 } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import AttachEventsModal from './AttachEventsModal';
 import AttachLogModal from './AttachLogModal';
 import Feedback from './Feedback';
 
@@ -368,6 +369,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
   const dispatch = useDispatch();
 
   const [error, setError] = React.useState<string>();
+  const [isEventsModalOpen, , openEventsModal, closeEventsModal] = useBoolean(false);
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
   const [isLoading, , setLoading, setLoaded] = useBoolean(false);
   const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
@@ -383,7 +385,10 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         return;
       }
 
-      if (attachmentType === AttachmentTypes.Log) {
+      if (attachmentType === AttachmentTypes.Events) {
+        openEventsModal();
+        close();
+      } else if (attachmentType === AttachmentTypes.Log) {
         openLogModal();
         close();
       } else if (kind === 'Alert') {
@@ -424,6 +429,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         let data;
         if (attachmentType === AttachmentTypes.YAML) {
           data = cloneDeep(context);
+          // We ignore the managedFields section because it doesn't have much value
           delete data.metadata.managedFields;
         } else if (attachmentType === AttachmentTypes.YAMLStatus) {
           data = { status: context.status };
@@ -437,19 +443,46 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         }
       }
     },
-    [close, context, dispatch, kind, name, namespace, openLogModal, setLoaded, setLoading, t],
+    [
+      close,
+      context,
+      dispatch,
+      kind,
+      name,
+      namespace,
+      openEventsModal,
+      openLogModal,
+      setLoaded,
+      setLoading,
+      t,
+    ],
   );
+
+  const showEvents = kind === 'Pod';
+  const showLogs = kind === 'Pod';
 
   return (
     <>
-      <AttachLogModal
-        containers={lodashMap(context?.spec?.containers, 'name')?.sort()}
-        isOpen={isLogModalOpen}
-        kind={kind}
-        namespace={namespace}
-        onClose={closeLogModal}
-        pod={name}
-      />
+      {showEvents && (
+        <AttachEventsModal
+          isOpen={isEventsModalOpen}
+          kind={kind}
+          name={name}
+          namespace={namespace}
+          onClose={closeEventsModal}
+          uid={context?.metadata?.uid}
+        />
+      )}
+      {showLogs && (
+        <AttachLogModal
+          containers={lodashMap(context?.spec?.containers, 'name')?.sort()}
+          isOpen={isLogModalOpen}
+          kind={kind}
+          namespace={namespace}
+          onClose={closeLogModal}
+          pod={name}
+        />
+      )}
 
       <Select
         isOpen={isOpen}
@@ -509,7 +542,12 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
                   <SelectOption value={AttachmentTypes.YAMLStatus}>
                     <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
                   </SelectOption>
-                  {kind === 'Pod' && (
+                  {showEvents && (
+                    <SelectOption value={AttachmentTypes.Events}>
+                      <TaskIcon /> {t('Events')}
+                    </SelectOption>
+                  )}
+                  {showLogs && (
                     <SelectOption value={AttachmentTypes.Log}>
                       <TaskIcon /> {t('Logs')}
                     </SelectOption>
