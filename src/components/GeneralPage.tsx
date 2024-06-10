@@ -124,17 +124,13 @@ const ResourceIcon: React.FC<ResourceIconProps> = ({ kind }) => (
   <SDKResourceIcon kind={kind === 'Alert' ? 'AL' : kind} />
 );
 
-type CodeProps = {
-  children: React.ReactNode;
-};
-
-const Code: React.FC<CodeProps> = (props) => {
+const Code = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
 
-  if (!String(props.children).includes('\n')) {
-    return <code {...props} />;
+  if (!String(children).includes('\n')) {
+    return <code>{children}</code>;
   }
 
   const actions = (
@@ -144,7 +140,7 @@ const Code: React.FC<CodeProps> = (props) => {
         exitDelay={isCopied ? 1500 : 600}
         id="basic-copy-button"
         onClick={() => {
-          navigator.clipboard.writeText(props.children.toString());
+          navigator.clipboard.writeText(children.toString());
           setCopied();
         }}
         onTooltipHidden={setNotCopied}
@@ -156,7 +152,11 @@ const Code: React.FC<CodeProps> = (props) => {
     </CodeBlockAction>
   );
 
-  return <CodeBlock actions={actions} className="ols-plugin__code-block" {...props} />;
+  return (
+    <CodeBlock actions={actions} className="ols-plugin__code-block">
+      {children}
+    </CodeBlock>
+  );
 };
 
 type AttachmentLabelProps = {
