@@ -382,7 +382,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent | undefined, attachmentType: string) => {
-      if (!kind || !name || !namespace) {
+      if (!kind || !name) {
         setError(t('Could not get context'));
         return;
       }
@@ -619,7 +619,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const k8sContext = useK8sWatchResource<K8sResourceKind>(k8sWatchOptions ?? null);
 
   const [attachContext] =
-    kind === 'Alert' && name && namespace ? [{ kind, metadata: { name, namespace } }] : k8sContext;
+    kind === 'Alert' && name ? [{ kind, metadata: { name, namespace } }] : k8sContext;
 
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
