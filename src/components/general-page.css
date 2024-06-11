@@ -51,7 +51,9 @@
 }
 
 .ols-plugin__code-block {
-  overflow: auto;
+  max-height: 8rem;
+  overflow: scroll;
+  white-space: pre;
 }
 
 .ols-plugin__context-code-block-code {
