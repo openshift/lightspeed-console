@@ -153,8 +153,8 @@ const Code = ({ children }: { children: React.ReactNode }) => {
   );
 
   return (
-    <CodeBlock actions={actions} className="ols-plugin__code-block">
-      {children}
+    <CodeBlock actions={actions}>
+      <CodeBlockCode className="ols-plugin__code-block">{children}</CodeBlockCode>
     </CodeBlock>
   );
 };
