@@ -111,7 +111,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
       <div className="modal-body">
         <div className="modal-body-content">
           <Form>
-            <FormGroup label={t('Number of events (most recent)')} isRequired>
+            <FormGroup isRequired label={t('Number of events (most recent)')}>
               {isLoading && <Spinner size="md" />}
               {!isLoading &&
                 (events.length === 0 ? (

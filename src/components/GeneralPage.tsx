@@ -95,7 +95,7 @@ type ExternalLinkProps = {
 };
 
 const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer">
+  <a href={href} rel="noopener noreferrer" target="_blank">
     {children} <ExternalLinkAltIcon />
   </a>
 );
@@ -197,7 +197,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             {entry.references && (
               <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
                 {entry.references.map((r, i) => (
-                  <DocLink reference={r} key={i} />
+                  <DocLink key={i} reference={r} />
                 ))}
               </ChipGroup>
             )}
@@ -460,7 +460,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
       >
         <SelectList className="ols-plugin__context-menu">
           {!kind || !name ? (
-            <Alert isInline isPlain variant="info" title="No context found">
+            <Alert isInline isPlain title="No context found" variant="info">
               <p>The current page your are viewing does not contain any supported context.</p>
             </Alert>
           ) : (
@@ -739,7 +739,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                     autoFocus
                     className="ols-plugin__chat-prompt-input"
                     onChange={onChange}
-                    onKeyPress={onKeyPress}
                     onFocus={(e) => {
                       // Move cursor to the end of the text when popover is closed then reopened
                       const len = e.currentTarget?.value?.length;
@@ -747,6 +746,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                         e.currentTarget.setSelectionRange(len, len);
                       }
                     }}
+                    onKeyPress={onKeyPress}
                     placeholder={t('Send a message...')}
                     ref={promptRef}
                     resizeOrientation="vertical"

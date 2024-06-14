@@ -148,10 +148,10 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
       <div className="modal-body">
         <div className="modal-body-content">
           <Form>
-            <FormGroup label="Container" isRequired>
+            <FormGroup isRequired label="Container">
               <ContainerMenu containers={containers} setValue={setContainer} value={container} />
             </FormGroup>
-            <FormGroup label={t('Number of lines (most recent)')} isRequired>
+            <FormGroup isRequired label={t('Number of lines (most recent)')}>
               <IntegerInput setValue={setLines} value={lines} />
             </FormGroup>
             <ActionGroup>
