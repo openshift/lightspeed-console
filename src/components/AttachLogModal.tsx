@@ -123,10 +123,10 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
         })
         .catch((error) => {
           setIsLoading(false);
-          setError(error.message || 'Failed to fetch logs');
+          setError(error.message || t('Failed to fetch logs'));
         });
     },
-    [container, dispatch, lines, namespace, onClose, pod],
+    [container, dispatch, lines, namespace, onClose, pod, t],
   );
 
   return (
@@ -140,8 +140,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
       <div className="modal-header">
         <Title headingLevel="h2">Configure log attachment</Title>
         <Text>
-          You can select a container and specify the most recent number of lines of its log file to
-          include as an attachment for detailed troubleshooting and analysis.
+          {t(
+            'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
+          )}
         </Text>
       </div>
       <div className="modal-body">
@@ -150,15 +151,15 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
             <FormGroup label="Container" isRequired>
               <ContainerMenu containers={containers} setValue={setContainer} value={container} />
             </FormGroup>
-            <FormGroup label="Number of lines (most recent)" isRequired>
+            <FormGroup label={t('Number of lines (most recent)')} isRequired>
               <IntegerInput setValue={setLines} value={lines} />
             </FormGroup>
             <ActionGroup>
               <Button onClick={onSubmit} type="submit" variant="primary">
-                Attach
+                {t('Attach')}
               </Button>
               <Button onClick={onClose} type="submit" variant="link">
-                Cancel
+                {t('Cancel')}
               </Button>
             </ActionGroup>
             {isLoading && <Spinner size="md" />}

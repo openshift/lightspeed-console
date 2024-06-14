@@ -6,6 +6,10 @@
   margin-bottom: var(--pf-v5-global--spacer--lg);
 }
 
+.ols-plugin__attachment-modal {
+  max-width: 60% !important;
+}
+
 .ols-plugin__chat-entry {
   --logo-size: 2.5rem;
 
@@ -56,10 +60,8 @@
   white-space: pre;
 }
 
-.ols-plugin__context-code-block-code {
-  font-size: 12px;
-  max-height: 10rem;
-  overflow: auto;
+.ols-plugin__code-block--attachment {
+  max-height: 20rem;
 }
 
 .ols-plugin__feedback {

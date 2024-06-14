@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { ChatEntry, AttachmentOptions } from './types';
+import { Attachment, ChatEntry, AttachmentOptions } from './types';
 
 export enum ActionType {
   AttachmentAdd = 'attachmentAdd',
@@ -9,6 +9,8 @@ export enum ActionType {
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
   CloseOLS = 'closeOLS',
+  OpenAttachmentClear = 'openAttachmentClear',
+  OpenAttachmentSet = 'openAttachmentSet',
   OpenOLS = 'openOLS',
   SetContext = 'setContext',
   SetConversationID = 'setConversationID',
@@ -40,6 +42,9 @@ export const attachmentsClear = () => action(ActionType.AttachmentsClear);
 export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 export const closeOLS = () => action(ActionType.CloseOLS);
+export const openAttachmentClear = () => action(ActionType.OpenAttachmentClear);
+export const openAttachmentSet = (attachment: Attachment) =>
+  action(ActionType.OpenAttachmentSet, { attachment });
 export const openOLS = () => action(ActionType.OpenOLS);
 export const setContext = (context: object) => action(ActionType.SetContext, { context });
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
@@ -60,6 +65,8 @@ const actions = {
   chatHistoryClear,
   chatHistoryPush,
   closeOLS,
+  openAttachmentClear,
+  openAttachmentSet,
   openOLS,
   setContext,
   setConversationID,

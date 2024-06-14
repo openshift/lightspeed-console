@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   consoleFetchJSON,
   K8sResourceKind,
-  ResourceIcon as SDKResourceIcon,
   useK8sWatchResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -17,9 +16,7 @@ import {
   Button,
   Chip,
   ChipGroup,
-  ClipboardCopyButton,
   CodeBlock,
-  CodeBlockAction,
   CodeBlockCode,
   ExpandableSection,
   Form,
@@ -32,7 +29,6 @@ import {
   MenuToggle,
   Page,
   PageSection,
-  Popover,
   Select,
   SelectList,
   SelectOption,
@@ -64,6 +60,7 @@ import {
   attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
+  openAttachmentSet,
   setContext,
   setConversationID,
   setQuery,
@@ -72,7 +69,10 @@ import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import AttachEventsModal from './AttachEventsModal';
 import AttachLogModal from './AttachLogModal';
+import AttachmentModal from './AttachmentModal';
+import CopyAction from './CopyAction';
 import Feedback from './Feedback';
+import ResourceIcon from './ResourceIcon';
 
 import './general-page.css';
 
@@ -116,41 +116,12 @@ const DocLink: React.FC<DocLinkProps> = ({ reference }) => {
   );
 };
 
-type ResourceIconProps = {
-  kind: string;
-};
-
-const ResourceIcon: React.FC<ResourceIconProps> = ({ kind }) => (
-  <SDKResourceIcon kind={kind === 'Alert' ? 'AL' : kind} />
-);
-
 const Code = ({ children }: { children: React.ReactNode }) => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
-
-  const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
-
   if (!String(children).includes('\n')) {
     return <code>{children}</code>;
   }
 
-  const actions = (
-    <CodeBlockAction>
-      <ClipboardCopyButton
-        aria-label={t('Copy to clipboard')}
-        exitDelay={isCopied ? 1500 : 600}
-        id="basic-copy-button"
-        onClick={() => {
-          navigator.clipboard.writeText(children.toString());
-          setCopied();
-        }}
-        onTooltipHidden={setNotCopied}
-        textId="code-content"
-        variant="plain"
-      >
-        {isCopied ? t('Copied') : t('Copy to clipboard')}
-      </ClipboardCopyButton>
-    </CodeBlockAction>
-  );
+  const actions = <CopyAction value={children.toString()} />;
 
   return (
     <CodeBlock actions={actions}>
@@ -165,49 +136,26 @@ type AttachmentLabelProps = {
 };
 
 const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }) => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+  const dispatch = useDispatch();
+
+  const onClick = React.useCallback(() => {
+    dispatch(openAttachmentSet(attachment));
+  }, [attachment, dispatch]);
 
   if (!attachment) {
     return null;
   }
 
-  const { attachmentType, kind, name, namespace, options, value } = attachment;
+  const { attachmentType, kind, name } = attachment;
 
   return (
-    <Popover
-      bodyContent={
-        <CodeBlock>
-          <CodeBlockCode
-            className="ols-plugin__context-code-block-code"
-            style={attachmentType === AttachmentTypes.Log ? { whiteSpace: 'pre' } : undefined}
-          >
-            {value}
-          </CodeBlockCode>
-        </CodeBlock>
-      }
-      headerContent={
-        <Title headingLevel="h5">
-          {kind === 'Container'
-            ? t('Container {{name}} of {{owner}} in namespace {{namespace}}', {
-                name,
-                namespace,
-                owner: options?.owner,
-              })
-            : t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
-        </Title>
-      }
-      maxWidth="35%"
-      position="left"
-      triggerAction="hover"
-    >
-      <Label className="ols-plugin__context-label" onClose={onClose}>
-        <ResourceIcon kind={kind} />
-        <span className="ols-plugin__context-label-text">{name}</span>{' '}
-        {kind !== 'Alert' && (
-          <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
-        )}
-      </Label>
-    </Popover>
+    <Label className="ols-plugin__context-label" onClick={onClick} onClose={onClose}>
+      <ResourceIcon kind={kind} />
+      <span className="ols-plugin__context-label-text">{name}</span>{' '}
+      {kind !== 'Alert' && (
+        <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
+      )}
+    </Label>
   );
 };
 
@@ -767,10 +715,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           <PrivacyAlert />
           {chatHistory.toJS().map((entry, i) => (
             <ChatHistoryEntry
-              key={i}
               conversationID={conversationID}
               entry={entry}
               entryIndex={i}
+              key={i}
               scrollIntoView={scrollIntoView}
             />
           ))}
@@ -836,6 +784,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 {t('Always check AI/LLM generated responses for accuracy prior to use.')}
               </HelperTextItem>
             </HelperText>
+
+            <AttachmentModal />
           </PageSection>
         )}
       </Page>

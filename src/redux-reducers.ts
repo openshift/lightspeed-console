@@ -20,6 +20,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       conversationID: null,
       isOpen: false,
+      openAttachment: null,
       query: '',
     });
   }
@@ -47,6 +48,12 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.CloseOLS:
       return state.set('isOpen', false);
+
+    case ActionType.OpenAttachmentClear:
+      return state.set('openAttachment', null);
+
+    case ActionType.OpenAttachmentSet:
+      return state.set('openAttachment', action.payload.attachment);
 
     case ActionType.OpenOLS:
       return state.set('isOpen', true);
