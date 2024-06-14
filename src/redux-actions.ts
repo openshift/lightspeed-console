@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { Attachment, ChatEntry, AttachmentOptions } from './types';
+import { Attachment, AttachmentOptions, ChatEntry } from './types';
 
 export enum ActionType {
   AttachmentAdd = 'attachmentAdd',

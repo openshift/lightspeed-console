@@ -20,6 +20,10 @@ plugins:
 rules:
   prettier/prettier:
     - error
+  sort-imports: ["error", {
+    ignoreCase: true,
+    ignoreDeclarationSort: true
+  }]
 settings:
   react:
     version: detect
