@@ -1,3 +1,4 @@
+import { dump } from 'js-yaml';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Modal from 'react-modal';
@@ -80,9 +81,9 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
     (e) => {
       e.preventDefault();
 
-      const eventsText = JSON.stringify(events.slice(-numEvents), null, 2);
+      const yaml = dump(events.slice(-numEvents), { lineWidth: -1 }).trim();
       dispatch(
-        attachmentAdd(AttachmentTypes.Events, kind, name, namespace, eventsText, {
+        attachmentAdd(AttachmentTypes.Events, kind, name, namespace, yaml, {
           owner: name,
           lines: numEvents,
         }),
