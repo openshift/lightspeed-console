@@ -53,11 +53,15 @@ const AttachmentModal: React.FC = () => {
       </div>
       <div className="modal-body">
         <div className="modal-body-content">
-          <Text component={TextVariants.h5}>
-            <ResourceIcon kind={attachment?.kind} /> {attachment?.name}
-          </Text>
           <CodeBlock
-            actions={<CopyAction value={attachment?.value} />}
+            actions={
+              <div className="ols-plugin__code-block__full-width-header">
+                <Text className="ols-plugin__code-block__title" component={TextVariants.h5}>
+                  <ResourceIcon kind={attachment?.kind} /> {attachment?.name}
+                </Text>
+                <CopyAction value={attachment?.value} />
+              </div>
+            }
             className="ols-plugin__code-block ols-plugin__code-block--attachment"
           >
             <CodeBlockCode
