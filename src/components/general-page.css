@@ -64,6 +64,17 @@
   max-height: 20rem;
 }
 
+.ols-plugin__code-block__full-width-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ols-plugin__code-block__title {
+  padding-left: var(--pf-global--spacer--md);
+  padding-top: var(--pf-global--spacer--form-element);
+}
+
 .ols-plugin__feedback {
   margin-top: var(--pf-v5-global--spacer--sm);
 }
