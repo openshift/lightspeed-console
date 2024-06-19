@@ -56,7 +56,7 @@
 
 .ols-plugin__code-block {
   max-height: 8rem;
-  overflow: scroll;
+  overflow: auto;
   white-space: pre;
 }
 
