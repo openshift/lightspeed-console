@@ -13,6 +13,8 @@ import {
   Form,
   FormGroup,
   MenuToggle,
+  Slider,
+  SliderOnChangeEvent,
   Spinner,
   Text,
   Title,
@@ -22,7 +24,6 @@ import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuth';
 import { attachmentAdd } from '../redux-actions';
-import IntegerInput from './IntegerInput';
 
 const DEFAULT_LOG_LINES = 25;
 const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
@@ -100,6 +101,11 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultContainer]);
 
+  const onLinesChange = React.useCallback(
+    (_e: SliderOnChangeEvent, value: number) => setLines(value),
+    [],
+  );
+
   const onSubmit = React.useCallback(
     (e) => {
       e.preventDefault();
@@ -152,7 +158,13 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
               <ContainerMenu containers={containers} setValue={setContainer} value={container} />
             </FormGroup>
             <FormGroup isRequired label={t('Number of lines (most recent)')}>
-              <IntegerInput setValue={setLines} value={lines} />
+              <Slider
+                hasTooltipOverThumb
+                max={100}
+                min={1}
+                onChange={onLinesChange}
+                value={lines}
+              />
             </FormGroup>
             <ActionGroup>
               <Button onClick={onSubmit} type="submit" variant="primary">

@@ -11,6 +11,9 @@ import GeneralPage from './GeneralPage';
 
 import './popover.css';
 
+// TODO: Include this for now to work around bug where CSS is not pulled in by console plugin SDK
+import './pf-slider.css';
+
 const Popover: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
