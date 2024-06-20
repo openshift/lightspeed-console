@@ -1,10 +1,10 @@
 FROM registry.access.redhat.com/ubi9/nodejs-18:latest AS build
 USER root
-RUN command -v yarn || npm i -g yarn
 
 ADD . /usr/src/app
 WORKDIR /usr/src/app
-RUN yarn install && yarn build
+RUN npm install --loglevel verbose
+RUN npm run build --loglevel verbose
 
 FROM registry.access.redhat.com/ubi9/nginx-120:latest
 

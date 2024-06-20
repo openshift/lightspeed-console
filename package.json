@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "yarn clean && NODE_ENV=production yarn ts-node node_modules/.bin/webpack",
+    "build": "npm run clean && NODE_ENV=production npm run ts-node node_modules/.bin/webpack",
     "build-dev": "yarn clean && yarn ts-node node_modules/.bin/webpack",
     "start": "yarn ts-node node_modules/.bin/webpack serve",
     "start-console": "./start-console.sh",
