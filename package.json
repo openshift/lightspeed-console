@@ -68,6 +68,9 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   },
+  "overrides": {
+    "webpack": "5.91.0"
+  },
   "resolutions": {
     "webpack": "5.91.0"
   },
