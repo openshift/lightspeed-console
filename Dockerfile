@@ -3,7 +3,7 @@ USER root
 
 ADD . /usr/src/app
 WORKDIR /usr/src/app
-RUN npm install --loglevel verbose
+RUN npm install --omit dev --loglevel verbose
 RUN npm run build --loglevel verbose
 
 FROM registry.access.redhat.com/ubi9/nginx-120:latest
