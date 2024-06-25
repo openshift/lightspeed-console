@@ -242,12 +242,20 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   return null;
 };
 
-const ChatHistoryEntryWaiting = () => (
-  <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
-    <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-    <Spinner size="lg" />
-  </div>
-);
+const ChatHistoryEntryWaiting = () => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  return (
+    <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
+      <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+      <HelperText>
+        <HelperTextItem variant="indeterminate">
+          {t('Waiting for LLM provider...')} <Spinner size="lg" />
+        </HelperTextItem>
+      </HelperText>
+    </div>
+  );
+};
 
 type AuthAlertProps = {
   authStatus: AuthStatus;

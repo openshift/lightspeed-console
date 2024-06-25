@@ -47,6 +47,7 @@
   "Send a message...": "Send a message...",
   "Submit": "Submit",
   "Thank you for your feedback!": "Thank you for your feedback!",
+  "Waiting for LLM provider...": "Waiting for LLM provider...",
   "Why did you choose this rating?": "Why did you choose this rating?",
   "You can preview and optionally edit the code displayed in the modal before attaching it to your prompt.": "You can preview and optionally edit the code displayed in the modal before attaching it to your prompt.",
   "You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.": "You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.",
