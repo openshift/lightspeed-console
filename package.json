@@ -44,7 +44,7 @@
     "react-markdown": "^8.0.7",
     "react-modal": "^3.12.1",
     "react-redux": "7.2.2",
-    "react-router": "5.3.x",
+    "react-router": "6.24.x",
     "react-router-dom": "5.3.x",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.3.1",
