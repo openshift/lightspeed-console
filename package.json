@@ -31,7 +31,7 @@
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
     "dotenv": "^16.4.5",
-    "i18next-parser": "^8.13.0",
+    "i18next-parser": "^9.0.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "mocha-junit-reporter": "^2.2.0",
