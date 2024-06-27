@@ -32,12 +32,13 @@ export const useLocationContext = () => {
 
   React.useEffect(() => {
     if (path) {
-      let matches = undefined;
+      const namespace = `[a-z0-9-]+`;
+      const resourceType = 'cronjobs|daemonsets|deployments|jobs|pods|replicasets|statefulsets';
+      const resourceName = '[a-z0-9-.]+';
 
+      let matches = undefined;
       matches = path.match(
-        new RegExp(
-          '/k8s/ns/([a-z0-9-]+)/(cronjobs|daemonsets|deployments|jobs|pods|replicasets|statefulsets)/([a-z0-9-]+)',
-        ),
+        new RegExp(`/k8s/ns/(${namespace})/(${resourceType})/(${resourceName})`),
       );
       if (matches) {
         setKind(resourcePluralToKind(matches[2]));
@@ -46,11 +47,7 @@ export const useLocationContext = () => {
         return;
       }
 
-      matches = path.match(
-        new RegExp(
-          '/k8s/all-namespaces/(cronjobs|daemonsets|deployments|jobs|pods|replicasets|statefulsets)/([a-z0-9-]+)',
-        ),
-      );
+      matches = path.match(new RegExp(`/k8s/all-namespaces/(${resourceType})/(${resourceName})`));
       if (matches) {
         setKind(resourcePluralToKind(matches[1]));
         setName(matches[2]);
