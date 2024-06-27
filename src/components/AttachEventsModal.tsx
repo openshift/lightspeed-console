@@ -11,6 +11,8 @@ import {
   FormGroup,
   HelperText,
   HelperTextItem,
+  Slider,
+  SliderOnChangeEvent,
   Spinner,
   Text,
   Title,
@@ -18,7 +20,6 @@ import {
 
 import { AttachmentTypes } from '../attachments';
 import { attachmentAdd } from '../redux-actions';
-import IntegerInput from './IntegerInput';
 
 const DEFAULT_MAX_EVENTS = 10;
 
@@ -77,6 +78,11 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
     }
   }, [kind, name, namespace, t, uid]);
 
+  const onInputNumEventsChange = React.useCallback(
+    (_e: SliderOnChangeEvent, value: number) => setInputNumEvents(value),
+    [],
+  );
+
   const onSubmit = React.useCallback(
     (e) => {
       e.preventDefault();
@@ -120,9 +126,11 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
                     <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
                   </HelperText>
                 ) : (
-                  <IntegerInput
+                  <Slider
+                    hasTooltipOverThumb
                     max={events.length}
-                    setValue={setInputNumEvents}
+                    min={1}
+                    onChange={onInputNumEventsChange}
                     value={numEvents}
                   />
                 ))}
