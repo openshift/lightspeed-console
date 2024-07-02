@@ -1,16 +1,10 @@
 import { Map as ImmutableMap } from 'immutable';
 
-export type AttachmentOptions = {
-  lines: number;
-  owner: string;
-};
-
 export type Attachment = {
   attachmentType: string;
   kind: string;
   name: string;
   namespace: string;
-  options: AttachmentOptions;
   value: string;
 };
 

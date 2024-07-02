@@ -154,8 +154,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
               'Container',
               container,
               namespace,
-              response?.trim(),
-              { lines, owner: pod },
+              `Most recent lines from the log for Container '${container}', belonging to pod '${pod}':\n\n${response?.trim()}`,
             ),
           );
           onClose();

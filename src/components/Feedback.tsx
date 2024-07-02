@@ -23,7 +23,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 
-import { buildQuery } from '../attachments';
+import { toOLSAttachment } from '../attachments';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuth';
 import {
   userFeedbackClose,
@@ -59,7 +59,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
   const query: string = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
   );
-  const queryAttachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
+  const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
   );
   const response: string = useSelector((s: State) =>
@@ -101,12 +101,16 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
   );
 
   const onSubmit = React.useCallback(() => {
+    const user_question = attachments
+      ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
+      : query;
+
     const requestJSON = {
       conversation_id: conversationID,
       llm_response: response,
-      sentiment: sentiment,
+      sentiment,
       user_feedback: text,
-      user_question: buildQuery(query, queryAttachments),
+      user_question,
     };
 
     consoleFetchJSON
@@ -119,7 +123,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
         setError(error.json?.detail || error.message || 'Feedback POST failed');
         setSubmitted(false);
       });
-  }, [conversationID, dispatch, entryIndex, query, queryAttachments, response, sentiment, text]);
+  }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, text]);
 
   return (
     <>
