@@ -707,7 +707,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               </LevelItem>
               <LevelItem>
                 <Button onClick={clearChat} variant="primary">
-                  {t('New chat')}
+                  {t('Clear chat')}
                 </Button>
               </LevelItem>
             </Level>
