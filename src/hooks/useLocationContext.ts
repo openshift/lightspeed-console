@@ -57,7 +57,7 @@ export const useLocationContext = () => {
 
       if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
         const params = new URLSearchParams(location.search);
-        if (params.has('alertname') && params.has('namespace')) {
+        if (params.has('alertname')) {
           setKind('Alert');
           setName(params.get('alertname'));
           setNamespace(params.get('namespace'));
