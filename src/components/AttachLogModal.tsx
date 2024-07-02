@@ -13,6 +13,7 @@ import {
   Form,
   FormGroup,
   MenuToggle,
+  Radio,
   Slider,
   SliderOnChangeEvent,
   Spinner,
@@ -34,7 +35,7 @@ type ContainerMenuProps = {
   value: string;
 };
 
-const ContainerMenu: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) => {
+const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) => {
   const [isOpen, toggleIsOpen, , close] = useBoolean(false);
 
   const onSelect = React.useCallback(
@@ -65,6 +66,38 @@ const ContainerMenu: React.FC<ContainerMenuProps> = ({ containers, setValue, val
     </Dropdown>
   );
 };
+
+const ContainerRadios: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) => (
+  <>
+    {containers.map((container) => (
+      <Radio
+        className="ols-plugin__radio"
+        id={container}
+        isChecked={container === value}
+        isLabelWrapped
+        key={container}
+        label={
+          <>
+            <ResourceIcon kind="Container" /> {container}
+          </>
+        }
+        name="container"
+        onChange={(_e: React.FormEvent<HTMLInputElement>, isChecked: boolean) => {
+          if (isChecked) {
+            setValue(container);
+          }
+        }}
+      />
+    ))}
+  </>
+);
+
+const ContainerInput: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) =>
+  containers.length < 6 ? (
+    <ContainerRadios containers={containers} setValue={setValue} value={value} />
+  ) : (
+    <ContainerDropdown containers={containers} setValue={setValue} value={value} />
+  );
 
 type AttachLogModalProps = {
   containers: string[];
@@ -155,7 +188,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
         <div className="modal-body-content">
           <Form>
             <FormGroup isRequired label="Container">
-              <ContainerMenu containers={containers} setValue={setContainer} value={container} />
+              <ContainerInput containers={containers} setValue={setContainer} value={container} />
             </FormGroup>
             <FormGroup isRequired label={t('Number of lines (most recent)')}>
               <Slider

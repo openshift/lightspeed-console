@@ -202,6 +202,10 @@
   margin-right: var(--pf-v5-global--spacer--md);
 }
 
+.ols-plugin__radio {
+  align-items: center;
+}
+
 .ols-plugin__references {
   margin-top: var(--pf-v5-global--spacer--md);
 }
