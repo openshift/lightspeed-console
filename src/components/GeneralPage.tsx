@@ -50,7 +50,7 @@ import {
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
-import { AttachmentTypes, buildQuery } from '../attachments';
+import { AttachmentTypes, toOLSAttachment } from '../attachments';
 import { AuthStatus, getRequestInitwithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
@@ -383,15 +383,17 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
             setError(t('Error fetching alerting rules: {{error}}', { error }));
             setLoaded();
           });
-      } else {
-        let data;
-        if (attachmentType === AttachmentTypes.YAML) {
-          data = cloneDeep(context);
-          // We ignore the managedFields section because it doesn't have much value
-          delete data.metadata.managedFields;
-        } else if (attachmentType === AttachmentTypes.YAMLStatus) {
-          data = { status: context.status };
-        }
+      } else if (
+        attachmentType === AttachmentTypes.YAML ||
+        attachmentType === AttachmentTypes.YAMLStatus
+      ) {
+        const data = cloneDeep(
+          attachmentType === AttachmentTypes.YAMLStatus
+            ? { kind: context.kind, metadata: context.metadata, status: context.status }
+            : context,
+        );
+        // We ignore the managedFields section because it doesn't have much value
+        delete data.metadata.managedFields;
         try {
           const yaml = dump(data, { lineWidth: -1 }).trim();
           dispatch(attachmentAdd(attachmentType, kind, name, namespace, yaml));
@@ -632,8 +634,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       setWaiting();
 
       const requestJSON = {
+        attachments: attachments.valueSeq().map(toOLSAttachment),
         conversation_id: conversationID,
-        query: buildQuery(query, attachments),
+        query,
       };
 
       consoleFetchJSON

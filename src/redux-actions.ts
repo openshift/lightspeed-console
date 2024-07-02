@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { Attachment, AttachmentOptions, ChatEntry } from './types';
+import { Attachment, ChatEntry } from './types';
 
 export enum ActionType {
   AttachmentAdd = 'attachmentAdd',
@@ -27,7 +27,6 @@ export const attachmentAdd = (
   name: string,
   namespace: string,
   value: string,
-  options: AttachmentOptions = null,
 ) =>
   action(ActionType.AttachmentAdd, {
     attachmentType,
@@ -35,7 +34,6 @@ export const attachmentAdd = (
     name,
     namespace,
     value,
-    options,
   });
 export const attachmentDelete = (id: string) => action(ActionType.AttachmentDelete, { id });
 export const attachmentsClear = () => action(ActionType.AttachmentsClear);
