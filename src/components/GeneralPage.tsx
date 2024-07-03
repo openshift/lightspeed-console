@@ -72,6 +72,7 @@ import AttachLogModal from './AttachLogModal';
 import AttachmentModal from './AttachmentModal';
 import CopyAction from './CopyAction';
 import Feedback from './Feedback';
+import NewChatModal from './NewChatModal';
 import ResourceIcon from './ResourceIcon';
 
 import './general-page.css';
@@ -586,6 +587,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const [authStatus] = useAuth();
 
+  const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
   const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
@@ -687,6 +689,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     [onSubmit],
   );
 
+  const onConfirmNewChat = React.useCallback(() => {
+    clearChat();
+    closeNewChatModal();
+  }, [clearChat, closeNewChatModal]);
+
   const isWelcomePage = chatHistory.size === 0;
 
   return (
@@ -706,7 +713,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 </Title>
               </LevelItem>
               <LevelItem>
-                <Button onClick={clearChat} variant="primary">
+                <Button onClick={openNewChatModal} variant="primary">
                   {t('Clear chat')}
                 </Button>
               </LevelItem>
@@ -797,6 +804,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             </HelperText>
 
             <AttachmentModal />
+            <NewChatModal
+              isOpen={isNewChatModalOpen}
+              onClose={closeNewChatModal}
+              onConfirm={onConfirmNewChat}
+            />
           </PageSection>
         )}
       </Page>
