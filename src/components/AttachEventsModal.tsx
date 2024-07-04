@@ -1,7 +1,6 @@
 import { dump } from 'js-yaml';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import * as Modal from 'react-modal';
 import { useDispatch } from 'react-redux';
 import {
   ActionGroup,
@@ -15,11 +14,11 @@ import {
   SliderOnChangeEvent,
   Spinner,
   Text,
-  Title,
 } from '@patternfly/react-core';
 
 import { AttachmentTypes } from '../attachments';
 import { attachmentAdd } from '../redux-actions';
+import Modal from './Modal';
 
 const DEFAULT_MAX_EVENTS = 10;
 
@@ -95,62 +94,49 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   );
 
   return (
-    <Modal
-      ariaHideApp={false}
-      className="modal-dialog"
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      overlayClassName="co-overlay"
-    >
-      <div className="modal-header">
-        <Title headingLevel="h2">{t('Configure events attachment')}</Title>
-        <Text>
-          {t(
-            'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
-          )}
-        </Text>
-      </div>
-      <div className="modal-body">
-        <div className="modal-body-content">
-          <Form>
-            <FormGroup isRequired label={t('Number of events (most recent)')}>
-              {isLoading && <Spinner size="md" />}
-              {!isLoading &&
-                (events.length === 0 ? (
-                  <HelperText>
-                    <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
-                  </HelperText>
-                ) : (
-                  <Slider
-                    hasTooltipOverThumb
-                    max={events.length}
-                    min={1}
-                    onChange={onInputNumEventsChange}
-                    value={numEvents}
-                  />
-                ))}
-            </FormGroup>
-            <ActionGroup>
-              <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
-                {t('Attach')}
-              </Button>
-              <Button onClick={onClose} type="submit" variant="link">
-                {t('Cancel')}
-              </Button>
-            </ActionGroup>
-            {error && (
-              <Alert
-                className="ols-plugin__alert"
-                isInline
-                title={t('Failed to attach context')}
-                variant="danger"
-              >
-                {error}
-              </Alert>
-            )}
-          </Form>
-        </div>
-      </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={t('Configure events attachment')}>
+      <Text>
+        {t(
+          'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
+        )}
+      </Text>
+      <Form>
+        <FormGroup isRequired label={t('Number of events (most recent)')}>
+          {isLoading && <Spinner size="md" />}
+          {!isLoading &&
+            (events.length === 0 ? (
+              <HelperText>
+                <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
+              </HelperText>
+            ) : (
+              <Slider
+                hasTooltipOverThumb
+                max={events.length}
+                min={1}
+                onChange={onInputNumEventsChange}
+                value={numEvents}
+              />
+            ))}
+        </FormGroup>
+        <ActionGroup>
+          <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
+            {t('Attach')}
+          </Button>
+          <Button onClick={onClose} type="submit" variant="link">
+            {t('Cancel')}
+          </Button>
+        </ActionGroup>
+        {error && (
+          <Alert
+            className="ols-plugin__alert"
+            isInline
+            title={t('Failed to attach context')}
+            variant="danger"
+          >
+            {error}
+          </Alert>
+        )}
+      </Form>
     </Modal>
   );
 };

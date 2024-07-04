@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import * as Modal from 'react-modal';
 import { useDispatch } from 'react-redux';
 import { consoleFetchText, ResourceIcon } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -18,13 +17,13 @@ import {
   SliderOnChangeEvent,
   Spinner,
   Text,
-  Title,
 } from '@patternfly/react-core';
 
 import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
 import { getRequestInitwithAuthHeader } from '../hooks/useAuth';
 import { attachmentAdd } from '../redux-actions';
+import Modal from './Modal';
 
 const DEFAULT_LOG_LINES = 25;
 const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
@@ -168,58 +167,39 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
   );
 
   return (
-    <Modal
-      ariaHideApp={false}
-      className="modal-dialog"
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      overlayClassName="co-overlay"
-    >
-      <div className="modal-header">
-        <Title headingLevel="h2">Configure log attachment</Title>
-        <Text>
-          {t(
-            'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
-          )}
-        </Text>
-      </div>
-      <div className="modal-body">
-        <div className="modal-body-content">
-          <Form>
-            <FormGroup isRequired label="Container">
-              <ContainerInput containers={containers} setValue={setContainer} value={container} />
-            </FormGroup>
-            <FormGroup isRequired label={t('Number of lines (most recent)')}>
-              <Slider
-                hasTooltipOverThumb
-                max={100}
-                min={1}
-                onChange={onLinesChange}
-                value={lines}
-              />
-            </FormGroup>
-            <ActionGroup>
-              <Button onClick={onSubmit} type="submit" variant="primary">
-                {t('Attach')}
-              </Button>
-              <Button onClick={onClose} type="submit" variant="link">
-                {t('Cancel')}
-              </Button>
-            </ActionGroup>
-            {isLoading && <Spinner size="md" />}
-            {error && (
-              <Alert
-                className="ols-plugin__alert"
-                isInline
-                title={t('Failed to attach context')}
-                variant="danger"
-              >
-                {error}
-              </Alert>
-            )}
-          </Form>
-        </div>
-      </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={t('Configure log attachment')}>
+      <Text>
+        {t(
+          'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
+        )}
+      </Text>
+      <Form>
+        <FormGroup isRequired label="Container">
+          <ContainerInput containers={containers} setValue={setContainer} value={container} />
+        </FormGroup>
+        <FormGroup isRequired label={t('Number of lines (most recent)')}>
+          <Slider hasTooltipOverThumb max={100} min={1} onChange={onLinesChange} value={lines} />
+        </FormGroup>
+        <ActionGroup>
+          <Button onClick={onSubmit} type="submit" variant="primary">
+            {t('Attach')}
+          </Button>
+          <Button onClick={onClose} type="submit" variant="link">
+            {t('Cancel')}
+          </Button>
+        </ActionGroup>
+        {isLoading && <Spinner size="md" />}
+        {error && (
+          <Alert
+            className="ols-plugin__alert"
+            isInline
+            title={t('Failed to attach context')}
+            variant="danger"
+          >
+            {error}
+          </Alert>
+        )}
+      </Form>
     </Modal>
   );
 };
