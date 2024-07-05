@@ -73,6 +73,7 @@ import AttachmentModal from './AttachmentModal';
 import CopyAction from './CopyAction';
 import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
+import ReadinessAlert from './ReadinessAlert';
 import ResourceIcon from './ResourceIcon';
 
 import './general-page.css';
@@ -741,6 +742,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             />
           ))}
           {isWaiting && <ChatHistoryEntryWaiting />}
+          <ReadinessAlert />
           <div ref={chatHistoryEndRef} />
         </PageSection>
 
