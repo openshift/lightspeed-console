@@ -187,9 +187,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
           </Alert>
         ) : (
           <>
-            <div className="ols-plugin__chat-entry-text">
-              <Markdown components={{ code: Code }}>{entry.text}</Markdown>
-            </div>
+            <Markdown components={{ code: Code }}>{entry.text}</Markdown>
             {entry.isTruncated && (
               <Alert isInline title={t('History truncated')} variant="warning">
                 {t('Conversation history has been truncated to fit within context window.')}
