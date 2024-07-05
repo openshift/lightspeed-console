@@ -182,7 +182,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
         {entry.error ? (
-          <Alert isInline title={t('Error submitting query')} variant="danger">
+          <Alert isInline title={t('Error querying OpenShift Lightspeed service')} variant="danger">
             {entry.error}
           </Alert>
         ) : (
@@ -373,7 +373,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
                 dispatch(attachmentAdd(AttachmentTypes.YAML, kind, name, namespace, yaml));
                 close();
               } catch (e) {
-                setError(t('Error getting YAML: {{e}}', { e }));
+                setError(t('Error converting to YAML: {{e}}', { e }));
               }
             } else {
               setError(t('Failed to find definition YAML for alert'));
@@ -400,7 +400,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
           dispatch(attachmentAdd(attachmentType, kind, name, namespace, yaml));
           close();
         } catch (e) {
-          setError(t('Error getting YAML: {{e}}', { e }));
+          setError(t('Error converting to YAML: {{e}}', { e }));
         }
       }
     },
@@ -661,7 +661,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           const errorMessage =
             typeof errorDetail?.response === 'string' && typeof errorDetail?.cause === 'string'
               ? `${errorDetail.response}: ${errorDetail.cause}`
-              : error.json?.message || 'Query POST failed';
+              : t('If this error persists, please contact an administrator. Error details: {{e}}', {
+                  e: error.json?.message || error.response.statusText,
+                });
           dispatch(chatHistoryPush({ error: errorMessage, isTruncated: false, who: 'ai' }));
           scrollIntoView();
           unsetWaiting();
@@ -672,7 +674,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [attachments, conversationID, dispatch, query, scrollIntoView, setWaiting, unsetWaiting],
+    [attachments, conversationID, dispatch, query, scrollIntoView, setWaiting, t, unsetWaiting],
   );
 
   // We use keypress instead of keydown even though keypress is deprecated to work around a problem
