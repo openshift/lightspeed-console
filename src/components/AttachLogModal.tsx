@@ -21,7 +21,7 @@ import {
 
 import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
-import { getRequestInitwithAuthHeader } from '../hooks/useAuth';
+import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { attachmentAdd } from '../redux-actions';
 import Modal from './Modal';
 
@@ -144,7 +144,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
 
       setIsLoading(true);
       const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${pod}/log?container=${container}&tailLines=${lines}`;
-      consoleFetchText(url, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
+      consoleFetchText(url, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
         .then((response: string) => {
           setIsLoading(false);
           dispatch(

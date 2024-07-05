@@ -24,7 +24,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
-import { getRequestInitwithAuthHeader } from '../hooks/useAuth';
+import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import {
   userFeedbackClose,
   userFeedbackOpen,
@@ -114,7 +114,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
     };
 
     consoleFetchJSON
-      .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
+      .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
       .then(() => {
         dispatch(userFeedbackClose(entryIndex));
         setSubmitted(true);

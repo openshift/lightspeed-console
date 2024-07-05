@@ -16,7 +16,7 @@ type AuthorizationResponse = {
   username: string;
 };
 
-export const getRequestInitwithAuthHeader = (): RequestInit => {
+export const getRequestInitWithAuthHeader = (): RequestInit => {
   const init: RequestInit = {};
   const bearerToken = process.env.REACT_BEARER_TOKEN;
   if (bearerToken) {
@@ -32,7 +32,7 @@ export const useAuth = (): [AuthStatus] => {
 
   React.useEffect(() => {
     consoleFetchJSON
-      .post(AUTHORIZATION_ENDPOINT, {}, getRequestInitwithAuthHeader())
+      .post(AUTHORIZATION_ENDPOINT, {}, getRequestInitWithAuthHeader())
       .then((response: AuthorizationResponse) => {
         if (response) {
           setAuthorizationStatus(AuthStatus.Authorized);
