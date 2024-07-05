@@ -51,7 +51,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { AttachmentTypes, toOLSAttachment } from '../attachments';
-import { AuthStatus, getRequestInitwithAuthHeader, useAuth } from '../hooks/useAuth';
+import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import {
@@ -351,7 +351,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
       } else if (kind === 'Alert') {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
-        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
+        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
           .then((response) => {
             let alert;
             each(response?.data?.groups, (group) => {
@@ -640,7 +640,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       };
 
       consoleFetchJSON
-        .post(QUERY_ENDPOINT, requestJSON, getRequestInitwithAuthHeader(), REQUEST_TIMEOUT)
+        .post(QUERY_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
         .then((response: QueryResponse) => {
           dispatch(setConversationID(response.conversation_id));
           dispatch(
