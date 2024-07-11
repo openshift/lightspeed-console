@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core';
 
 import { AttachmentTypes } from '../attachments';
-import { attachmentAdd } from '../redux-actions';
+import { attachmentSet } from '../redux-actions';
 import Modal from './Modal';
 
 const DEFAULT_MAX_EVENTS = 10;
@@ -87,7 +87,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
       e.preventDefault();
 
       const yaml = dump(events.slice(-numEvents), { lineWidth: -1 }).trim();
-      dispatch(attachmentAdd(AttachmentTypes.Events, kind, name, namespace, yaml));
+      dispatch(attachmentSet(AttachmentTypes.Events, kind, name, namespace, yaml));
       onClose();
     },
     [dispatch, events, kind, name, namespace, numEvents, onClose],

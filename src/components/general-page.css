@@ -10,6 +10,10 @@
   max-width: 60% !important;
 }
 
+.ols-plugin__attachment-modal-actions {
+  margin-top: var(--pf-v5-global--spacer--lg)
+}
+
 .ols-plugin__chat-entry {
   --logo-size: 2.5rem;
 
@@ -61,7 +65,7 @@
 }
 
 .ols-plugin__code-block--attachment {
-  max-height: 20rem;
+  max-height: 24rem;
 }
 
 .ols-plugin__code-block__full-width-header {
