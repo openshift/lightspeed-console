@@ -20,6 +20,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       conversationID: null,
       isOpen: false,
+      isUserFeedbackEnabled: true,
       openAttachment: null,
       query: '',
     });
@@ -72,6 +73,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
         ['chatHistory', action.payload.entryIndex, 'userFeedback', 'isOpen'],
         false,
       );
+
+    case ActionType.UserFeedbackDisable:
+      return state.set('isUserFeedbackEnabled', false);
 
     case ActionType.UserFeedbackOpen:
       return state.setIn(

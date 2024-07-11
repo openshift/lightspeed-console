@@ -2,9 +2,11 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { Tooltip } from '@patternfly/react-core';
+import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
+import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
-import { closeOLS, openOLS } from '../redux-actions';
+import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
 import { State } from '../redux-reducers';
 import ErrorBoundary from './ErrorBoundary';
 import GeneralPage from './GeneralPage';
@@ -14,6 +16,10 @@ import './popover.css';
 // TODO: Include this for now to work around bug where CSS is not pulled in by console plugin SDK
 import './pf-slider.css';
 
+const FEEDBACK_STATUS_ENDPOINT =
+  '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback/status';
+const REQUEST_TIMEOUT = 5 * 60 * 1000;
+
 const Popover: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -22,6 +28,23 @@ const Popover: React.FC = () => {
   const isOpen = useSelector((s: State) => s.plugins?.ols?.get('isOpen'));
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
+
+  React.useEffect(() => {
+    consoleFetchJSON(
+      FEEDBACK_STATUS_ENDPOINT,
+      'get',
+      getRequestInitWithAuthHeader(),
+      REQUEST_TIMEOUT,
+    )
+      .then((response) => {
+        if (response.status?.enabled === false) {
+          dispatch(userFeedbackDisable());
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching user feedback status: {{error}}', { error });
+      });
+  }, [dispatch]);
 
   const open = React.useCallback(() => {
     dispatch(openOLS());

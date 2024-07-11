@@ -177,6 +177,9 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const [isContextExpanded, toggleContextExpanded] = useBoolean(false);
+  const isUserFeedbackEnabled = useSelector((s: State) =>
+    s.plugins?.ols?.get('isUserFeedbackEnabled'),
+  );
 
   if (entry.who === 'ai') {
     return (
@@ -201,11 +204,13 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
                 ))}
               </ChipGroup>
             )}
-            <Feedback
-              conversationID={conversationID}
-              entryIndex={entryIndex}
-              scrollIntoView={scrollIntoView}
-            />
+            {isUserFeedbackEnabled && (
+              <Feedback
+                conversationID={conversationID}
+                entryIndex={entryIndex}
+                scrollIntoView={scrollIntoView}
+              />
+            )}
           </>
         )}
       </div>
