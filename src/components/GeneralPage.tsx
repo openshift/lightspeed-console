@@ -55,9 +55,9 @@ import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useA
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import {
-  attachmentAdd,
   attachmentDelete,
   attachmentsClear,
+  attachmentSet,
   chatHistoryClear,
   chatHistoryPush,
   openAttachmentSet,
@@ -138,6 +138,8 @@ type AttachmentLabelProps = {
 };
 
 const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
   const dispatch = useDispatch();
 
   const onClick = React.useCallback(() => {
@@ -151,13 +153,15 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
   const { attachmentType, kind, name } = attachment;
 
   return (
-    <Label className="ols-plugin__context-label" onClick={onClick} onClose={onClose}>
-      <ResourceIcon kind={kind} />
-      <span className="ols-plugin__context-label-text">{name}</span>{' '}
-      {kind !== 'Alert' && (
-        <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
-      )}
-    </Label>
+    <Tooltip content={t('Preview attachment')}>
+      <Label className="ols-plugin__context-label" onClick={onClick} onClose={onClose}>
+        <ResourceIcon kind={kind} />
+        <span className="ols-plugin__context-label-text">{name}</span>{' '}
+        {kind !== 'Alert' && (
+          <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
+        )}
+      </Label>
+    </Tooltip>
   );
 };
 
@@ -374,7 +378,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
             if (alert) {
               try {
                 const yaml = dump(alert, { lineWidth: -1 }).trim();
-                dispatch(attachmentAdd(AttachmentTypes.YAML, kind, name, namespace, yaml));
+                dispatch(attachmentSet(AttachmentTypes.YAML, kind, name, namespace, yaml));
                 close();
               } catch (e) {
                 setError(t('Error converting to YAML: {{e}}', { e }));
@@ -401,7 +405,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         delete data.metadata.managedFields;
         try {
           const yaml = dump(data, { lineWidth: -1 }).trim();
-          dispatch(attachmentAdd(attachmentType, kind, name, namespace, yaml));
+          dispatch(attachmentSet(attachmentType, kind, name, namespace, yaml));
           close();
         } catch (e) {
           setError(t('Error converting to YAML: {{e}}', { e }));

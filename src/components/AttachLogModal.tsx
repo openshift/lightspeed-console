@@ -22,7 +22,7 @@ import {
 import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
-import { attachmentAdd } from '../redux-actions';
+import { attachmentSet } from '../redux-actions';
 import Modal from './Modal';
 
 const DEFAULT_LOG_LINES = 25;
@@ -148,7 +148,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
         .then((response: string) => {
           setIsLoading(false);
           dispatch(
-            attachmentAdd(
+            attachmentSet(
               AttachmentTypes.Log,
               'Container',
               container,

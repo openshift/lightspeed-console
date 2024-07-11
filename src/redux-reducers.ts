@@ -27,16 +27,16 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
   }
 
   switch (action.type) {
-    case ActionType.AttachmentAdd: {
-      const id = `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}`;
-      return state.setIn(['attachments', id], action.payload);
-    }
-
     case ActionType.AttachmentDelete:
       return state.deleteIn(['attachments', action.payload.id]);
 
     case ActionType.AttachmentsClear:
       return state.set('attachments', ImmutableMap());
+
+    case ActionType.AttachmentSet: {
+      const id = `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}`;
+      return state.setIn(['attachments', id], action.payload);
+    }
 
     case ActionType.ChatHistoryClear:
       return state.set('chatHistory', ImmutableList());
