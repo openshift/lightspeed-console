@@ -16,6 +16,7 @@ export enum ActionType {
   SetConversationID = 'setConversationID',
   SetQuery = 'setQuery',
   UserFeedbackClose = 'userFeedbackClose',
+  UserFeedbackDisable = 'userFeedbackDisable',
   UserFeedbackOpen = 'userFeedbackOpen',
   UserFeedbackSetSentiment = 'userFeedbackSetSentiment',
   UserFeedbackSetText = 'userFeedbackSetText',
@@ -49,6 +50,7 @@ export const setConversationID = (id: string) => action(ActionType.SetConversati
 export const setQuery = (query: string) => action(ActionType.SetQuery, { query });
 export const userFeedbackClose = (entryIndex: number) =>
   action(ActionType.UserFeedbackClose, { entryIndex });
+export const userFeedbackDisable = () => action(ActionType.UserFeedbackDisable);
 export const userFeedbackOpen = (entryIndex: number) =>
   action(ActionType.UserFeedbackOpen, { entryIndex });
 export const userFeedbackSetSentiment = (entryIndex: number, sentiment: number) =>
@@ -70,6 +72,7 @@ const actions = {
   setConversationID,
   setQuery,
   userFeedbackClose,
+  userFeedbackDisable,
   userFeedbackOpen,
   userFeedbackSetSentiment,
   userFeedbackSetText,
