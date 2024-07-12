@@ -123,10 +123,14 @@ const Code = ({ children }: { children: React.ReactNode }) => {
     return <code>{children}</code>;
   }
 
-  const actions = <CopyAction value={children.toString()} />;
-
   return (
-    <CodeBlock actions={actions}>
+    <CodeBlock
+      actions={
+        <div className="ols-plugin__code-block__full-width-header">
+          <CopyAction value={children.toString()} />
+        </div>
+      }
+    >
       <CodeBlockCode className="ols-plugin__code-block">{children}</CodeBlockCode>
     </CodeBlock>
   );

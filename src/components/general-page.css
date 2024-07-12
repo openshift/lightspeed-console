@@ -70,6 +70,7 @@
 
 .ols-plugin__code-block__full-width-header {
   display: flex;
+  flex-direction: row-reverse;
   justify-content: space-between;
   width: 100%;
 }

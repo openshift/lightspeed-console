@@ -60,8 +60,8 @@ const Viewer: React.FC = () => {
     <CodeBlock
       actions={
         <div className="ols-plugin__code-block__full-width-header">
-          <ResourceHeader />
           <CopyAction value={attachment?.value} />
+          <ResourceHeader />
         </div>
       }
       className="ols-plugin__code-block ols-plugin__code-block--attachment"
