@@ -35,7 +35,7 @@ type ContainerMenuProps = {
 };
 
 const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) => {
-  const [isOpen, toggleIsOpen, , close] = useBoolean(false);
+  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent<Element, MouseEvent> | undefined, value: string) => {
@@ -48,6 +48,7 @@ const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue,
   return (
     <Dropdown
       isOpen={isOpen}
+      onOpenChange={setIsOpen}
       onSelect={onSelect}
       toggle={(toggleRef) => (
         <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
