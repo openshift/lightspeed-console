@@ -27,6 +27,7 @@ import {
   Level,
   LevelItem,
   MenuToggle,
+  MenuToggleElement,
   Page,
   PageSection,
   Select,
@@ -431,6 +432,27 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
     ],
   );
 
+  const toggle = React.useCallback(
+    (toggleRef: React.Ref<MenuToggleElement>) => (
+      <Tooltip content={t('Attach context')} style={isOpen ? { visibility: 'hidden' } : undefined}>
+        <MenuToggle
+          className="ols-plugin__attach-menu"
+          isExpanded={isOpen}
+          onClick={toggleIsOpen}
+          ref={toggleRef}
+          variant="plain"
+        >
+          <Icon size="md">
+            <PlusCircleIcon
+              className={isOpen ? 'ols-plugin__context-menu-icon--active' : undefined}
+            />
+          </Icon>
+        </MenuToggle>
+      </Tooltip>
+    ),
+    [isOpen, t, toggleIsOpen],
+  );
+
   const showEvents = kind === 'Pod';
   const showLogs = kind === 'Pod';
 
@@ -457,30 +479,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         />
       )}
 
-      <Select
-        isOpen={isOpen}
-        onOpenChange={setIsOpen}
-        onSelect={onSelect}
-        toggle={(toggleRef) => (
-          <MenuToggle
-            className="ols-plugin__attach-menu"
-            isExpanded={isOpen}
-            onClick={toggleIsOpen}
-            ref={toggleRef}
-            variant="plain"
-          >
-            <Icon size="md">
-              {isOpen ? (
-                <PlusCircleIcon className="ols-plugin__context-menu-icon--active" />
-              ) : (
-                <Tooltip content={t('Attach context')}>
-                  <PlusCircleIcon />
-                </Tooltip>
-              )}
-            </Icon>
-          </MenuToggle>
-        )}
-      >
+      <Select isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
         <SelectList className="ols-plugin__context-menu">
           {!kind || !name ? (
             <Alert isInline isPlain title="No context found" variant="info">
