@@ -54,7 +54,7 @@ const Editor: React.FC<EditorProps> = ({ onChange }) => {
       isLanguageLabelVisible
       isMinimapVisible
       language={
-        attachment.attachmentType === AttachmentTypes.Log ? Language.plaintext : Language.yaml
+        attachment?.attachmentType === AttachmentTypes.Log ? Language.plaintext : Language.yaml
       }
       onChange={onChange}
       onEditorDidMount={onEditorDidMount}
@@ -104,9 +104,6 @@ const AttachmentModal: React.FC = () => {
     const originalValue =
       attachment.originalValue === undefined ? attachment.value : attachment.originalValue;
     dispatch(
-      openAttachmentSet(Object.assign({}, attachment, { value: editorValue, originalValue })),
-    );
-    dispatch(
       attachmentSet(
         attachment.attachmentType,
         attachment.kind,
@@ -116,6 +113,7 @@ const AttachmentModal: React.FC = () => {
         originalValue,
       ),
     );
+    dispatch(openAttachmentClear());
     setNotEditing();
   }, [attachment, dispatch, editorValue, setNotEditing]);
 
