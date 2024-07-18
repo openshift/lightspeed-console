@@ -32,6 +32,7 @@ export const attachmentSet = (
   name: string,
   namespace: string,
   value: string,
+  originalValue?: string,
 ) =>
   action(ActionType.AttachmentSet, {
     attachmentType,
@@ -39,6 +40,7 @@ export const attachmentSet = (
     name,
     namespace,
     value,
+    originalValue,
   });
 
 export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);

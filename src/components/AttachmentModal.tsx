@@ -3,7 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { BlueInfoCircleIcon } from '@openshift-console/dynamic-plugin-sdk';
 import { CodeEditor, Language } from '@patternfly/react-code-editor';
-import { Button, CodeBlock, CodeBlockCode, Text, TextVariants } from '@patternfly/react-core';
+import {
+  Button,
+  CodeBlock,
+  CodeBlockCode,
+  Split,
+  SplitItem,
+  Text,
+  TextVariants,
+} from '@patternfly/react-core';
+import { UndoIcon } from '@patternfly/react-icons';
 
 import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
@@ -92,7 +101,11 @@ const AttachmentModal: React.FC = () => {
   }, [dispatch]);
 
   const onSave = React.useCallback(() => {
-    dispatch(openAttachmentSet(Object.assign({}, attachment, { value: editorValue })));
+    const originalValue =
+      attachment.originalValue === undefined ? attachment.value : attachment.originalValue;
+    dispatch(
+      openAttachmentSet(Object.assign({}, attachment, { value: editorValue, originalValue })),
+    );
     dispatch(
       attachmentSet(
         attachment.attachmentType,
@@ -100,10 +113,25 @@ const AttachmentModal: React.FC = () => {
         attachment.name,
         attachment.namespace,
         editorValue,
+        originalValue,
       ),
     );
     setNotEditing();
   }, [attachment, dispatch, editorValue, setNotEditing]);
+
+  const onRevert = React.useCallback(() => {
+    dispatch(openAttachmentSet(Object.assign({}, attachment, { value: attachment.originalValue })));
+    dispatch(
+      attachmentSet(
+        attachment.attachmentType,
+        attachment.kind,
+        attachment.name,
+        attachment.namespace,
+        attachment.originalValue,
+        undefined,
+      ),
+    );
+  }, [attachment, dispatch]);
 
   return (
     <Modal
@@ -133,14 +161,23 @@ const AttachmentModal: React.FC = () => {
             </Button>
           </>
         ) : (
-          <>
-            <Button onClick={setEditing} type="submit" variant="primary">
-              {t('Edit')}
-            </Button>
-            <Button onClick={onClose} variant="link">
-              {t('Dismiss')}
-            </Button>
-          </>
+          <Split>
+            <SplitItem isFilled>
+              <Button onClick={setEditing} type="submit" variant="primary">
+                {t('Edit')}
+              </Button>
+              <Button onClick={onClose} variant="link">
+                {t('Dismiss')}
+              </Button>
+            </SplitItem>
+            {attachment?.originalValue && attachment.originalValue !== attachment.value && (
+              <SplitItem>
+                <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
+                  {t('Revert to original')}
+                </Button>
+              </SplitItem>
+            )}
+          </Split>
         )}
       </div>
     </Modal>
