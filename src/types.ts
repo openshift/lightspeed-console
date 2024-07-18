@@ -5,6 +5,7 @@ export type Attachment = {
   kind: string;
   name: string;
   namespace: string;
+  originalValue?: string;
   value: string;
 };
 

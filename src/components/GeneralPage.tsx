@@ -1,6 +1,6 @@
 import { List as ImmutableList } from 'immutable';
 import { dump } from 'js-yaml';
-import { cloneDeep, defer, each, isMatch, map as lodashMap } from 'lodash';
+import { cloneDeep, defer, each, isMatch, map as lodashMap, omit } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -642,7 +642,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         return;
       }
 
-      dispatch(chatHistoryPush({ attachments, text: query, who: 'user' }));
+      dispatch(
+        chatHistoryPush({
+          attachments: attachments.map((a) => omit(a, 'originalValue')),
+          text: query,
+          who: 'user',
+        }),
+      );
       scrollIntoView();
       setWaiting();
 
