@@ -157,6 +157,10 @@
   margin-top: var(--pf-v5-global--spacer--sm);
 }
 
+.ols-plugin__context-label-modified {
+  margin-left: var(--pf-global--spacer--sm);
+}
+
 .ols-plugin__context-label-text {
   max-width: 12rem;
   overflow: hidden;
@@ -165,7 +169,7 @@
 }
 
 .ols-plugin__context-label-type {
-  margin-left: var(--pf-global--spacer--xs);
+  margin-left: var(--pf-global--spacer--sm);
 }
 
 .ols-plugin__context-menu {

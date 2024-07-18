@@ -46,6 +46,7 @@ import {
   ExternalLinkAltIcon,
   FileCodeIcon,
   PaperPlaneIcon,
+  PencilAltIcon,
   PlusCircleIcon,
   TaskIcon,
   WindowMinimizeIcon,
@@ -155,13 +156,19 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
     return null;
   }
 
-  const { attachmentType, kind, name } = attachment;
+  const { attachmentType, kind, name, originalValue, value } = attachment;
+  const isChanged = originalValue !== undefined && originalValue !== value;
 
   return (
-    <Tooltip content={t('Preview attachment')}>
+    <Tooltip content={isChanged ? t('Preview attachment - modified') : t('Preview attachment')}>
       <Label className="ols-plugin__context-label" onClick={onClick} onClose={onClose}>
         <ResourceIcon kind={kind} />
-        <span className="ols-plugin__context-label-text">{name}</span>{' '}
+        <span className="ols-plugin__context-label-text">{name}</span>
+        {isChanged && (
+          <span className="ols-plugin__context-label-modified">
+            <PencilAltIcon />
+          </span>
+        )}
         {kind !== 'Alert' && (
           <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
         )}
