@@ -6,15 +6,16 @@ import { CodeEditor, Language } from '@patternfly/react-code-editor';
 import {
   Button,
   CodeBlock,
+  CodeBlockAction,
   CodeBlockCode,
   Split,
   SplitItem,
   Text,
   TextVariants,
 } from '@patternfly/react-core';
-import { UndoIcon } from '@patternfly/react-icons';
+import { PencilAltIcon, UndoIcon } from '@patternfly/react-icons';
 
-import { AttachmentTypes } from '../attachments';
+import { AttachmentTypes, isAttachmentChanged } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
 import { attachmentSet, openAttachmentClear, openAttachmentSet } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -29,6 +30,11 @@ const ResourceHeader: React.FC = () => {
   return (
     <Text className="ols-plugin__code-block__title" component={TextVariants.h5}>
       <ResourceIcon kind={attachment?.kind} /> {attachment?.name}
+      {isAttachmentChanged(attachment) && (
+        <span className="ols-plugin__inline-icon">
+          <PencilAltIcon />
+        </span>
+      )}
     </Text>
   );
 };
@@ -68,10 +74,14 @@ const Viewer: React.FC = () => {
   return (
     <CodeBlock
       actions={
-        <div className="ols-plugin__code-block__full-width-header">
-          <CopyAction value={attachment?.value} />
-          <ResourceHeader />
-        </div>
+        <>
+          <CodeBlockAction>
+            <ResourceHeader />
+          </CodeBlockAction>
+          <CodeBlockAction>
+            <CopyAction value={attachment?.value} />
+          </CodeBlockAction>
+        </>
       }
       className="ols-plugin__code-block ols-plugin__code-block--attachment"
     >
