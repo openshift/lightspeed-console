@@ -7,6 +7,9 @@ export enum AttachmentTypes {
   YAMLStatus = 'YAML Status',
 }
 
+export const isAttachmentChanged = (attachment: Attachment): boolean =>
+  attachment?.originalValue !== undefined && attachment.originalValue !== attachment.value;
+
 export const toOLSAttachment = (attachment: Attachment) => {
   let attachment_type = 'api object';
   if (attachment.attachmentType === AttachmentTypes.Events) {

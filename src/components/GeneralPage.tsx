@@ -17,6 +17,7 @@ import {
   Chip,
   ChipGroup,
   CodeBlock,
+  CodeBlockAction,
   CodeBlockCode,
   ExpandableSection,
   Form,
@@ -52,7 +53,7 @@ import {
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
-import { AttachmentTypes, toOLSAttachment } from '../attachments';
+import { AttachmentTypes, isAttachmentChanged, toOLSAttachment } from '../attachments';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
@@ -128,9 +129,9 @@ const Code = ({ children }: { children: React.ReactNode }) => {
   return (
     <CodeBlock
       actions={
-        <div className="ols-plugin__code-block__full-width-header">
+        <CodeBlockAction>
           <CopyAction value={children.toString()} />
-        </div>
+        </CodeBlockAction>
       }
     >
       <CodeBlockCode className="ols-plugin__code-block">{children}</CodeBlockCode>
@@ -156,8 +157,8 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
     return null;
   }
 
-  const { attachmentType, kind, name, originalValue, value } = attachment;
-  const isChanged = originalValue !== undefined && originalValue !== value;
+  const { attachmentType, kind, name } = attachment;
+  const isChanged = isAttachmentChanged(attachment);
 
   return (
     <Tooltip content={isChanged ? t('Preview attachment - modified') : t('Preview attachment')}>
@@ -165,13 +166,11 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }
         <ResourceIcon kind={kind} />
         <span className="ols-plugin__context-label-text">{name}</span>
         {isChanged && (
-          <span className="ols-plugin__context-label-modified">
+          <span className="ols-plugin__inline-icon">
             <PencilAltIcon />
           </span>
         )}
-        {kind !== 'Alert' && (
-          <Label className="ols-plugin__context-label-type">{attachmentType}</Label>
-        )}
+        {kind !== 'Alert' && <Label className="ols-plugin__inline-icon">{attachmentType}</Label>}
       </Label>
     </Tooltip>
   );
