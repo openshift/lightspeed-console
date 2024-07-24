@@ -101,7 +101,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
         )}
       </Text>
       <Form>
-        <FormGroup isRequired label={t('Number of events (most recent)')}>
+        <FormGroup isRequired label={t('Most recent {{numEvents}} events', { numEvents })}>
           {isLoading && <Spinner size="md" />}
           {!isLoading &&
             (events.length === 0 ? (
@@ -110,7 +110,6 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
               </HelperText>
             ) : (
               <Slider
-                hasTooltipOverThumb
                 max={events.length}
                 min={1}
                 onChange={onInputNumEventsChange}
