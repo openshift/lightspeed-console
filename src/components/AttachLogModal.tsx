@@ -178,8 +178,8 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
         <FormGroup isRequired label="Container">
           <ContainerInput containers={containers} setValue={setContainer} value={container} />
         </FormGroup>
-        <FormGroup isRequired label={t('Number of lines (most recent)')}>
-          <Slider hasTooltipOverThumb max={100} min={1} onChange={onLinesChange} value={lines} />
+        <FormGroup isRequired label={t('Most recent {{lines}} lines', { lines })}>
+          <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
         </FormGroup>
         <ActionGroup>
           <Button onClick={onSubmit} type="submit" variant="primary">
