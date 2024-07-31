@@ -45,7 +45,7 @@
     "react-router": "5.3.x",
     "react-router-dom": "5.3.x",
     "style-loader": "^4.0.0",
-    "ts-loader": "^9.3.1",
+    "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "webpack": "5.91.0",
