@@ -7,8 +7,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && NODE_ENV=production npm run ts-node node_modules/.bin/webpack",
-    "build-dev": "yarn clean && yarn ts-node node_modules/.bin/webpack",
-    "start": "yarn ts-node node_modules/.bin/webpack serve",
+    "build-dev": "npm run clean && npm run ts-node node_modules/.bin/webpack",
+    "start": "npm run ts-node node_modules/.bin/webpack serve",
     "start-console": "./start-console.sh",
     "i18n": "./i18n-scripts/build-i18n.sh && node ./i18n-scripts/set-english-defaults.js",
     "ts-node": "ts-node -O '{\"module\":\"commonjs\"}'",
@@ -18,7 +18,7 @@
     "test-cypress-headless": "cd integration-tests && node --max-old-space-size=4096 ../node_modules/.bin/cypress run --env openshift=true --browser ${BRIDGE_E2E_BROWSER_NAME:=electron}",
     "cypress-merge": "mochawesome-merge ./integration-tests/screenshots/cypress_report*.json > ./integration-tests/screenshots/cypress.json",
     "cypress-generate": "marge -o ./integration-tests/screenshots/ -f cypress-report -t 'OpenShift Console Plugin Template Cypress Test Results' -p 'OpenShift Cypress Plugin Template Test Results' --showPassed false --assetsDir ./integration-tests/screenshots/cypress/assets ./integration-tests/screenshots/cypress.json",
-    "cypress-postreport": "yarn cypress-merge && yarn cypress-generate"
+    "cypress-postreport": "npm run cypress-merge && npm run cypress-generate"
   },
   "dependencies": {
     "@openshift-console/dynamic-plugin-sdk": "1.0.0",

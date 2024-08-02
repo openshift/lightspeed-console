@@ -30,8 +30,8 @@ export BRIDGE_BASE_ADDRESS
 
 echo "Install dependencies"
 if [ ! -d node_modules ]; then
-  yarn install
+  npm run install
 fi
 
 echo "Runs Cypress tests in headless mode"
-yarn run test-cypress-headless
+npm run run test-cypress-headless
