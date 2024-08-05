@@ -42,7 +42,7 @@ const Popover: React.FC = () => {
         }
       })
       .catch((error) => {
-        console.error('Error fetching user feedback status: {{error}}', { error });
+        console.error('Error fetching user feedback status:', error);
       });
   }, [dispatch]);
 
