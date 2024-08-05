@@ -101,17 +101,19 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
   );
 
   const onSubmit = React.useCallback(() => {
-    const user_question = attachments
+    const userQuestion = attachments
       ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
       : query;
 
+    /* eslint-disable camelcase */
     const requestJSON = {
       conversation_id: conversationID,
       llm_response: response,
       sentiment,
       user_feedback: text,
-      user_question,
+      user_question: userQuestion,
     };
+    /* eslint-enable camelcase */
 
     consoleFetchJSON
       .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)

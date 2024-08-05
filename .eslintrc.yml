@@ -18,10 +18,29 @@ plugins:
   - react
   - '@typescript-eslint'
 rules:
-  prettier/prettier:
-    - error
-  react/jsx-sort-props: [1, { ignoreCase: true }]
-  sort-imports: ["error", { ignoreCase: true, ignoreDeclarationSort: true }]
+  camelcase: 'error'
+  consistent-this: ['error', 'that']
+  curly: 'error'
+  default-case: 'error'
+  default-case-last: 'error'
+  dot-notation: 'error'
+  eqeqeq: 'error'
+  guard-for-in: 'error'
+  no-alert: 'error'
+  no-caller: 'error'
+  no-console: 'error'
+  no-else-return: 'error'
+  no-use-before-define: 'error'
+  no-var: 'error'
+  object-shorthand: 'error'
+  prefer-const: 'error'
+  prefer-template: 'error'
+  prettier/prettier: 'error'
+  radix: 'error'
+  react/jsx-fragments: 'error'
+  react/jsx-sort-props: ['error', { ignoreCase: true }]
+  react/self-closing-comp: ['error', { html: false }]
+  sort-imports: ['error', { ignoreCase: true, ignoreDeclarationSort: true }]
 settings:
   react:
     version: detect

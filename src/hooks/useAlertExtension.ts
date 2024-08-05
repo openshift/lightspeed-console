@@ -13,6 +13,7 @@ const useAlertExtension: ExtensionHook<Array<Action>, AlertExtensionOptions> = (
       label: 'Ask OpenShift Lightspeed',
       cta: () => {
         const ruleName = options.alert?.rule?.name;
+        // eslint-disable-next-line no-console
         console.warn(`OpenShift Lightspeed callback called for alert ${ruleName}`);
       },
     },

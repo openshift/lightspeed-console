@@ -10,6 +10,7 @@ export enum AttachmentTypes {
 export const isAttachmentChanged = (attachment: Attachment): boolean =>
   attachment?.originalValue !== undefined && attachment.originalValue !== attachment.value;
 
+/* eslint-disable camelcase */
 export const toOLSAttachment = (attachment: Attachment) => {
   let attachment_type = 'api object';
   if (attachment.attachmentType === AttachmentTypes.Events) {
@@ -26,3 +27,4 @@ export const toOLSAttachment = (attachment: Attachment) => {
       attachment.attachmentType === AttachmentTypes.Log ? 'text/plain' : 'application/yaml',
   };
 };
+/* eslint-enable camelcase */

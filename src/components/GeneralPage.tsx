@@ -660,6 +660,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       const requestJSON = {
         attachments: attachments.valueSeq().map(toOLSAttachment),
+        // eslint-disable-next-line camelcase
         conversation_id: conversationID,
         query,
       };
