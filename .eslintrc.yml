@@ -18,7 +18,10 @@ plugins:
   - react
   - '@typescript-eslint'
 rules:
+  array-callback-return: ['error', { checkForEach: true }]
+  arrow-body-style: 'error'
   camelcase: 'error'
+  capitalized-comments: ['error', 'always', { 'ignoreConsecutiveComments': true }]
   consistent-this: ['error', 'that']
   curly: 'error'
   default-case: 'error'
@@ -29,10 +32,23 @@ rules:
   no-alert: 'error'
   no-caller: 'error'
   no-console: 'error'
+  no-duplicate-imports: 'error'
   no-else-return: 'error'
+  no-negated-condition: 'error'
+  no-promise-executor-return: 'error'
+  no-return-assign: 'error'
+  no-self-compare: 'error'
+  no-sequences: 'error'
+  no-template-curly-in-string: 'error'
+  no-underscore-dangle: 'error'
+  no-unmodified-loop-condition: 'error'
+  no-unneeded-ternary: 'error'
+  no-unreachable-loop: 'error'
   no-use-before-define: 'error'
+  no-useless-return: 'error'
   no-var: 'error'
   object-shorthand: 'error'
+  prefer-arrow-callback: 'error'
   prefer-const: 'error'
   prefer-template: 'error'
   prettier/prettier: 'error'
@@ -41,7 +57,10 @@ rules:
   react/jsx-no-useless-fragment: 'error'
   react/jsx-sort-props: ['error', { ignoreCase: true }]
   react/self-closing-comp: ['error', { html: false }]
+  require-atomic-updates: 'error'
   sort-imports: ['error', { ignoreCase: true, ignoreDeclarationSort: true }]
+  strict: ['error', 'never']
+  yoda: 'error'
   '@typescript-eslint/no-shadow': 'error'
 settings:
   react:
