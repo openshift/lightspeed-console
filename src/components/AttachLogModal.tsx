@@ -38,9 +38,9 @@ const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue,
   const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
-    (_e: React.MouseEvent<Element, MouseEvent> | undefined, value: string) => {
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string) => {
       close();
-      setValue(value);
+      setValue(newValue);
     },
     [close, setValue],
   );
@@ -159,9 +159,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
           );
           onClose();
         })
-        .catch((error) => {
+        .catch((err) => {
           setIsLoading(false);
-          setError(error.message || t('Failed to fetch logs'));
+          setError(err.message || t('Failed to fetch logs'));
         });
     },
     [container, dispatch, lines, namespace, onClose, pod, t],

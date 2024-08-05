@@ -399,8 +399,8 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
             }
             setLoaded();
           })
-          .catch((error) => {
-            setError(t('Error fetching alerting rules: {{error}}', { error }));
+          .catch((err) => {
+            setError(t('Error fetching alerting rules: {{err}}', { err }));
             setLoaded();
           });
       } else if (

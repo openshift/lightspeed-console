@@ -41,6 +41,7 @@ rules:
   react/jsx-sort-props: ['error', { ignoreCase: true }]
   react/self-closing-comp: ['error', { html: false }]
   sort-imports: ['error', { ignoreCase: true, ignoreDeclarationSort: true }]
+  '@typescript-eslint/no-shadow': 'error'
 settings:
   react:
     version: detect

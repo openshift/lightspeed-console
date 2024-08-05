@@ -94,8 +94,8 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
   }, [dispatch, entryIndex, scrollIntoView, sentiment]);
 
   const onTextChange = React.useCallback(
-    (_e, text) => {
-      dispatch(userFeedbackSetText(entryIndex, text));
+    (_e, newText) => {
+      dispatch(userFeedbackSetText(entryIndex, newText));
     },
     [dispatch, entryIndex],
   );
@@ -121,8 +121,8 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
         dispatch(userFeedbackClose(entryIndex));
         setSubmitted(true);
       })
-      .catch((error) => {
-        setError(error.json?.detail || error.message || 'Feedback POST failed');
+      .catch((err) => {
+        setError(err.json?.detail || err.message || 'Feedback POST failed');
         setSubmitted(false);
       });
   }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, text]);
