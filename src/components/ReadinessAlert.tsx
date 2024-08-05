@@ -27,7 +27,7 @@ const ReadinessAlert: React.FC = () => {
           }
         })
         .catch((error) => {
-          console.error('Error fetching OpenShift Lightspeed readiness: {{error}}', { error });
+          console.error('Error fetching OpenShift Lightspeed readiness:', error);
         });
     };
 
