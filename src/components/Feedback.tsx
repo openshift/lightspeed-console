@@ -24,6 +24,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
+import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import {
   userFeedbackClose,
@@ -120,10 +121,10 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
         setSubmitted(true);
       })
       .catch((error) => {
-        setError(error.json?.detail || error.message || 'Feedback POST failed');
+        setError(getFetchErrorMessage(error, t));
         setSubmitted(false);
       });
-  }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, text]);
+  }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, t, text]);
 
   return (
     <>
