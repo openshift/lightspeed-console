@@ -22,7 +22,7 @@
   "Edit": "Edit",
   "Erase and start new chat": "Erase and start new chat",
   "Error converting to YAML: {{e}}": "Error converting to YAML: {{e}}",
-  "Error fetching alerting rules: {{error}}": "Error fetching alerting rules: {{error}}",
+  "Error fetching alerting rules: {{err}}": "Error fetching alerting rules: {{err}}",
   "Error loading events from WebSocket": "Error loading events from WebSocket",
   "Error querying OpenShift Lightspeed service": "Error querying OpenShift Lightspeed service",
   "Error submitting feedback": "Error submitting feedback",

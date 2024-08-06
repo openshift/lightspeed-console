@@ -94,24 +94,26 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
   }, [dispatch, entryIndex, scrollIntoView, sentiment]);
 
   const onTextChange = React.useCallback(
-    (_e, text) => {
-      dispatch(userFeedbackSetText(entryIndex, text));
+    (_e, newText) => {
+      dispatch(userFeedbackSetText(entryIndex, newText));
     },
     [dispatch, entryIndex],
   );
 
   const onSubmit = React.useCallback(() => {
-    const user_question = attachments
+    const userQuestion = attachments
       ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
       : query;
 
+    /* eslint-disable camelcase */
     const requestJSON = {
       conversation_id: conversationID,
       llm_response: response,
       sentiment,
       user_feedback: text,
-      user_question,
+      user_question: userQuestion,
     };
+    /* eslint-enable camelcase */
 
     consoleFetchJSON
       .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
@@ -119,8 +121,8 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
         dispatch(userFeedbackClose(entryIndex));
         setSubmitted(true);
       })
-      .catch((error) => {
-        setError(error.json?.detail || error.message || 'Feedback POST failed');
+      .catch((err) => {
+        setError(err.json?.detail || err.message || 'Feedback POST failed');
         setSubmitted(false);
       });
   }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, text]);

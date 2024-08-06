@@ -27,6 +27,7 @@ const ReadinessAlert: React.FC = () => {
           }
         })
         .catch((error) => {
+          // eslint-disable-next-line no-console
           console.error('Error fetching OpenShift Lightspeed readiness:', error);
         });
     };

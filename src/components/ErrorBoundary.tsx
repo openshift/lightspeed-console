@@ -7,6 +7,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { isE
   }
 
   static getDerivedStateFromError(error) {
+    // eslint-disable-next-line no-console
     console.error(`Caught OpenShift Lightspeed plugin error:
 Message: "${error?.message}"
 Stack:

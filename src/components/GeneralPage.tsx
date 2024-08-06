@@ -399,8 +399,8 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
             }
             setLoaded();
           })
-          .catch((error) => {
-            setError(t('Error fetching alerting rules: {{error}}', { error }));
+          .catch((err) => {
+            setError(t('Error fetching alerting rules: {{err}}', { err }));
             setLoaded();
           });
       } else if (
@@ -660,6 +660,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       const requestJSON = {
         attachments: attachments.valueSeq().map(toOLSAttachment),
+        // eslint-disable-next-line camelcase
         conversation_id: conversationID,
         query,
       };
@@ -722,123 +723,115 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const isWelcomePage = chatHistory.size === 0;
 
   return (
-    <>
-      <Page>
-        <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
-          {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
-          {onCollapse && (
-            <CompressIcon className="ols-plugin__popover-close" onClick={onCollapse} />
-          )}
-          <WindowMinimizeIcon className="ols-plugin__popover-close" onClick={onClose} />
-          {!isWelcomePage && (
-            <Level>
-              <LevelItem>
-                <Title className="ols-plugin__heading" headingLevel="h1">
-                  {t('Red Hat OpenShift Lightspeed')}
-                </Title>
-              </LevelItem>
-              <LevelItem>
-                <Button onClick={openNewChatModal} variant="primary">
-                  {t('Clear chat')}
-                </Button>
-              </LevelItem>
-            </Level>
-          )}
-        </PageSection>
-
-        <PageSection
-          aria-label={t('OpenShift Lightspeed chat history')}
-          className="ols-plugin__chat-history"
-          hasOverflowScroll
-          isFilled
-          variant="light"
-        >
-          {isWelcomePage && <Welcome />}
-          <AuthAlert authStatus={authStatus} />
-          <PrivacyAlert />
-          {chatHistory.toJS().map((entry, i) => (
-            <ChatHistoryEntry
-              conversationID={conversationID}
-              entry={entry}
-              entryIndex={i}
-              key={i}
-              scrollIntoView={scrollIntoView}
-            />
-          ))}
-          {isWaiting && <ChatHistoryEntryWaiting />}
-          <ReadinessAlert />
-          <div ref={chatHistoryEndRef} />
-        </PageSection>
-
-        {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-          <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
-            <Form onSubmit={onSubmit}>
-              <Split hasGutter>
-                <SplitItem>
-                  <AttachMenu context={attachContext} />
-                </SplitItem>
-                <SplitItem isFilled>
-                  <TextArea
-                    aria-label={t('OpenShift Lightspeed prompt')}
-                    autoFocus
-                    className="ols-plugin__chat-prompt-input"
-                    onChange={onChange}
-                    onFocus={(e) => {
-                      // Move cursor to the end of the text when popover is closed then reopened
-                      const len = e.currentTarget?.value?.length;
-                      if (len) {
-                        e.currentTarget.setSelectionRange(len, len);
-                      }
-                    }}
-                    onKeyPress={onKeyPress}
-                    placeholder={t('Send a message...')}
-                    ref={promptRef}
-                    resizeOrientation="vertical"
-                    rows={Math.min(query.split('\n').length, 12)}
-                    validated={validated}
-                    value={query}
-                  />
-                  <>
-                    {attachments.keySeq().map((id: string) => {
-                      const attachment: Attachment = attachments.get(id);
-                      return (
-                        <AttachmentLabel
-                          attachment={attachment}
-                          key={id}
-                          onClose={() => dispatch(attachmentDelete(id))}
-                        />
-                      );
-                    })}
-                  </>
-                </SplitItem>
-                <SplitItem className="ols-plugin__chat-prompt-submit">
-                  <Button
-                    className="ols-plugin__chat-prompt-button"
-                    type="submit"
-                    variant="primary"
-                  >
-                    <PaperPlaneIcon />
-                  </Button>
-                </SplitItem>
-              </Split>
-            </Form>
-
-            <HelperText>
-              <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-                {t('Always check AI/LLM generated responses for accuracy prior to use.')}
-              </HelperTextItem>
-            </HelperText>
-
-            <AttachmentModal />
-            <NewChatModal
-              isOpen={isNewChatModalOpen}
-              onClose={closeNewChatModal}
-              onConfirm={onConfirmNewChat}
-            />
-          </PageSection>
+    <Page>
+      <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
+        {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
+        {onCollapse && <CompressIcon className="ols-plugin__popover-close" onClick={onCollapse} />}
+        <WindowMinimizeIcon className="ols-plugin__popover-close" onClick={onClose} />
+        {!isWelcomePage && (
+          <Level>
+            <LevelItem>
+              <Title className="ols-plugin__heading" headingLevel="h1">
+                {t('Red Hat OpenShift Lightspeed')}
+              </Title>
+            </LevelItem>
+            <LevelItem>
+              <Button onClick={openNewChatModal} variant="primary">
+                {t('Clear chat')}
+              </Button>
+            </LevelItem>
+          </Level>
         )}
-      </Page>
-    </>
+      </PageSection>
+
+      <PageSection
+        aria-label={t('OpenShift Lightspeed chat history')}
+        className="ols-plugin__chat-history"
+        hasOverflowScroll
+        isFilled
+        variant="light"
+      >
+        {isWelcomePage && <Welcome />}
+        <AuthAlert authStatus={authStatus} />
+        <PrivacyAlert />
+        {chatHistory.toJS().map((entry, i) => (
+          <ChatHistoryEntry
+            conversationID={conversationID}
+            entry={entry}
+            entryIndex={i}
+            key={i}
+            scrollIntoView={scrollIntoView}
+          />
+        ))}
+        {isWaiting && <ChatHistoryEntryWaiting />}
+        <ReadinessAlert />
+        <div ref={chatHistoryEndRef} />
+      </PageSection>
+
+      {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
+        <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
+          <Form onSubmit={onSubmit}>
+            <Split hasGutter>
+              <SplitItem>
+                <AttachMenu context={attachContext} />
+              </SplitItem>
+              <SplitItem isFilled>
+                <TextArea
+                  aria-label={t('OpenShift Lightspeed prompt')}
+                  autoFocus
+                  className="ols-plugin__chat-prompt-input"
+                  onChange={onChange}
+                  onFocus={(e) => {
+                    // Move cursor to the end of the text when popover is closed then reopened
+                    const len = e.currentTarget?.value?.length;
+                    if (len) {
+                      e.currentTarget.setSelectionRange(len, len);
+                    }
+                  }}
+                  onKeyPress={onKeyPress}
+                  placeholder={t('Send a message...')}
+                  ref={promptRef}
+                  resizeOrientation="vertical"
+                  rows={Math.min(query.split('\n').length, 12)}
+                  validated={validated}
+                  value={query}
+                />
+                <>
+                  {attachments.keySeq().map((id: string) => {
+                    const attachment: Attachment = attachments.get(id);
+                    return (
+                      <AttachmentLabel
+                        attachment={attachment}
+                        key={id}
+                        onClose={() => dispatch(attachmentDelete(id))}
+                      />
+                    );
+                  })}
+                </>
+              </SplitItem>
+              <SplitItem className="ols-plugin__chat-prompt-submit">
+                <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">
+                  <PaperPlaneIcon />
+                </Button>
+              </SplitItem>
+            </Split>
+          </Form>
+
+          <HelperText>
+            <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
+              {t('Always check AI/LLM generated responses for accuracy prior to use.')}
+            </HelperTextItem>
+          </HelperText>
+
+          <AttachmentModal />
+          <NewChatModal
+            isOpen={isNewChatModalOpen}
+            onClose={closeNewChatModal}
+            onConfirm={onConfirmNewChat}
+          />
+        </PageSection>
+      )}
+    </Page>
   );
 };
 
