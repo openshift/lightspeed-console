@@ -76,6 +76,7 @@ export const userFeedbackSetSentiment = (entryIndex: number, sentiment: number) 
 export const userFeedbackSetText = (entryIndex: number, text: string) =>
   action(ActionType.UserFeedbackSetText, { entryIndex, text });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actions = {
   attachmentDelete,
   attachmentsClear,
