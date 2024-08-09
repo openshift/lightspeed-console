@@ -99,29 +99,6 @@ NOTE: If you have a Mac with Apple silicon, you will need to add the flag
 `--platform=linux/amd64` when building the image to target the correct platform
 to run in-cluster.
 
-## Deployment on cluster
-
-A [Helm](https://helm.sh) chart is available to deploy the plugin to an OpenShift environment.
-
-The following Helm parameters are required:
-
-`plugin.image`: The location of the image containing the plugin that was previously pushed.  `quay.io/openshift/lightspeed-console-plugin:latest` contains the latest merged code.
-
-Additional parameters can be specified if desired. Consult the chart [values](charts/openshift-console-plugin/values.yaml) file for the full set of supported parameters.
-
-### Installing the Helm Chart
-
-1. Create an openshift-lightspeed namespace:
-    ```shell
-    $ oc create ns openshift-lightspeed
-    ```
-2. Install the chart using the name of the plugin as the Helm release name into the `openshift-lightspeed` namespace, providing the location of the image within the `plugin.image` parameter, by running the following command from the plugin repository root:
-    ```shell
-    $ helm upgrade -i lightspeed-console-plugin charts/openshift-console-plugin -n openshift-lightspeed --set plugin.image=quay.io/openshift/lightspeed-console-plugin:latest
-    ```
-
-NOTE: When defining i18n namespace, adhere `plugin__<name-of-the-plugin>` format. The name of the plugin should be extracted from the `consolePlugin` declaration within the [package.json](package.json) file.
-
 ## i18n
 
 To avoid naming conflicts, the `plugin__lightspeed-console-plugin` i18n
