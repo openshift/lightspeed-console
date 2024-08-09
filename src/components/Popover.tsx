@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { Tooltip } from '@patternfly/react-core';
+import { Button, Tooltip } from '@patternfly/react-core';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
@@ -55,8 +55,10 @@ const Popover: React.FC = () => {
     dispatch(closeOLS());
   }, [dispatch]);
 
+  const title = t('Red Hat OpenShift Lightspeed');
+
   return (
-    <div aria-label={t('Red Hat OpenShift Lightspeed')} className="ols-plugin__popover-container">
+    <div aria-label={title} className="ols-plugin__popover-container">
       {isOpen ? (
         <>
           <div
@@ -73,8 +75,13 @@ const Popover: React.FC = () => {
           <div className="ols-plugin__popover-button" onClick={close}></div>
         </>
       ) : (
-        <Tooltip content={t('Red Hat OpenShift Lightspeed')}>
-          <div className="ols-plugin__popover-button" onClick={open}></div>
+        <Tooltip content={title}>
+          <Button
+            aria-label={title}
+            className="ols-plugin__popover-button"
+            onClick={open}
+            variant="link"
+          />
         </Tooltip>
       )}
     </div>
