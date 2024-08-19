@@ -54,6 +54,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { AttachmentTypes, isAttachmentChanged, toOLSAttachment } from '../attachments';
+import { getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
@@ -201,8 +202,17 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
         {entry.error ? (
-          <Alert isInline title={t('Error querying OpenShift Lightspeed service')} variant="danger">
-            {entry.error}
+          <Alert
+            isExpandable={!!entry.error.moreInfo}
+            isInline
+            title={
+              entry.error.moreInfo
+                ? entry.error.message
+                : t('Error querying OpenShift Lightspeed service')
+            }
+            variant="danger"
+          >
+            {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
           </Alert>
         ) : (
           <>
@@ -681,14 +691,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           unsetWaiting();
         })
         .catch((error) => {
-          const errorDetail = error.json?.detail;
-          const errorMessage =
-            typeof errorDetail?.response === 'string' && typeof errorDetail?.cause === 'string'
-              ? `${errorDetail.response}: ${errorDetail.cause}`
-              : t('If this error persists, please contact an administrator. Error details: {{e}}', {
-                  e: error.json?.message || error.response.statusText,
-                });
-          dispatch(chatHistoryPush({ error: errorMessage, isTruncated: false, who: 'ai' }));
+          dispatch(
+            chatHistoryPush({
+              error: getFetchErrorMessage(error, t),
+              isTruncated: false,
+              who: 'ai',
+            }),
+          );
           scrollIntoView();
           unsetWaiting();
         });

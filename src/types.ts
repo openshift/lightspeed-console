@@ -1,5 +1,7 @@
 import { Map as ImmutableMap } from 'immutable';
 
+import { ErrorType } from './error';
+
 export type Attachment = {
   attachmentType: string;
   kind: string;
@@ -21,7 +23,7 @@ type ChatEntryUser = {
 };
 
 type ChatEntryAI = {
-  error?: string;
+  error?: ErrorType;
   isTruncated: boolean;
   references?: Array<ReferencedDoc>;
   text?: string;
