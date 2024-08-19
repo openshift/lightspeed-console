@@ -23,7 +23,28 @@
 
 .ols-plugin__popover--collapsed {
   height: calc(100% - 2*var(--popover-bottom));
-  width: 35%;
+  width: calc(100% - 2*var(--popover-margin));
+}
+
+/* --pf-v5-global--breakpoint--md */
+@media (min-width: 768px) {
+  .ols-plugin__popover--collapsed {
+    width: 50%;
+  }
+}
+
+/* --pf-v5-global--breakpoint--xl */
+@media (min-width: 1200px) {
+  .ols-plugin__popover--collapsed {
+    width: 40%;
+  }
+}
+
+/* --pf-v5-global--breakpoint--2xl */
+@media (min-width: 1450px) {
+  .ols-plugin__popover--collapsed {
+    width: 35%;
+  }
 }
 
 .ols-plugin__popover--expanded {

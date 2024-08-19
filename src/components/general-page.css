@@ -6,8 +6,11 @@
   margin-bottom: var(--pf-v5-global--spacer--lg);
 }
 
-.ols-plugin__attachment-modal {
-  max-width: 60% !important;
+/* --pf-v5-global--breakpoint--lg */
+@media (min-width: 992px) {
+  .ols-plugin__attachment-modal {
+    max-width: 60% !important;
+  }
 }
 
 .ols-plugin__attachment-modal-actions {
