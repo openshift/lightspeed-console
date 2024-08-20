@@ -52,11 +52,16 @@ const Editor: React.FC<EditorProps> = ({ onChange }) => {
     monaco.editor.onDidChangeMarkers = () => {};
   };
 
+  // In more recent versions of the dynamic plugin SDK, the useUserSettings hook can be used to get
+  // the current theme, but to maintain 4.15 compatibility we are not upgrading the SDK yet
+  const isDarkTheme = document.documentElement.classList.contains('pf-v5-theme-dark');
+
   return (
     <CodeEditor
       code={attachment?.value}
       customControls={<ResourceHeader />}
       height="calc(24rem - 52px)"
+      isDarkTheme={isDarkTheme}
       isLanguageLabelVisible
       isMinimapVisible
       language={
