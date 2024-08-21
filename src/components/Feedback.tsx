@@ -24,6 +24,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
+import { ErrorType, getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import {
   userFeedbackClose,
@@ -72,7 +73,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'text']),
   );
 
-  const [error, setError] = React.useState<string>();
+  const [error, setError] = React.useState<ErrorType>();
   const [submitted, setSubmitted] = React.useState(false);
 
   const onClose = React.useCallback(() => {
@@ -122,10 +123,10 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
         setSubmitted(true);
       })
       .catch((err) => {
-        setError(err.json?.detail || err.message || 'Feedback POST failed');
+        setError(getFetchErrorMessage(err, t));
         setSubmitted(false);
       });
-  }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, text]);
+  }, [conversationID, dispatch, entryIndex, query, attachments, response, sentiment, t, text]);
 
   return (
     <>
@@ -175,11 +176,12 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
             {error && (
               <Alert
                 className="ols-plugin__alert"
+                isExpandable={!!error.moreInfo}
                 isInline
-                title={t('Error submitting feedback')}
+                title={error.moreInfo ? error.message : t('Error submitting feedback')}
                 variant="danger"
               >
-                {error}
+                {error.moreInfo ? error.moreInfo : error.message}
               </Alert>
             )}
             <Button onClick={onSubmit} variant="primary">
