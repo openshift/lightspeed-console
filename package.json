@@ -62,9 +62,6 @@
   "overrides": {
     "webpack": "5.91.0"
   },
-  "resolutions": {
-    "webpack": "5.91.0"
-  },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
     "version": "0.1.0",
