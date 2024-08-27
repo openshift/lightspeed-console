@@ -31,6 +31,11 @@
   background-image: url('../assets/logo.svg');
 }
 
+/* stylelint-disable-next-line selector-disallowed-list */
+.pf-v5-theme-dark .ols-plugin__chat-entry--ai {
+  background-image: url('../assets/logo-dark.svg');
+}
+
 .ols-plugin__chat-entry--user {
   background-image: url('../assets/user.png');
 }
@@ -201,6 +206,11 @@
   padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
 }
 
+/* stylelint-disable-next-line selector-disallowed-list */
+.pf-v5-theme-dark .ols-plugin__header {
+  background-image: url('../assets/logo-dark.svg');
+}
+
 .ols-plugin__heading {
   margin-right: var(--pf-v5-global--spacer--md);
 }
@@ -228,6 +238,11 @@
   height: var(--logo-size);
   margin: var(--pf-v5-global--spacer--2xl) auto var(--pf-v5-global--spacer--lg) auto;
   width: var(--logo-size);
+}
+
+/* stylelint-disable-next-line selector-disallowed-list */
+.pf-v5-theme-dark .ols-plugin__welcome-logo {
+  background-image: url('../assets/logo-dark.svg');
 }
 
 .ols-plugin__welcome-subheading {
