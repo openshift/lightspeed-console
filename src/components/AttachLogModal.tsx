@@ -1,7 +1,12 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { consoleFetchText, ResourceIcon } from '@openshift-console/dynamic-plugin-sdk';
+import {
+  consoleFetchText,
+  K8sResourceKind,
+  ResourceIcon,
+  useK8sWatchResource,
+} from '@openshift-console/dynamic-plugin-sdk';
 import {
   ActionGroup,
   Alert,
@@ -28,21 +33,25 @@ import Modal from './Modal';
 const DEFAULT_LOG_LINES = 25;
 const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
-type ContainerMenuProps = {
+type ContainerInputProps = {
   containers: string[];
-  setValue: (string) => void;
-  value: string;
+  selectedContainer: string;
+  setContainer: (string) => void;
 };
 
-const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) => {
+const ContainerDropdown: React.FC<ContainerInputProps> = ({
+  containers,
+  selectedContainer,
+  setContainer,
+}) => {
   const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string) => {
       close();
-      setValue(newValue);
+      setContainer(newValue);
     },
-    [close, setValue],
+    [close, setContainer],
   );
 
   return (
@@ -52,7 +61,7 @@ const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue,
       onSelect={onSelect}
       toggle={(toggleRef) => (
         <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
-          <ResourceIcon kind="Container" /> {value}
+          <ResourceIcon kind="Container" /> {selectedContainer}
         </MenuToggle>
       )}
     >
@@ -67,13 +76,17 @@ const ContainerDropdown: React.FC<ContainerMenuProps> = ({ containers, setValue,
   );
 };
 
-const ContainerRadios: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) => (
+const ContainerRadios: React.FC<ContainerInputProps> = ({
+  containers,
+  selectedContainer,
+  setContainer,
+}) => (
   <>
     {containers.map((container) => (
       <Radio
         className="ols-plugin__radio"
         id={container}
-        isChecked={container === value}
+        isChecked={container === selectedContainer}
         isLabelWrapped
         key={container}
         label={
@@ -84,7 +97,7 @@ const ContainerRadios: React.FC<ContainerMenuProps> = ({ containers, setValue, v
         name="container"
         onChange={(_e: React.FormEvent<HTMLInputElement>, isChecked: boolean) => {
           if (isChecked) {
-            setValue(container);
+            setContainer(container);
           }
         }}
       />
@@ -92,47 +105,145 @@ const ContainerRadios: React.FC<ContainerMenuProps> = ({ containers, setValue, v
   </>
 );
 
-const ContainerInput: React.FC<ContainerMenuProps> = ({ containers, setValue, value }) =>
+const ContainerInput: React.FC<ContainerInputProps> = ({
+  containers,
+  selectedContainer,
+  setContainer,
+}) =>
   containers.length < 6 ? (
-    <ContainerRadios containers={containers} setValue={setValue} value={value} />
+    <ContainerRadios
+      containers={containers}
+      selectedContainer={selectedContainer}
+      setContainer={setContainer}
+    />
   ) : (
-    <ContainerDropdown containers={containers} setValue={setValue} value={value} />
+    <ContainerDropdown
+      containers={containers}
+      selectedContainer={selectedContainer}
+      setContainer={setContainer}
+    />
+  );
+
+type PodInputProps = {
+  pods: K8sResourceKind[];
+  selectedPod: K8sResourceKind;
+  setPod: (K8sResourceKind) => void;
+};
+
+const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => {
+  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
+
+  const onSelect = React.useCallback(
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newPod: K8sResourceKind) => {
+      close();
+      setPod(newPod);
+    },
+    [close, setPod],
+  );
+
+  return (
+    <Dropdown
+      isOpen={isOpen}
+      onOpenChange={setIsOpen}
+      onSelect={onSelect}
+      toggle={(toggleRef) => (
+        <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
+          <ResourceIcon kind="Pod" /> {selectedPod?.metadata?.name}
+        </MenuToggle>
+      )}
+    >
+      <DropdownList>
+        {pods.map((pod) => (
+          <DropdownItem key={pod.metadata?.uid} value={pod}>
+            <ResourceIcon kind="Pod" /> {pod.metadata?.name}
+          </DropdownItem>
+        ))}
+      </DropdownList>
+    </Dropdown>
+  );
+};
+
+const PodRadios: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => (
+  <>
+    {pods.map((pod) => (
+      <Radio
+        className="ols-plugin__radio"
+        id={pod.metadata?.uid}
+        isChecked={pod.metadata?.uid === selectedPod?.metadata?.uid}
+        isLabelWrapped
+        key={pod.metadata?.uid}
+        label={
+          <>
+            <ResourceIcon kind="Pod" /> {pod.metadata?.name}
+          </>
+        }
+        name="pod"
+        onChange={(_e: React.FormEvent<HTMLInputElement>, isChecked: boolean) => {
+          if (isChecked) {
+            setPod(pod);
+          }
+        }}
+      />
+    ))}
+  </>
+);
+
+const PodInput: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) =>
+  pods.length < 6 ? (
+    <PodRadios pods={pods} selectedPod={selectedPod} setPod={setPod} />
+  ) : (
+    <PodDropdown pods={pods} selectedPod={selectedPod} setPod={setPod} />
   );
 
 type AttachLogModalProps = {
-  containers: string[];
   isOpen: boolean;
-  kind: string;
-  namespace: string;
   onClose: () => void;
-  pod: string;
+  resource: K8sResourceKind;
 };
 
-const AttachLogModal: React.FC<AttachLogModalProps> = ({
-  containers,
-  isOpen,
-  namespace,
-  onClose,
-  pod,
-}) => {
+const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resource }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
 
-  const defaultContainer = containers?.[0];
+  const kind = resource.kind;
+  const name = resource.metadata?.name;
+  const namespace = resource.metadata?.namespace;
 
-  const [container, setContainer] = React.useState<string>(defaultContainer);
+  const showPodInput = kind !== 'Pod';
+
+  const [container, setContainer] = React.useState<string>(
+    kind === 'Pod' ? resource.spec?.containers?.[0]?.name : undefined,
+  );
+  const [containers, setContainers] = React.useState<string[]>([]);
   const [error, setError] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState(false);
   const [lines, setLines] = React.useState<number>(DEFAULT_LOG_LINES);
+  const [pod, setPod] = React.useState<K8sResourceKind>();
 
-  React.useEffect(() => {
-    if (defaultContainer && container === undefined) {
-      setContainer(defaultContainer);
+  const selector = kind === 'Job' ? { 'job-name': name } : resource.spec?.selector;
+  const [pods, podsLoaded, podsError] = useK8sWatchResource<K8sResourceKind[]>(
+    showPodInput ? { isList: true, kind: 'Pod', namespace, selector } : null,
+  );
+
+  const changePod = (newPod: K8sResourceKind) => {
+    if (newPod) {
+      setPod(newPod);
+      const newContainers = newPod.spec?.containers?.map((c) => c.name).sort() ?? [];
+      setContainers(newContainers);
+      setContainer(newContainers[0]);
     }
-    // Only trigger when the default container changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultContainer]);
+  };
+
+  // When the resource changes, reset the default pod (and container) options
+  React.useEffect(() => {
+    changePod(kind === 'Pod' ? resource : undefined);
+  }, [kind, resource]);
+
+  // When the pods are loaded, use the first pod as the default pod value
+  React.useEffect(() => {
+    changePod(podsLoaded && pods ? pods[0] : undefined);
+  }, [pods, podsLoaded]);
 
   const onLinesChange = React.useCallback(
     (_e: SliderOnChangeEvent, value: number) => setLines(value),
@@ -144,7 +255,8 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
       e.preventDefault();
 
       setIsLoading(true);
-      const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${pod}/log?container=${container}&tailLines=${lines}`;
+      const podName = pod?.metadata?.name;
+      const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${lines}`;
       consoleFetchText(url, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
         .then((response: string) => {
           setIsLoading(false);
@@ -153,8 +265,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
               AttachmentTypes.Log,
               'Container',
               container,
+              podName,
               namespace,
-              `Most recent lines from the log for Container '${container}', belonging to pod '${pod}':\n\n${response?.trim()}`,
+              `Most recent lines from the log for Container '${container}', belonging to pod '${podName}':\n\n${response?.trim()}`,
             ),
           );
           onClose();
@@ -175,14 +288,52 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({
         )}
       </Text>
       <Form>
-        <FormGroup isRequired label="Container">
-          <ContainerInput containers={containers} setValue={setContainer} value={container} />
-        </FormGroup>
-        <FormGroup isRequired label={t('Most recent {{lines}} lines', { lines })}>
-          <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
-        </FormGroup>
+        {showPodInput && (
+          <FormGroup isRequired label="Pod">
+            {podsError && (
+              <Alert
+                className="ols-plugin__alert"
+                isInline
+                title={t('Failed to load pods')}
+                variant="danger"
+              >
+                {podsError}
+              </Alert>
+            )}
+            {podsLoaded ? (
+              pods.length === 0 ? (
+                <Alert
+                  className="ols-plugin__alert"
+                  isInline
+                  title={t('No pods found')}
+                  variant="info"
+                >
+                  {t('No pods found for {{kind}} {{name}}', { kind, name })}
+                </Alert>
+              ) : (
+                <PodInput pods={pods} selectedPod={pod} setPod={changePod} />
+              )
+            ) : (
+              <Spinner isInline size="md" />
+            )}
+          </FormGroup>
+        )}
+        {(!showPodInput || (podsLoaded && pods.length > 0)) && (
+          <>
+            <FormGroup isRequired label="Container">
+              <ContainerInput
+                containers={containers}
+                selectedContainer={container}
+                setContainer={setContainer}
+              />
+            </FormGroup>
+            <FormGroup isRequired label={t('Most recent {{lines}} lines', { lines })}>
+              <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
+            </FormGroup>
+          </>
+        )}
         <ActionGroup>
-          <Button onClick={onSubmit} type="submit" variant="primary">
+          <Button isDisabled={!container} onClick={onSubmit} type="submit" variant="primary">
             {t('Attach')}
           </Button>
           <Button onClick={onClose} type="submit" variant="link">

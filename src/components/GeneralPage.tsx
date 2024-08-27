@@ -1,6 +1,6 @@
 import { List as ImmutableList } from 'immutable';
 import { dump } from 'js-yaml';
-import { cloneDeep, defer, each, isMatch, map as lodashMap, omit } from 'lodash';
+import { cloneDeep, defer, each, isMatch, omit } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -400,7 +400,9 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
             if (alert) {
               try {
                 const yaml = dump(alert, { lineWidth: -1 }).trim();
-                dispatch(attachmentSet(AttachmentTypes.YAML, kind, name, namespace, yaml));
+                dispatch(
+                  attachmentSet(AttachmentTypes.YAML, kind, name, undefined, namespace, yaml),
+                );
                 close();
               } catch (e) {
                 setError(t('Error converting to YAML: {{e}}', { e }));
@@ -427,7 +429,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
         delete data.metadata.managedFields;
         try {
           const yaml = dump(data, { lineWidth: -1 }).trim();
-          dispatch(attachmentSet(attachmentType, kind, name, namespace, yaml));
+          dispatch(attachmentSet(attachmentType, kind, name, undefined, namespace, yaml));
           close();
         } catch (e) {
           setError(t('Error converting to YAML: {{e}}', { e }));
@@ -471,29 +473,24 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
   );
 
   const showEvents = kind === 'Pod';
-  const showLogs = kind === 'Pod';
+  const showLogs = ['DaemonSet', 'Deployment', 'Job', 'Pod', 'ReplicaSet', 'StatefulSet'].includes(
+    kind,
+  );
 
   return (
     <>
-      {showEvents && (
+      {showEvents && context && (
         <AttachEventsModal
           isOpen={isEventsModalOpen}
           kind={kind}
           name={name}
           namespace={namespace}
           onClose={closeEventsModal}
-          uid={context?.metadata?.uid}
+          uid={context.metadata?.uid}
         />
       )}
-      {showLogs && (
-        <AttachLogModal
-          containers={lodashMap(context?.spec?.containers, 'name')?.sort()}
-          isOpen={isLogModalOpen}
-          kind={kind}
-          namespace={namespace}
-          onClose={closeLogModal}
-          pod={name}
-        />
+      {showLogs && context && (
+        <AttachLogModal isOpen={isLogModalOpen} onClose={closeLogModal} resource={context} />
       )}
 
       <Select isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
