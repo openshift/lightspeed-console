@@ -4,6 +4,7 @@ import { ErrorType } from './error';
 
 export type Attachment = {
   attachmentType: string;
+  isEditable?: boolean;
   kind: string;
   name: string;
   namespace: string;

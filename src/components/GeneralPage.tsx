@@ -142,17 +142,18 @@ const Code = ({ children }: { children: React.ReactNode }) => {
 
 type AttachmentLabelProps = {
   attachment: Attachment;
+  isEditable?: boolean;
   onClose?: () => void;
 };
 
-const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, onClose }) => {
+const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, isEditable, onClose }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
 
   const onClick = React.useCallback(() => {
-    dispatch(openAttachmentSet(attachment));
-  }, [attachment, dispatch]);
+    dispatch(openAttachmentSet(Object.assign({}, attachment, { isEditable })));
+  }, [attachment, isEditable, dispatch]);
 
   if (!attachment) {
     return null;
@@ -811,6 +812,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                     return (
                       <AttachmentLabel
                         attachment={attachment}
+                        isEditable
                         key={id}
                         onClose={() => dispatch(attachmentDelete(id))}
                       />
