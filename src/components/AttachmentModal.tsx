@@ -176,9 +176,11 @@ const AttachmentModal: React.FC = () => {
         ) : (
           <Split>
             <SplitItem isFilled>
-              <Button onClick={setEditing} type="submit" variant="primary">
-                {t('Edit')}
-              </Button>
+              {attachment?.isEditable && (
+                <Button onClick={setEditing} type="submit" variant="primary">
+                  {t('Edit')}
+                </Button>
+              )}
               <Button onClick={onClose} variant="link">
                 {t('Dismiss')}
               </Button>
