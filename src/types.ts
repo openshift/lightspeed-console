@@ -9,6 +9,7 @@ export type Attachment = {
   name: string;
   namespace: string;
   originalValue?: string;
+  ownerName?: string;
   value: string;
 };
 

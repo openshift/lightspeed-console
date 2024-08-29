@@ -87,7 +87,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
       e.preventDefault();
 
       const yaml = dump(events.slice(-numEvents), { lineWidth: -1 }).trim();
-      dispatch(attachmentSet(AttachmentTypes.Events, kind, name, namespace, yaml));
+      dispatch(attachmentSet(AttachmentTypes.Events, kind, name, undefined, namespace, yaml));
       onClose();
     },
     [dispatch, events, kind, name, namespace, numEvents, onClose],
