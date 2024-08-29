@@ -68,6 +68,7 @@
 
 /* stylelint-disable-next-line selector-disallowed-list */
 .pf-v5-theme-dark .ols-plugin__popover-button {
+  background-color: var(--pf-v5-global--BackgroundColor--100);
   background-image: url('../assets/logo-dark.svg');
 }
 
