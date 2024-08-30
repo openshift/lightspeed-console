@@ -235,6 +235,10 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     }
   };
 
+  // Call onClose when the component is unmounted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => onClose, []);
+
   // When the resource changes, reset the default pod (and container) options
   React.useEffect(() => {
     changePod(kind === 'Pod' ? resource : undefined);

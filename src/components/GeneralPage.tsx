@@ -479,7 +479,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   return (
     <>
-      {showEvents && context && (
+      {showEvents && context && context.metadata?.uid && (
         <AttachEventsModal
           isOpen={isEventsModalOpen}
           kind={kind}
