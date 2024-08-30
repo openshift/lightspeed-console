@@ -43,6 +43,10 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
 
   const numEvents = inputNumEvents ?? Math.min(events.length, DEFAULT_MAX_EVENTS);
 
+  // Call onClose when the component is unmounted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => onClose, []);
+
   React.useEffect(() => {
     if (kind && name && namespace) {
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -70,8 +74,12 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
         setError(t('Error loading events from WebSocket'));
       };
 
-      return () => {
+      socket.onclose = () => {
+        setError(undefined);
         setIsLoading(false);
+      };
+
+      return () => {
         socket.close();
       };
     }
@@ -129,7 +137,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
           <Alert
             className="ols-plugin__alert"
             isInline
-            title={t('Failed to attach context')}
+            title={t('Failed to load events')}
             variant="danger"
           >
             {error}
