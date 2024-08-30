@@ -134,7 +134,8 @@ const AttachmentModal: React.FC = () => {
   }, [attachment, dispatch, editorValue, setNotEditing]);
 
   const onRevert = React.useCallback(() => {
-    dispatch(openAttachmentSet(Object.assign({}, attachment, { value: attachment.originalValue })));
+    const value = attachment.originalValue;
+    dispatch(openAttachmentSet(Object.assign({}, attachment, { value })));
     dispatch(
       attachmentSet(
         attachment.attachmentType,
@@ -142,10 +143,11 @@ const AttachmentModal: React.FC = () => {
         attachment.name,
         attachment.ownerName,
         attachment.namespace,
-        attachment.originalValue,
+        value,
         undefined,
       ),
     );
+    setEditorValue(value);
   }, [attachment, dispatch]);
 
   return (
