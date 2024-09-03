@@ -803,19 +803,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   validated={validated}
                   value={query}
                 />
-                <>
-                  {attachments.keySeq().map((id: string) => {
-                    const attachment: Attachment = attachments.get(id);
-                    return (
-                      <AttachmentLabel
-                        attachment={attachment}
-                        isEditable
-                        key={id}
-                        onClose={() => dispatch(attachmentDelete(id))}
-                      />
-                    );
-                  })}
-                </>
               </SplitItem>
               <SplitItem className="ols-plugin__chat-prompt-submit">
                 <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">
@@ -824,6 +811,19 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               </SplitItem>
             </Split>
           </Form>
+          <div className="ols-plugin__chat-prompt-attachments">
+            {attachments.keySeq().map((id: string) => {
+              const attachment: Attachment = attachments.get(id);
+              return (
+                <AttachmentLabel
+                  attachment={attachment}
+                  isEditable
+                  key={id}
+                  onClose={() => dispatch(attachmentDelete(id))}
+                />
+              );
+            })}
+          </div>
 
           <HelperText>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
