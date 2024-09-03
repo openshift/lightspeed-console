@@ -144,6 +144,11 @@
   margin-top: var(--pf-v5-global--spacer--sm);
 }
 
+.ols-plugin__chat-prompt-attachments {
+  max-width: 100%;
+  padding-left: 2rem;
+}
+
 .ols-plugin__chat-prompt-submit {
   align-self: start;
 }
@@ -165,7 +170,8 @@
 }
 
 .ols-plugin__context-label-text {
-  max-width: 12rem;
+  display: inline-flex;
+  max-width: 10rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
