@@ -11,31 +11,34 @@ const REQUEST_TIMEOUT = 5 * 60 * 1000;
 const ReadinessAlert: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  // Default to true and only show the Alert if the call to /readiness returns `false`
-  const [isReady, setIsReady] = React.useState(true);
+  const [showAlert, setShowAlert] = React.useState(false);
 
   React.useEffect(() => {
     const poller = () => {
       consoleFetchJSON(READINESS_ENDPOINT, 'get', getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
         .then((response) => {
           // Keep polling until /readiness returns true
-          if (response.ready === false) {
-            setIsReady(false);
+          if (response.ready === true) {
+            setShowAlert(false);
+          } else {
+            setShowAlert(true);
             setTimeout(poller, 10000);
-          } else if (response.ready === true) {
-            setIsReady(true);
           }
         })
-        .catch((error) => {
-          // eslint-disable-next-line no-console
-          console.error('Error fetching OpenShift Lightspeed readiness:', error);
+        .catch(() => {
+          setShowAlert(true);
+          setTimeout(poller, 10000);
         });
     };
 
     poller();
   }, []);
 
-  return isReady ? null : (
+  if (!showAlert) {
+    return null;
+  }
+
+  return (
     <Alert
       className="ols-plugin__alert"
       isInline
