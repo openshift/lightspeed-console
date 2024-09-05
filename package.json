@@ -21,7 +21,7 @@
     "@patternfly/react-code-editor": "5.4.0",
     "@patternfly/react-core": "5.4.0",
     "@patternfly/react-icons": "5.4.0",
-    "@types/node": "^22.5.3",
+    "@types/node": "^22.5.4",
     "@types/react": "17.0.x",
     "@types/react-router-dom": "5.3.x",
     "copy-webpack-plugin": "^12.0.2",
