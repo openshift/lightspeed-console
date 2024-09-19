@@ -472,7 +472,16 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
     [isOpen, t, toggleIsOpen],
   );
 
-  const showEvents = kind === 'Pod';
+  const showEvents = [
+    'CronJob',
+    'DaemonSet',
+    'Deployment',
+    'Job',
+    'Pod',
+    'ReplicaSet',
+    'StatefulSet',
+  ].includes(kind);
+
   const showLogs = ['DaemonSet', 'Deployment', 'Job', 'Pod', 'ReplicaSet', 'StatefulSet'].includes(
     kind,
   );
