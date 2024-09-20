@@ -18,7 +18,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       attachments: ImmutableMap<string, Attachment>(),
       chatHistory: ImmutableList(),
       context: null,
+      contextEvents: [],
       conversationID: null,
+      isContextEventsLoading: false,
       isOpen: false,
       isUserFeedbackEnabled: true,
       openAttachment: null,
@@ -27,6 +29,14 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
   }
 
   switch (action.type) {
+    case ActionType.AddContextEvent: {
+      const oldEvents = state.get('contextEvents');
+      return state.set(
+        'contextEvents',
+        oldEvents ? [...oldEvents, action.payload.event] : [action.payload.event],
+      );
+    }
+
     case ActionType.AttachmentDelete:
       return state.deleteIn(['attachments', action.payload.id]);
 
@@ -47,6 +57,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
         state.get('chatHistory').push(ImmutableMap(action.payload.entry)),
       );
 
+    case ActionType.ClearContextEvents:
+      return state.set('contextEvents', []);
+
     case ActionType.CloseOLS:
       return state.set('isOpen', false);
 
@@ -61,6 +74,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.SetContext:
       return state.set('context', action.payload.context);
+
+    case ActionType.SetIsContextEventsLoading:
+      return state.set('isContextEventsLoading', action.payload.isLoading);
 
     case ActionType.SetConversationID:
       return state.set('conversationID', action.payload.id);

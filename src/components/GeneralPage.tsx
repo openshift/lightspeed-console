@@ -357,6 +357,9 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
   const dispatch = useDispatch();
 
+  const events = useSelector((s: State) => s.plugins?.ols?.get('contextEvents'));
+  const isEventsLoading = useSelector((s: State) => s.plugins?.ols?.get('isContextEventsLoading'));
+
   const [error, setError] = React.useState<string>();
   const [isEventsModalOpen, , openEventsModal, closeEventsModal] = useBoolean(false);
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
@@ -538,9 +541,16 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
                     <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
                   </SelectOption>
                   {showEvents && (
-                    <SelectOption value={AttachmentTypes.Events}>
-                      <TaskIcon /> {t('Events')}
-                    </SelectOption>
+                    <div
+                      title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}
+                    >
+                      <SelectOption
+                        isDisabled={!isEventsLoading && events.length === 0}
+                        value={AttachmentTypes.Events}
+                      >
+                        <TaskIcon /> {t('Events')}
+                      </SelectOption>
+                    </div>
                   )}
                   {showLogs && (
                     <SelectOption value={AttachmentTypes.Log}>
