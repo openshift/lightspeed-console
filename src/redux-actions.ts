@@ -3,17 +3,20 @@ import { action, ActionType as Action } from 'typesafe-actions';
 import { Attachment, ChatEntry } from './types';
 
 export enum ActionType {
+  AddContextEvent = 'addContextEvent',
   AttachmentDelete = 'attachmentDelete',
   AttachmentsClear = 'attachmentsClear',
   AttachmentSet = 'attachmentSet',
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
+  ClearContextEvents = 'clearContextEvents',
   CloseOLS = 'closeOLS',
   OpenAttachmentClear = 'openAttachmentClear',
   OpenAttachmentSet = 'openAttachmentSet',
   OpenOLS = 'openOLS',
   SetContext = 'setContext',
   SetConversationID = 'setConversationID',
+  SetIsContextEventsLoading = 'setIsContextEventsLoading',
   SetQuery = 'setQuery',
   UserFeedbackClose = 'userFeedbackClose',
   UserFeedbackDisable = 'userFeedbackDisable',
@@ -21,6 +24,8 @@ export enum ActionType {
   UserFeedbackSetSentiment = 'userFeedbackSetSentiment',
   UserFeedbackSetText = 'userFeedbackSetText',
 }
+
+export const addContextEvent = (event: object) => action(ActionType.AddContextEvent, { event });
 
 export const attachmentDelete = (id: string) => action(ActionType.AttachmentDelete, { id });
 
@@ -49,6 +54,8 @@ export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 
+export const clearContextEvents = () => action(ActionType.ClearContextEvents);
+
 export const closeOLS = () => action(ActionType.CloseOLS);
 
 export const openAttachmentClear = () => action(ActionType.OpenAttachmentClear);
@@ -61,6 +68,9 @@ export const openOLS = () => action(ActionType.OpenOLS);
 export const setContext = (context: object) => action(ActionType.SetContext, { context });
 
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
+
+export const setIsContextEventsLoading = (isLoading: boolean) =>
+  action(ActionType.SetIsContextEventsLoading, { isLoading });
 
 export const setQuery = (query: string) => action(ActionType.SetQuery, { query });
 
@@ -80,17 +90,20 @@ export const userFeedbackSetText = (entryIndex: number, text: string) =>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actions = {
+  addContextEvent,
   attachmentDelete,
   attachmentsClear,
   attachmentSet,
   chatHistoryClear,
   chatHistoryPush,
+  clearContextEvents,
   closeOLS,
   openAttachmentClear,
   openAttachmentSet,
   openOLS,
   setContext,
   setConversationID,
+  setIsContextEventsLoading,
   setQuery,
   userFeedbackClose,
   userFeedbackDisable,

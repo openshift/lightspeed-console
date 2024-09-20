@@ -1,7 +1,7 @@
 import { dump } from 'js-yaml';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   ActionGroup,
   Alert,
@@ -17,7 +17,13 @@ import {
 } from '@patternfly/react-core';
 
 import { AttachmentTypes } from '../attachments';
-import { attachmentSet } from '../redux-actions';
+import {
+  addContextEvent,
+  attachmentSet,
+  clearContextEvents,
+  setIsContextEventsLoading,
+} from '../redux-actions';
+import { State } from '../redux-reducers';
 import Modal from './Modal';
 
 const DEFAULT_MAX_EVENTS = 10;
@@ -36,10 +42,11 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
 
   const dispatch = useDispatch();
 
+  const events = useSelector((s: State) => s.plugins?.ols?.get('contextEvents'));
+  const isLoading = useSelector((s: State) => s.plugins?.ols?.get('isContextEventsLoading'));
+
   const [error, setError] = React.useState<string>();
-  const [events, setEvents] = React.useState([]);
   const [inputNumEvents, setInputNumEvents] = React.useState<number>();
-  const [isLoading, setIsLoading] = React.useState(true);
 
   const numEvents = inputNumEvents ?? Math.min(events.length, DEFAULT_MAX_EVENTS);
 
@@ -49,41 +56,45 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
 
   React.useEffect(() => {
     if (kind && name && namespace) {
+      dispatch(clearContextEvents());
+
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
       const url = `${protocol}://${window.location.host}/api/kubernetes/api/v1/namespaces/${namespace}/events?fieldSelector=involvedObject.kind=${kind},involvedObject.name=${name},involvedObject.uid=${uid}&watch=true`;
       const socket = new WebSocket(url);
 
       socket.onopen = () => {
-        setIsLoading(true);
+        dispatch(setIsContextEventsLoading(true));
         // After a while, timeout and assume that there are no events
-        setTimeout(() => setIsLoading(false), 10000);
+        setTimeout(() => dispatch(setIsContextEventsLoading(false)), 10000);
       };
 
       socket.onmessage = (e) => {
-        setIsLoading(false);
+        dispatch(setIsContextEventsLoading(false));
         const data = JSON.parse(e.data);
         if (data && data.type === 'ADDED') {
           // We ignore the managedFields section because it doesn't have much value
           delete data.object.metadata.managedFields;
-          setEvents((oldEvents) => [...oldEvents, data.object]);
+          dispatch(addContextEvent(data.object));
         }
       };
 
       socket.onerror = () => {
-        setIsLoading(false);
+        dispatch(setIsContextEventsLoading(false));
         setError(t('Error loading events from WebSocket'));
       };
 
       socket.onclose = () => {
         setError(undefined);
-        setIsLoading(false);
+        dispatch(setIsContextEventsLoading(false));
       };
 
       return () => {
+        dispatch(setIsContextEventsLoading(false));
+        dispatch(clearContextEvents());
         socket.close();
       };
     }
-  }, [kind, name, namespace, t, uid]);
+  }, [dispatch, kind, name, namespace, t, uid]);
 
   const onInputNumEventsChange = React.useCallback(
     (_e: SliderOnChangeEvent, value: number) => setInputNumEvents(value),
