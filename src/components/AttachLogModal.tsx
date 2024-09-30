@@ -1,3 +1,4 @@
+import { debounce, throttle } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -11,6 +12,9 @@ import {
   ActionGroup,
   Alert,
   Button,
+  CodeBlock,
+  CodeBlockAction,
+  CodeBlockCode,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -28,6 +32,7 @@ import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { attachmentSet } from '../redux-actions';
+import CopyAction from './CopyAction';
 import Modal from './Modal';
 
 const DEFAULT_LOG_LINES = 25;
@@ -195,6 +200,17 @@ const PodInput: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) =>
     <PodDropdown pods={pods} selectedPod={selectedPod} setPod={setPod} />
   );
 
+type ErrorProps = {
+  children: React.ReactNode;
+  title: React.ReactNode;
+};
+
+const Error: React.FC<ErrorProps> = ({ children, title }) => (
+  <Alert className="ols-plugin__alert" isInline title={title} variant="danger">
+    {children}
+  </Alert>
+);
+
 type AttachLogModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -220,6 +236,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   const [isLoading, setIsLoading] = React.useState(false);
   const [lines, setLines] = React.useState<number>(DEFAULT_LOG_LINES);
   const [pod, setPod] = React.useState<K8sResourceKind>();
+  const [preview, setPreview] = React.useState<string>();
+  const [previewError, setPreviewError] = React.useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = React.useState(false);
 
   const selector = kind === 'Job' ? { 'job-name': name } : resource.spec?.selector;
   const [pods, podsLoaded, podsError] = useK8sWatchResource<K8sResourceKind[]>(
@@ -249,18 +268,47 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     changePod(podsLoaded && pods ? pods[0] : undefined);
   }, [pods, podsLoaded]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const onLinesChange = React.useCallback(
-    (_e: SliderOnChangeEvent, value: number) => setLines(value),
+    throttle((_e: SliderOnChangeEvent, value: number) => setLines(value), 50),
     [],
   );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const loadPreview = React.useCallback(
+    debounce((url: string) => {
+      setIsPreviewLoading(true);
+      setPreviewError(undefined);
+      consoleFetchText(url, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+        .then((response: string) => {
+          setPreview(response);
+          setIsPreviewLoading(false);
+        })
+        .catch((err) => {
+          setIsPreviewLoading(false);
+          setPreviewError(err.message || t('Failed to fetch logs'));
+        });
+    }, 500),
+    [],
+  );
+
+  React.useEffect(() => {
+    const podName = pod?.metadata?.name;
+    if (container && lines && namespace && podName) {
+      loadPreview(
+        `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${lines}`,
+      );
+    }
+  }, [container, loadPreview, lines, namespace, pod]);
 
   const onSubmit = React.useCallback(
     (e) => {
       e.preventDefault();
 
-      setIsLoading(true);
       const podName = pod?.metadata?.name;
       const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${lines}`;
+      setIsLoading(true);
+      setError(undefined);
       consoleFetchText(url, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
         .then((response: string) => {
           setIsLoading(false);
@@ -294,16 +342,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       <Form>
         {showPodInput && (
           <FormGroup isRequired label="Pod">
-            {podsError && (
-              <Alert
-                className="ols-plugin__alert"
-                isInline
-                title={t('Failed to load pods')}
-                variant="danger"
-              >
-                {podsError}
-              </Alert>
-            )}
+            {podsError && <Error title={t('Failed to load pods')}>{podsError}</Error>}
             {podsLoaded ? (
               pods.length === 0 ? (
                 <Alert
@@ -336,6 +375,26 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
             </FormGroup>
           </>
         )}
+        {preview && (
+          <CodeBlock
+            actions={
+              <>
+                <CodeBlockAction />
+                <CodeBlockAction>
+                  <CopyAction value={preview} />
+                </CodeBlockAction>
+              </>
+            }
+            className="ols-plugin__code-block ols-plugin__code-block--logs-preview"
+          >
+            {isPreviewLoading && <Spinner size="md" />}
+            {previewError && <Error title={t('Failed to load preview')}>{previewError}</Error>}
+            {preview && !isPreviewLoading && !previewError && (
+              <CodeBlockCode style={{ whiteSpace: 'pre' }}>{preview}</CodeBlockCode>
+            )}
+          </CodeBlock>
+        )}
+        {error && <Error title={t('Failed to attach context')}>{error}</Error>}
         <ActionGroup>
           <Button isDisabled={!container} onClick={onSubmit} type="submit" variant="primary">
             {t('Attach')}
@@ -345,16 +404,6 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
           </Button>
         </ActionGroup>
         {isLoading && <Spinner size="md" />}
-        {error && (
-          <Alert
-            className="ols-plugin__alert"
-            isInline
-            title={t('Failed to attach context')}
-            variant="danger"
-          >
-            {error}
-          </Alert>
-        )}
       </Form>
     </Modal>
   );
