@@ -82,6 +82,12 @@
   max-height: 24rem;
 }
 
+.ols-plugin__code-block--logs-preview {
+  height: 14rem;
+  margin-top: 1rem;
+  max-height: unset;
+}
+
 .ols-plugin__code-block__title {
   padding-left: var(--pf-global--spacer--md);
   padding-top: var(--pf-global--spacer--form-element);
