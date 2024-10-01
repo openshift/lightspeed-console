@@ -19,7 +19,7 @@
     "@openshift-console/dynamic-plugin-sdk": "1.0.0",
     "@openshift-console/dynamic-plugin-sdk-webpack": "1.0.2",
     "@patternfly/react-code-editor": "5.4.1",
-    "@patternfly/react-core": "5.4.0",
+    "@patternfly/react-core": "5.4.1",
     "@patternfly/react-icons": "5.4.0",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
