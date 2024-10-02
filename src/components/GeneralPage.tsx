@@ -85,7 +85,7 @@ import './general-page.css';
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
 
-const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+const QUERY_REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 type QueryResponse = {
   conversation_id: string;
@@ -386,7 +386,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
       } else if (kind === 'Alert') {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
-        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader())
           .then((response) => {
             let alert;
             each(response?.data?.groups, (group) => {
@@ -693,7 +693,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       };
 
       consoleFetchJSON
-        .post(QUERY_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+        .post(QUERY_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), QUERY_REQUEST_TIMEOUT)
         .then((response: QueryResponse) => {
           dispatch(setConversationID(response.conversation_id));
           dispatch(
