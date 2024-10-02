@@ -1,6 +1,5 @@
 import { List as ImmutableList } from 'immutable';
-import { dump } from 'js-yaml';
-import { cloneDeep, defer, each, isMatch, omit } from 'lodash';
+import { defer, omit } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -23,17 +22,11 @@ import {
   Form,
   HelperText,
   HelperTextItem,
-  Icon,
   Label,
   Level,
   LevelItem,
-  MenuToggle,
-  MenuToggleElement,
   Page,
   PageSection,
-  Select,
-  SelectList,
-  SelectOption,
   Spinner,
   Split,
   SplitItem,
@@ -45,15 +38,12 @@ import {
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
-  FileCodeIcon,
   PaperPlaneIcon,
   PencilAltIcon,
-  PlusCircleIcon,
-  TaskIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
-import { AttachmentTypes, isAttachmentChanged, toOLSAttachment } from '../attachments';
+import { isAttachmentChanged, toOLSAttachment } from '../attachments';
 import { getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -61,7 +51,6 @@ import { useLocationContext } from '../hooks/useLocationContext';
 import {
   attachmentDelete,
   attachmentsClear,
-  attachmentSet,
   chatHistoryClear,
   chatHistoryPush,
   openAttachmentSet,
@@ -71,9 +60,8 @@ import {
 } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
-import AttachEventsModal from './AttachEventsModal';
-import AttachLogModal from './AttachLogModal';
 import AttachmentModal from './AttachmentModal';
+import AttachMenu from './AttachMenu';
 import CopyAction from './CopyAction';
 import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
@@ -83,7 +71,6 @@ import ResourceIcon from './ResourceIcon';
 import './general-page.css';
 
 const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
-const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
 
 const QUERY_REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
@@ -344,236 +331,6 @@ const Welcome: React.FC = () => {
           'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
         )}
       </Title>
-    </>
-  );
-};
-
-type AttachMenuProps = {
-  context: K8sResourceKind;
-};
-
-const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
-
-  const dispatch = useDispatch();
-
-  const events = useSelector((s: State) => s.plugins?.ols?.get('contextEvents'));
-  const isEventsLoading = useSelector((s: State) => s.plugins?.ols?.get('isContextEventsLoading'));
-
-  const [error, setError] = React.useState<string>();
-  const [isEventsModalOpen, , openEventsModal, closeEventsModal] = useBoolean(false);
-  const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
-  const [isLoading, , setLoading, setLoaded] = useBoolean(false);
-  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
-
-  const kind = context?.kind;
-  const name = context?.metadata?.name;
-  const namespace = context?.metadata?.namespace;
-
-  const onSelect = React.useCallback(
-    (_e: React.MouseEvent | undefined, attachmentType: string) => {
-      if (!kind || !name) {
-        setError(t('Could not get context'));
-        return;
-      }
-
-      if (attachmentType === AttachmentTypes.Events) {
-        openEventsModal();
-        close();
-      } else if (attachmentType === AttachmentTypes.Log) {
-        openLogModal();
-        close();
-      } else if (kind === 'Alert') {
-        setLoading();
-        const labels = Object.fromEntries(new URLSearchParams(location.search));
-        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader())
-          .then((response) => {
-            let alert;
-            each(response?.data?.groups, (group) => {
-              each(group.rules, (rule) => {
-                alert = rule.alerts?.find((a) => isMatch(labels, a.labels));
-                if (alert) {
-                  return false;
-                }
-              });
-              if (alert) {
-                return false;
-              }
-            });
-            if (alert) {
-              try {
-                const yaml = dump(alert, { lineWidth: -1 }).trim();
-                dispatch(
-                  attachmentSet(AttachmentTypes.YAML, kind, name, undefined, namespace, yaml),
-                );
-                close();
-              } catch (e) {
-                setError(t('Error converting to YAML: {{e}}', { e }));
-              }
-            } else {
-              setError(t('Failed to find definition YAML for alert'));
-            }
-            setLoaded();
-          })
-          .catch((err) => {
-            setError(t('Error fetching alerting rules: {{err}}', { err }));
-            setLoaded();
-          });
-      } else if (
-        attachmentType === AttachmentTypes.YAML ||
-        attachmentType === AttachmentTypes.YAMLStatus
-      ) {
-        const data = cloneDeep(
-          attachmentType === AttachmentTypes.YAMLStatus
-            ? { kind: context.kind, metadata: context.metadata, status: context.status }
-            : context,
-        );
-        // We ignore the managedFields section because it doesn't have much value
-        delete data.metadata.managedFields;
-        try {
-          const yaml = dump(data, { lineWidth: -1 }).trim();
-          dispatch(attachmentSet(attachmentType, kind, name, undefined, namespace, yaml));
-          close();
-        } catch (e) {
-          setError(t('Error converting to YAML: {{e}}', { e }));
-        }
-      }
-    },
-    [
-      close,
-      context,
-      dispatch,
-      kind,
-      name,
-      namespace,
-      openEventsModal,
-      openLogModal,
-      setLoaded,
-      setLoading,
-      t,
-    ],
-  );
-
-  const toggle = React.useCallback(
-    (toggleRef: React.Ref<MenuToggleElement>) => (
-      <Tooltip content={t('Attach context')} style={isOpen ? { visibility: 'hidden' } : undefined}>
-        <MenuToggle
-          className="ols-plugin__attach-menu"
-          isExpanded={isOpen}
-          onClick={toggleIsOpen}
-          ref={toggleRef}
-          variant="plain"
-        >
-          <Icon size="md">
-            <PlusCircleIcon
-              className={isOpen ? 'ols-plugin__context-menu-icon--active' : undefined}
-            />
-          </Icon>
-        </MenuToggle>
-      </Tooltip>
-    ),
-    [isOpen, t, toggleIsOpen],
-  );
-
-  const showEvents = [
-    'CronJob',
-    'DaemonSet',
-    'Deployment',
-    'Job',
-    'Pod',
-    'ReplicaSet',
-    'StatefulSet',
-  ].includes(kind);
-
-  const showLogs = ['DaemonSet', 'Deployment', 'Job', 'Pod', 'ReplicaSet', 'StatefulSet'].includes(
-    kind,
-  );
-
-  return (
-    <>
-      {showEvents && context && context.metadata?.uid && (
-        <AttachEventsModal
-          isOpen={isEventsModalOpen}
-          kind={kind}
-          name={name}
-          namespace={namespace}
-          onClose={closeEventsModal}
-          uid={context.metadata?.uid}
-        />
-      )}
-      {showLogs && context && (
-        <AttachLogModal isOpen={isLogModalOpen} onClose={closeLogModal} resource={context} />
-      )}
-
-      <Select isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
-        <SelectList className="ols-plugin__context-menu">
-          {!kind || !name ? (
-            <Alert isInline isPlain title="No context found" variant="info">
-              <p>The current page your are viewing does not contain any supported context.</p>
-            </Alert>
-          ) : (
-            <>
-              <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-                {t('Currently viewing')}
-              </Title>
-              <Label
-                className="ols-plugin__context-label"
-                textMaxWidth="10rem"
-                title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
-              >
-                <ResourceIcon kind={kind} /> {name}
-              </Label>
-
-              <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-                {t('Attach')}
-              </Title>
-
-              {kind === 'Alert' ? (
-                <SelectOption value={AttachmentTypes.YAML}>
-                  <FileCodeIcon /> {t('Alert')} {isLoading && <Spinner size="md" />}
-                </SelectOption>
-              ) : (
-                <>
-                  <SelectOption value={AttachmentTypes.YAML}>
-                    <FileCodeIcon /> YAML
-                  </SelectOption>
-                  <SelectOption value={AttachmentTypes.YAMLStatus}>
-                    <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
-                  </SelectOption>
-                  {showEvents && (
-                    <div
-                      title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}
-                    >
-                      <SelectOption
-                        isDisabled={!isEventsLoading && events.length === 0}
-                        value={AttachmentTypes.Events}
-                      >
-                        <TaskIcon /> {t('Events')}
-                      </SelectOption>
-                    </div>
-                  )}
-                  {showLogs && (
-                    <SelectOption value={AttachmentTypes.Log}>
-                      <TaskIcon /> {t('Logs')}
-                    </SelectOption>
-                  )}
-                </>
-              )}
-            </>
-          )}
-
-          {error && (
-            <Alert
-              className="ols-plugin__alert"
-              isInline
-              title={t('Failed to attach context')}
-              variant="danger"
-            >
-              {error}
-            </Alert>
-          )}
-        </SelectList>
-      </Select>
     </>
   );
 };
