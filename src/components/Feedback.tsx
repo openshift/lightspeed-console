@@ -38,7 +38,7 @@ import ErrorBoundary from './ErrorBoundary';
 
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
 
-const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+const REQUEST_TIMEOUT = 5 * 60 * 1000;
 
 const THUMBS_DOWN = -1;
 const THUMBS_UP = 1;

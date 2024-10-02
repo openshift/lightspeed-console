@@ -36,7 +36,6 @@ import CopyAction from './CopyAction';
 import Modal from './Modal';
 
 const DEFAULT_LOG_LINES = 25;
-const REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 type ContainerInputProps = {
   containers: string[];
@@ -279,7 +278,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     debounce((url: string) => {
       setIsPreviewLoading(true);
       setPreviewError(undefined);
-      consoleFetchText(url, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+      consoleFetchText(url, getRequestInitWithAuthHeader())
         .then((response: string) => {
           setPreview(response);
           setIsPreviewLoading(false);
@@ -309,7 +308,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${lines}`;
       setIsLoading(true);
       setError(undefined);
-      consoleFetchText(url, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+      consoleFetchText(url, getRequestInitWithAuthHeader())
         .then((response: string) => {
           setIsLoading(false);
           dispatch(
