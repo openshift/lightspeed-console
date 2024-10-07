@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 RUN npm install --omit dev --loglevel verbose
 RUN npm run build --loglevel verbose
 
-FROM registry.access.redhat.com/ubi9/nginx-120:latest
+FROM registry.access.redhat.com/ubi9/nginx-124:latest
 
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 LABEL name="openshift-lightspeed/lightspeed-console" \
