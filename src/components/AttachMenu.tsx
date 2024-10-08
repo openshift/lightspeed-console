@@ -153,7 +153,7 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
           <MenuToggle
             className="ols-plugin__attach-menu"
             isDisabled={isDisabled}
-            isExpanded={isOpen}
+            isExpanded={isOpen && !isDisabled}
             onClick={toggleIsOpen}
             ref={toggleRef}
             variant="plain"
