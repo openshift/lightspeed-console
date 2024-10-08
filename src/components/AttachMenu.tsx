@@ -137,25 +137,37 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
     ],
   );
 
+  const isDisabled = !kind || !name;
+
   const toggle = React.useCallback(
     (toggleRef: React.Ref<MenuToggleElement>) => (
-      <Tooltip content={t('Attach context')} style={isOpen ? { visibility: 'hidden' } : undefined}>
-        <MenuToggle
-          className="ols-plugin__attach-menu"
-          isExpanded={isOpen}
-          onClick={toggleIsOpen}
-          ref={toggleRef}
-          variant="plain"
-        >
-          <Icon size="md">
-            <PlusCircleIcon
-              className={isOpen ? 'ols-plugin__context-menu-icon--active' : undefined}
-            />
-          </Icon>
-        </MenuToggle>
+      <Tooltip
+        content={
+          isDisabled
+            ? t('The current page your are viewing does not contain any supported context')
+            : t('Attach context')
+        }
+        style={isOpen ? { visibility: 'hidden' } : undefined}
+      >
+        <div>
+          <MenuToggle
+            className="ols-plugin__attach-menu"
+            isDisabled={isDisabled}
+            isExpanded={isOpen}
+            onClick={toggleIsOpen}
+            ref={toggleRef}
+            variant="plain"
+          >
+            <Icon size="md">
+              <PlusCircleIcon
+                className={isOpen ? 'ols-plugin__context-menu-icon--active' : undefined}
+              />
+            </Icon>
+          </MenuToggle>
+        </div>
       </Tooltip>
     ),
-    [isOpen, t, toggleIsOpen],
+    [isDisabled, isOpen, t, toggleIsOpen],
   );
 
   const showEvents = [
@@ -190,60 +202,52 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
 
       <Select isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
         <SelectList className="ols-plugin__context-menu">
-          {!kind || !name ? (
-            <Alert isInline isPlain title="No context found" variant="info">
-              <p>The current page your are viewing does not contain any supported context.</p>
-            </Alert>
-          ) : (
-            <>
-              <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-                {t('Currently viewing')}
-              </Title>
-              <Label
-                className="ols-plugin__context-label"
-                textMaxWidth="10rem"
-                title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
-              >
-                <ResourceIcon kind={kind} /> {name}
-              </Label>
+          <>
+            <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+              {t('Currently viewing')}
+            </Title>
+            <Label
+              className="ols-plugin__context-label"
+              textMaxWidth="10rem"
+              title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
+            >
+              <ResourceIcon kind={kind} /> {name}
+            </Label>
 
-              <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-                {t('Attach')}
-              </Title>
+            <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+              {t('Attach')}
+            </Title>
 
-              {kind === 'Alert' ? (
+            {kind === 'Alert' ? (
+              <SelectOption value={AttachmentTypes.YAML}>
+                <FileCodeIcon /> {t('Alert')} {isLoading && <Spinner size="md" />}
+              </SelectOption>
+            ) : (
+              <>
                 <SelectOption value={AttachmentTypes.YAML}>
-                  <FileCodeIcon /> {t('Alert')} {isLoading && <Spinner size="md" />}
+                  <FileCodeIcon /> YAML
                 </SelectOption>
-              ) : (
-                <>
-                  <SelectOption value={AttachmentTypes.YAML}>
-                    <FileCodeIcon /> YAML
-                  </SelectOption>
-                  <SelectOption value={AttachmentTypes.YAMLStatus}>
-                    <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
-                  </SelectOption>
-                  {showEvents && (
-                    <div
-                      title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}
+                <SelectOption value={AttachmentTypes.YAMLStatus}>
+                  <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
+                </SelectOption>
+                {showEvents && (
+                  <div title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}>
+                    <SelectOption
+                      isDisabled={!isEventsLoading && events.length === 0}
+                      value={AttachmentTypes.Events}
                     >
-                      <SelectOption
-                        isDisabled={!isEventsLoading && events.length === 0}
-                        value={AttachmentTypes.Events}
-                      >
-                        <TaskIcon /> {t('Events')}
-                      </SelectOption>
-                    </div>
-                  )}
-                  {showLogs && (
-                    <SelectOption value={AttachmentTypes.Log}>
-                      <TaskIcon /> {t('Logs')}
+                      <TaskIcon /> {t('Events')}
                     </SelectOption>
-                  )}
-                </>
-              )}
-            </>
-          )}
+                  </div>
+                )}
+                {showLogs && (
+                  <SelectOption value={AttachmentTypes.Log}>
+                    <TaskIcon /> {t('Logs')}
+                  </SelectOption>
+                )}
+              </>
+            )}
+          </>
 
           {error && (
             <Alert
