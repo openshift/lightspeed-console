@@ -1,25 +1,18 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 
-const resourcePluralToKind = (plural: string) => {
-  switch (plural) {
-    case 'cronjobs':
-      return 'CronJob';
-    case 'daemonsets':
-      return 'DaemonSet';
-    case 'deployments':
-      return 'Deployment';
-    case 'jobs':
-      return 'Job';
-    case 'pods':
-      return 'Pod';
-    case 'replicasets':
-      return 'ReplicaSet';
-    case 'statefulsets':
-      return 'StatefulSet';
-    default:
-      return undefined;
-  }
+const resources = {
+  cronjobs: 'CronJob',
+  daemonsets: 'DaemonSet',
+  deployments: 'Deployment',
+  ingresses: 'Ingress',
+  jobs: 'Job',
+  networkpolicies: 'NetworkPolicy',
+  pods: 'Pod',
+  replicasets: 'ReplicaSet',
+  routes: 'Route',
+  services: 'Service',
+  statefulsets: 'StatefulSet',
 };
 
 export const useLocationContext = () => {
@@ -33,13 +26,13 @@ export const useLocationContext = () => {
   React.useEffect(() => {
     if (path) {
       const ns = `[a-z0-9-]+`;
-      const resourceType = 'cronjobs|daemonsets|deployments|jobs|pods|replicasets|statefulsets';
+      const resourceType = Object.keys(resources).join('|');
       const resourceName = '[a-z0-9-.]+';
 
       let matches = undefined;
       matches = path.match(new RegExp(`/k8s/ns/(${ns})/(${resourceType})/(${resourceName})`));
       if (matches) {
-        setKind(resourcePluralToKind(matches[2]));
+        setKind(resources[matches[2]]);
         setName(matches[3]);
         setNamespace(matches[1]);
         return;
@@ -47,7 +40,7 @@ export const useLocationContext = () => {
 
       matches = path.match(new RegExp(`/k8s/all-namespaces/(${resourceType})/(${resourceName})`));
       if (matches) {
-        setKind(resourcePluralToKind(matches[1]));
+        setKind(resources[matches[1]]);
         setName(matches[2]);
         setNamespace(undefined);
         return;
