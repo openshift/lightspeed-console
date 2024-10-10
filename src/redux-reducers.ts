@@ -37,6 +37,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       );
     }
 
+    case ActionType.ImportCodeblock:
+      return state.set('codeblock', action.payload.code);
+
     case ActionType.AttachmentDelete:
       return state.deleteIn(['attachments', action.payload.id]);
 
