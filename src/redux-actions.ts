@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { Attachment, ChatEntry } from './types';
+import { Attachment, ChatEntry, CodeBlock } from './types';
 
 export enum ActionType {
   AddContextEvent = 'addContextEvent',
@@ -22,6 +22,7 @@ export enum ActionType {
   UserFeedbackOpen = 'userFeedbackOpen',
   UserFeedbackSetSentiment = 'userFeedbackSetSentiment',
   UserFeedbackSetText = 'userFeedbackSetText',
+  ImportCodeBlock = 'importCodeBlock',
 }
 
 export const addContextEvent = (event: object) => action(ActionType.AddContextEvent, { event });
@@ -85,6 +86,8 @@ export const userFeedbackSetSentiment = (entryIndex: number, sentiment: number) 
 export const userFeedbackSetText = (entryIndex: number, text: string) =>
   action(ActionType.UserFeedbackSetText, { entryIndex, text });
 
+export const importCodeBlock = (code: CodeBlock) => action(ActionType.ImportCodeBlock, { code });
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actions = {
   addContextEvent,
@@ -95,6 +98,7 @@ const actions = {
   chatHistoryPush,
   clearContextEvents,
   closeOLS,
+  importCodeBlock,
   openAttachmentClear,
   openAttachmentSet,
   openOLS,

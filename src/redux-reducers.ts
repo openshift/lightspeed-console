@@ -17,6 +17,8 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     return ImmutableMap({
       attachments: ImmutableMap<string, Attachment>(),
       chatHistory: ImmutableList(),
+      codeBlock: null,
+      context: null,
       contextEvents: [],
       conversationID: null,
       isContextEventsLoading: false,
@@ -35,6 +37,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
         oldEvents ? [...oldEvents, action.payload.event] : [action.payload.event],
       );
     }
+
+    case ActionType.ImportCodeBlock:
+      return state.set('codeBlock', action.payload.code);
 
     case ActionType.AttachmentDelete:
       return state.deleteIn(['attachments', action.payload.id]);

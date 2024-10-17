@@ -57,6 +57,7 @@ import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import AttachmentModal from './AttachmentModal';
 import AttachMenu from './AttachMenu';
 import CopyAction from './CopyAction';
+import ImportAction from './ImportAction';
 import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
 import ReadinessAlert from './ReadinessAlert';
@@ -113,6 +114,7 @@ const Code = ({ children }: { children: React.ReactNode }) => {
       actions={
         <CodeBlockAction>
           <CopyAction value={children.toString()} />
+          <ImportAction value={children.toString()} />
         </CodeBlockAction>
       }
     >
