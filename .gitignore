@@ -7,3 +7,6 @@ integration-tests/.DS_Store
 yarn-error.log
 .DS_Store
 .env
+tests/yarn.lock
+tests/gui_test_screenshots
+tests/upstream
