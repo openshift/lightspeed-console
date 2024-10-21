@@ -6,6 +6,9 @@ import {
   ActionGroup,
   Alert,
   Button,
+  CodeBlock,
+  CodeBlockAction,
+  CodeBlockCode,
   Form,
   FormGroup,
   HelperText,
@@ -24,9 +27,21 @@ import {
   setIsContextEventsLoading,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
+import CopyAction from './CopyAction';
 import Modal from './Modal';
 
 const DEFAULT_MAX_EVENTS = 10;
+
+type ErrorProps = {
+  children: React.ReactNode;
+  title: React.ReactNode;
+};
+
+const Error: React.FC<ErrorProps> = ({ children, title }) => (
+  <Alert className="ols-plugin__alert" isInline title={title} variant="danger">
+    {children}
+  </Alert>
+);
 
 type Props = {
   isOpen: boolean;
@@ -49,6 +64,8 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   const [inputNumEvents, setInputNumEvents] = React.useState<number>();
 
   const numEvents = inputNumEvents ?? Math.min(events.length, DEFAULT_MAX_EVENTS);
+
+  const yaml = dump(events.slice(-numEvents), { lineWidth: -1 }).trim();
 
   // Call onClose when the component is unmounted
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,12 +121,10 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   const onSubmit = React.useCallback(
     (e) => {
       e.preventDefault();
-
-      const yaml = dump(events.slice(-numEvents), { lineWidth: -1 }).trim();
       dispatch(attachmentSet(AttachmentTypes.Events, kind, name, undefined, namespace, yaml));
       onClose();
     },
-    [dispatch, events, kind, name, namespace, numEvents, onClose],
+    [dispatch, kind, name, namespace, onClose, yaml],
   );
 
   return (
@@ -128,14 +143,30 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
                 <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
               </HelperText>
             ) : (
-              <Slider
-                max={events.length}
-                min={1}
-                onChange={onInputNumEventsChange}
-                value={numEvents}
-              />
+              <>
+                <Slider
+                  max={events.length}
+                  min={1}
+                  onChange={onInputNumEventsChange}
+                  value={numEvents}
+                />
+                <CodeBlock
+                  actions={
+                    <>
+                      <CodeBlockAction />
+                      <CodeBlockAction>
+                        <CopyAction value={yaml} />
+                      </CodeBlockAction>
+                    </>
+                  }
+                  className="ols-plugin__code-block ols-plugin__code-block--preview"
+                >
+                  <CodeBlockCode style={{ whiteSpace: 'pre' }}>{yaml}</CodeBlockCode>
+                </CodeBlock>
+              </>
             ))}
         </FormGroup>
+        {error && <Error title={t('Failed to load events')}>{error}</Error>}
         <ActionGroup>
           <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
             {t('Attach')}
@@ -144,16 +175,6 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
             {t('Cancel')}
           </Button>
         </ActionGroup>
-        {error && (
-          <Alert
-            className="ols-plugin__alert"
-            isInline
-            title={t('Failed to load events')}
-            variant="danger"
-          >
-            {error}
-          </Alert>
-        )}
       </Form>
     </Modal>
   );
