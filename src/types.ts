@@ -34,3 +34,8 @@ type ChatEntryAI = {
 };
 
 export type ChatEntry = ChatEntryAI | ChatEntryUser;
+
+export type CodeBlock = {
+  id: string;
+  value: string;
+};
