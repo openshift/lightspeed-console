@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 const { CustomJSONLexer } = require('./i18n-scripts/lexers');
 
 // eslint-disable-next-line no-undef
@@ -12,7 +12,7 @@ module.exports = {
   defaultNamespace: 'plugin__lightspeed-console-plugin',
   useKeysAsDefaultValue: true,
 
-  // see below for more details
+  // See below for more details
   lexers: {
     hbs: ['HandlebarsLexer'],
     handlebars: ['HandlebarsLexer'],
@@ -21,7 +21,7 @@ module.exports = {
     html: ['HTMLLexer'],
 
     mjs: ['JavascriptLexer'],
-    js: ['JavascriptLexer'], // if you're writing jsx inside .js files, change this to JsxLexer
+    js: ['JavascriptLexer'], // If you're writing jsx inside .js files, change this to JsxLexer
     ts: ['JavascriptLexer'],
     jsx: ['JsxLexer'],
     tsx: ['JsxLexer'],
