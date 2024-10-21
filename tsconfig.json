@@ -8,7 +8,7 @@
     "allowJs": true,
     "strict": false,
     "noUnusedLocals": true,
-    "sourceMap": true
+    "sourceMap": false
   },
   "include": ["src"]
 }
