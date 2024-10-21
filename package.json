@@ -12,8 +12,8 @@
     "start-console": "./start-console.sh",
     "i18n": "./i18n-scripts/build-i18n.sh && node ./i18n-scripts/set-english-defaults.js",
     "ts-node": "ts-node -O '{\"module\":\"commonjs\"}'",
-    "lint": "eslint ./i18next-parser.config.js ./src && stylelint \"src/**/*.css\" --allow-empty-input",
-    "lint-fix": "eslint ./i18next-parser.config.js ./src --fix && stylelint \"src/**/*.css\" --allow-empty-input --fix"
+    "lint": "eslint ./*.{js,ts} ./src && stylelint \"src/**/*.css\" --allow-empty-input",
+    "lint-fix": "eslint ./*.{js,ts} ./src --fix && stylelint \"src/**/*.css\" --allow-empty-input --fix"
   },
   "dependencies": {
     "@openshift-console/dynamic-plugin-sdk": "1.0.0",

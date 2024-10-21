@@ -1,31 +1,32 @@
 /* eslint-env node */
 
-import { Configuration as WebpackConfiguration } from "webpack";
-import * as path from "path";
-import { ConsoleRemotePlugin } from "@openshift-console/dynamic-plugin-sdk-webpack";
-import * as dotenv from "dotenv";
-import { DefinePlugin } from 'webpack';
+import { DefinePlugin, Configuration as WebpackConfiguration } from 'webpack';
+import * as path from 'path';
+import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack';
+import * as dotenv from 'dotenv';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 interface Configuration extends WebpackConfiguration {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   devServer?: any;
 }
 
 dotenv.config();
 
 const config: Configuration = {
-  mode: "development",
+  mode: 'development',
   // No regular entry points. The remote container entry is handled by ConsoleRemotePlugin.
   entry: {},
-  context: path.resolve(__dirname, "src"),
+  context: path.resolve(__dirname, 'src'),
   output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "[name]-bundle.js",
-    chunkFilename: "[name]-chunk.js",
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name]-bundle.js',
+    chunkFilename: '[name]-chunk.js',
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx"],
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
   module: {
     rules: [
@@ -34,16 +35,16 @@ const config: Configuration = {
         exclude: /node_modules/,
         use: [
           {
-            loader: "ts-loader",
+            loader: 'ts-loader',
             options: {
-              configFile: path.resolve(__dirname, "tsconfig.json"),
+              configFile: path.resolve(__dirname, 'tsconfig.json'),
             },
           },
         ],
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|woff2?|ttf|eot|otf)(\?.*$|$)/,
@@ -66,9 +67,9 @@ const config: Configuration = {
     // Allow bridge running in a container to connect to the plugin dev server.
     allowedHosts: 'all',
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Authorization"
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, Content-Type, Authorization',
     },
     devMiddleware: {
       writeToDisk: true,
@@ -77,22 +78,22 @@ const config: Configuration = {
   },
   plugins: [
     new DefinePlugin({
-      'process.env': JSON.stringify(process.env)
+      'process.env': JSON.stringify(process.env),
     }),
-    new ConsoleRemotePlugin(), 
+    new ConsoleRemotePlugin(),
     new CopyWebpackPlugin({
       patterns: [{ from: path.resolve(__dirname, 'locales'), to: 'locales' }],
     }),
   ],
-  devtool: "source-map",
+  devtool: 'source-map',
   optimization: {
-    chunkIds: "named",
+    chunkIds: 'named',
     minimize: false,
   },
 };
 
-if (process.env.NODE_ENV === "production") {
-  config.mode = "production";
+if (process.env.NODE_ENV === 'production') {
+  config.mode = 'production';
   if (config.output) {
     config.output.filename = '[name]-bundle-[hash].min.js';
     config.output.chunkFilename = '[name]-chunk-[chunkhash].min.js';
