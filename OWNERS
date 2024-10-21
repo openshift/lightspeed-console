@@ -1,6 +1,7 @@
 approvers:
-  - bparees
+  - joshuawilson
   - kyoto
+  - syedriko
   - xrajesh
 
 # Anyone in the OpenShift org can /lgtm a PR, so leaving this empty
