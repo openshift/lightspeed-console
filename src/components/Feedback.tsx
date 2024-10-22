@@ -20,7 +20,6 @@ import {
   OutlinedThumbsUpIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
-  TimesIcon,
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
@@ -34,6 +33,7 @@ import {
 } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment } from '../types';
+import CloseButton from './CloseButton';
 import ErrorBoundary from './ErrorBoundary';
 
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
@@ -154,7 +154,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex, scrollIntoView 
         {isOpen && sentiment !== undefined && (
           <div className="ols-plugin__feedback-comment">
             <Title headingLevel="h3">
-              <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
+              <CloseButton onClose={onClose} />
               {t('Why did you choose this rating?')} <Chip isReadOnly>{t('Optional')}</Chip>
             </Title>
             <TextArea

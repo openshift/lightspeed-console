@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { Title } from '@patternfly/react-core';
-import { TimesIcon } from '@patternfly/react-icons';
+
+import CloseButton from './CloseButton';
 
 type Props = {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ const Modal: React.FC<Props> = ({ children, className, isOpen, onClose, title })
     overlayClassName="co-overlay"
   >
     <div className="modal-header">
-      <TimesIcon className="ols-plugin__popover-close" onClick={onClose} />
+      <CloseButton onClose={onClose} />
       <Title headingLevel="h2">{title}</Title>
     </div>
     <div className="modal-body">
