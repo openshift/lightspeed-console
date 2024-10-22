@@ -384,7 +384,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
                 </CodeBlockAction>
               </>
             }
-            className="ols-plugin__code-block ols-plugin__code-block--logs-preview"
+            className="ols-plugin__code-block ols-plugin__code-block--preview"
           >
             {isPreviewLoading && <Spinner size="md" />}
             {previewError && <Error title={t('Failed to load preview')}>{previewError}</Error>}

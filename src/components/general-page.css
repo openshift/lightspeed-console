@@ -82,7 +82,7 @@
   max-height: 24rem;
 }
 
-.ols-plugin__code-block--logs-preview {
+.ols-plugin__code-block--preview {
   height: 14rem;
   margin-top: 1rem;
   max-height: unset;
