@@ -4,11 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  consoleFetchJSON,
-  K8sResourceKind,
-  useK8sWatchResource,
-} from '@openshift-console/dynamic-plugin-sdk';
+import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -47,14 +43,12 @@ import { isAttachmentChanged, toOLSAttachment } from '../attachments';
 import { getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
-import { useLocationContext } from '../hooks/useLocationContext';
 import {
   attachmentDelete,
   attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
   openAttachmentSet,
-  setContext,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -351,36 +345,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     s.plugins?.ols?.get('chatHistory'),
   );
 
-  let k8sWatchOptions;
-
-  // Do we have a context in Redux that looks like a k8s resource with sufficient information
-  const context: K8sResourceKind = useSelector((s: State) => s.plugins?.ols?.get('context'));
-  if (
-    context &&
-    typeof context.kind === 'string' &&
-    typeof context.metadata?.name === 'string' &&
-    typeof context.metadata?.namespace === 'string'
-  ) {
-    k8sWatchOptions = {
-      isList: false,
-      kind: context.kind,
-      name: context.metadata?.name,
-      namespace: context.metadata?.namespace,
-    };
-  }
-
-  const [kind, name, namespace] = useLocationContext();
-
-  // If we didn't get a k8s resource context from Redux, can we get one from the current page?
-  if (!k8sWatchOptions && kind && kind !== 'Alert' && name) {
-    k8sWatchOptions = { isList: false, kind, name, namespace };
-  }
-
-  const k8sContext = useK8sWatchResource<K8sResourceKind>(k8sWatchOptions ?? null);
-
-  const [attachContext] =
-    kind === 'Alert' && name ? [{ kind, metadata: { name, namespace } }] : k8sContext;
-
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
@@ -407,7 +371,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   }, []);
 
   const clearChat = React.useCallback(() => {
-    dispatch(setContext(null));
     dispatch(setConversationID(null));
     dispatch(chatHistoryClear());
     dispatch(attachmentsClear());
@@ -585,7 +548,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           <Form onSubmit={onSubmit}>
             <Split hasGutter>
               <SplitItem>
-                <AttachMenu context={attachContext} />
+                <AttachMenu />
               </SplitItem>
               <SplitItem isFilled>
                 <TextArea

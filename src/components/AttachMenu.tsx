@@ -3,7 +3,11 @@ import { cloneDeep, each, isMatch } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { consoleFetchJSON, K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
+import {
+  consoleFetchJSON,
+  K8sResourceKind,
+  useK8sWatchResource,
+} from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Chip,
@@ -23,6 +27,7 @@ import { FileCodeIcon, PlusCircleIcon, TaskIcon } from '@patternfly/react-icons'
 import { AttachmentTypes } from '../attachments';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useLocationContext } from '../hooks/useLocationContext';
 import { attachmentSet } from '../redux-actions';
 import { State } from '../redux-reducers';
 import AttachEventsModal from './AttachEventsModal';
@@ -31,11 +36,7 @@ import ResourceIcon from './ResourceIcon';
 
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
 
-type AttachMenuProps = {
-  context: K8sResourceKind;
-};
-
-const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
+const AttachMenu: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -49,9 +50,13 @@ const AttachMenu: React.FC<AttachMenuProps> = ({ context }) => {
   const [isLoading, , setLoading, setLoaded] = useBoolean(false);
   const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
-  const kind = context?.kind;
-  const name = context?.metadata?.name;
-  const namespace = context?.metadata?.namespace;
+  const [kind, name, namespace] = useLocationContext();
+
+  const k8sContext = useK8sWatchResource<K8sResourceKind>(
+    kind && kind !== 'Alert' && name ? { isList: false, kind, name, namespace } : null,
+  );
+
+  const [context] = kind === 'Alert' && name ? [] : k8sContext;
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent | undefined, attachmentType: string) => {
