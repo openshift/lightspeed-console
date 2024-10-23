@@ -508,9 +508,34 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   return (
     <Page>
       <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
-        {onExpand && <ExpandIcon className="ols-plugin__popover-close" onClick={onExpand} />}
-        {onCollapse && <CompressIcon className="ols-plugin__popover-close" onClick={onCollapse} />}
-        <WindowMinimizeIcon className="ols-plugin__popover-close" onClick={onClose} />
+        {onExpand && (
+          <Button
+            className="ols-plugin__popover-control"
+            onClick={onExpand}
+            title={t('Expand')}
+            variant="plain"
+          >
+            <ExpandIcon className="ols-plugin__popover-control-icon" />
+          </Button>
+        )}
+        {onCollapse && (
+          <Button
+            className="ols-plugin__popover-control"
+            onClick={onCollapse}
+            title={t('Collapse')}
+            variant="plain"
+          >
+            <CompressIcon className="ols-plugin__popover-control-icon" />
+          </Button>
+        )}
+        <Button
+          className="ols-plugin__popover-control"
+          onClick={onClose}
+          title={t('Minimize')}
+          variant="plain"
+        >
+          <WindowMinimizeIcon className="ols-plugin__popover-control-icon" />
+        </Button>
         {!isWelcomePage && (
           <Level>
             <LevelItem>
@@ -519,7 +544,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               </Title>
             </LevelItem>
             <LevelItem>
-              <Button onClick={openNewChatModal} variant="primary">
+              <Button
+                className="ols-plugin__popover-clear-chat"
+                onClick={openNewChatModal}
+                variant="primary"
+              >
                 {t('Clear chat')}
               </Button>
             </LevelItem>
