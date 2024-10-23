@@ -72,7 +72,12 @@ const Popover: React.FC = () => {
               <GeneralPage onClose={close} onExpand={expand} />
             )}
           </div>
-          <div className="ols-plugin__popover-button" onClick={close}></div>
+          <Button
+            aria-label={title}
+            className="ols-plugin__popover-button"
+            onClick={close}
+            variant="link"
+          />
         </>
       ) : (
         <Tooltip content={title}>
