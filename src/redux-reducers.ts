@@ -17,7 +17,6 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     return ImmutableMap({
       attachments: ImmutableMap<string, Attachment>(),
       chatHistory: ImmutableList(),
-      context: null,
       contextEvents: [],
       conversationID: null,
       isContextEventsLoading: false,
@@ -71,9 +70,6 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.OpenOLS:
       return state.set('isOpen', true);
-
-    case ActionType.SetContext:
-      return state.set('context', action.payload.context);
 
     case ActionType.SetIsContextEventsLoading:
       return state.set('isContextEventsLoading', action.payload.isLoading);

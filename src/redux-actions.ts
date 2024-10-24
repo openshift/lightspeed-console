@@ -14,7 +14,6 @@ export enum ActionType {
   OpenAttachmentClear = 'openAttachmentClear',
   OpenAttachmentSet = 'openAttachmentSet',
   OpenOLS = 'openOLS',
-  SetContext = 'setContext',
   SetConversationID = 'setConversationID',
   SetIsContextEventsLoading = 'setIsContextEventsLoading',
   SetQuery = 'setQuery',
@@ -65,8 +64,6 @@ export const openAttachmentSet = (attachment: Attachment) =>
 
 export const openOLS = () => action(ActionType.OpenOLS);
 
-export const setContext = (context: object) => action(ActionType.SetContext, { context });
-
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
 
 export const setIsContextEventsLoading = (isLoading: boolean) =>
@@ -101,7 +98,6 @@ const actions = {
   openAttachmentClear,
   openAttachmentSet,
   openOLS,
-  setContext,
   setConversationID,
   setIsContextEventsLoading,
   setQuery,

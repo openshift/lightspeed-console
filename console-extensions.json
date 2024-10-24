@@ -1,54 +1,5 @@
 [
   {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "batch~v1~CronJob",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "apps~v1~DaemonSet",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "apps~v1~Deployment",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "batch~v1~Job",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "core~v1~Pod",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "apps~v1~ReplicaSet",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/provider",
-    "properties": {
-      "contextId": "apps~v1~StatefulSet",
-      "provider": { "$codeRef": "K8sResourceActionsProvider" }
-    }
-  },
-  {
     "type": "console.context-provider",
     "properties": {
       "provider": { "$codeRef": "NullContextProvider" },
