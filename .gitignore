@@ -3,3 +3,4 @@ dist/
 .devcontainer/dev.env
 .DS_Store
 .env
+gui_test_screenshots
