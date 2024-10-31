@@ -53,7 +53,7 @@
     "webpack-cli": "^5.1.4"
   },
   "devDependencies": {
-    "@types/node": "^22.8.2",
+    "@types/node": "^22.8.5",
     "@types/react": "17.0.x",
     "@types/react-router-dom": "5.3.x",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
