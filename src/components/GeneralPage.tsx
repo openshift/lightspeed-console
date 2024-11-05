@@ -599,6 +599,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
               {t('Always check AI/LLM generated responses for accuracy prior to use.')}
             </HelperTextItem>
+            <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
+              {t('Want to contact the OpenShift Lightspeed team?')}{' '}
+              <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
+                Click here
+              </ExternalLink>{' '}
+              to email us.
+            </HelperTextItem>
           </HelperText>
 
           <AttachmentModal />
