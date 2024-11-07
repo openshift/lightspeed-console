@@ -18,8 +18,8 @@ export default defineConfig({
     HOST_API: process.env.CYPRESS_BASE_URL.replace(/console-openshift-console.apps/, 'api').concat(
       ':6443',
     ),
-    LOGIN_USERNAME: process.env.CYPRESS_LOGIN_USERS.split(',')[0].split(':')[0],
-    LOGIN_PASSWORD: process.env.CYPRESS_LOGIN_USERS.split(',')[0].split(':')[1],
+    //  LOGIN_USERNAME: process.env.CYPRESS_LOGIN_USERS.split(',')[0].split(':')[0],
+    //  LOGIN_PASSWORD: process.env.CYPRESS_LOGIN_USERS.split(',')[0].split(':')[1],
   },
   fixturesFolder: 'fixtures',
   defaultCommandTimeout: 30000,
