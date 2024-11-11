@@ -80,6 +80,7 @@
     "mochawesome-report-generator": "^6.2.0"
   },
   "overrides": {
+    "cross-spawn": "^7.0.5",
     "webpack": "5.94.0"
   },
   "consolePlugin": {
