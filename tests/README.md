@@ -25,9 +25,9 @@ drwxr-xr-x  node_modules
 in order to run Cypress tests, we need to export some environment variables that Cypress can read then pass down to our tests, currently we have following environment variables defined and used.
 ```bash
 export CYPRESS_BASE_URL=https://<console_route_spec_host>
-export CYPRESS_LOGIN_IDP=flexy-htpasswd-provider
+export CYPRESS_LOGIN_IDP=kube:admin
 **[Note] Use `flexy-htpasswd-provider` above when running tests on flexy installed clusters and using any user other than kubeadmin. Use `kube:admin` when running tests as kubeadmin
-export CYPRESS_LOGIN_USERS=USER1:Password1,USER2:Password2,USER3:Password3
+export CYPRESS_LOGIN_PASSWORD=<kubeadmin password>
 export CYPRESS_KUBECONFIG_PATH=/path/to/kubeconfig
 ```
 ### Start Cypress

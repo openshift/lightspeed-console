@@ -101,7 +101,7 @@ Cypress.Commands.add(
   (
     provider: string = 'kube:admin',
     username: string = 'kubeadmin',
-    password: string = Cypress.env('BRIDGE_KUBEADMIN_PASSWORD'),
+    password: string = Cypress.env('LOGIN_PASSWORD'),
   ) => {
     cy.session(
       [provider, username],
