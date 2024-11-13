@@ -117,8 +117,9 @@ const Code = ({ children }: { children: React.ReactNode }) => {
           <ImportAction value={children.toString()} />
         </CodeBlockAction>
       }
+      className="ols-plugin__code-block"
     >
-      <CodeBlockCode className="ols-plugin__code-block">{children}</CodeBlockCode>
+      <CodeBlockCode className="ols-plugin__code-block-code">{children}</CodeBlockCode>
     </CodeBlock>
   );
 };

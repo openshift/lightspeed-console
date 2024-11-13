@@ -91,6 +91,7 @@ const Viewer: React.FC = () => {
       className="ols-plugin__code-block ols-plugin__code-block--attachment"
     >
       <CodeBlockCode
+        className="ols-plugin__code-block-code"
         style={
           attachment?.attachmentType === AttachmentTypes.Log ? { whiteSpace: 'pre' } : undefined
         }

@@ -67,24 +67,31 @@
 }
 
 .ols-plugin__code-block {
+  overflow: hidden;
+}
+
+.ols-plugin__code-block-code {
   max-height: 8rem;
   overflow: auto;
   white-space: pre;
 }
 
+.ols-plugin__code-block--attachment .ols-plugin__code-block-code {
+  max-height: 20rem;
+}
+
 /* stylelint-disable-next-line selector-disallowed-list */
-.ols-plugin__code-block .pf-v5-c-code-block__actions {
+.ols-plugin__code-block--attachment .pf-v5-c-code-block__actions {
   justify-content: space-between;
   width: 100%;
 }
 
-.ols-plugin__code-block--attachment {
-  max-height: 24rem;
+.ols-plugin__code-block--preview {
+  margin-top: 1rem;
 }
 
-.ols-plugin__code-block--preview {
-  height: 14rem;
-  margin-top: 1rem;
+.ols-plugin__code-block--preview .ols-plugin__code-block-code {
+  height: 10rem;
   max-height: unset;
 }
 
