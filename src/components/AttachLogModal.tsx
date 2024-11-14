@@ -386,10 +386,16 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
             }
             className="ols-plugin__code-block ols-plugin__code-block--preview"
           >
-            {isPreviewLoading && <Spinner size="md" />}
+            {isPreviewLoading && (
+              <CodeBlockCode className="ols-plugin__code-block-code">
+                <Spinner size="md" />
+              </CodeBlockCode>
+            )}
             {previewError && <Error title={t('Failed to load preview')}>{previewError}</Error>}
             {preview && !isPreviewLoading && !previewError && (
-              <CodeBlockCode style={{ whiteSpace: 'pre' }}>{preview}</CodeBlockCode>
+              <CodeBlockCode className="ols-plugin__code-block-code" style={{ whiteSpace: 'pre' }}>
+                {preview}
+              </CodeBlockCode>
             )}
           </CodeBlock>
         )}

@@ -161,7 +161,12 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
                   }
                   className="ols-plugin__code-block ols-plugin__code-block--preview"
                 >
-                  <CodeBlockCode style={{ whiteSpace: 'pre' }}>{yaml}</CodeBlockCode>
+                  <CodeBlockCode
+                    className="ols-plugin__code-block-code"
+                    style={{ whiteSpace: 'pre' }}
+                  >
+                    {yaml}
+                  </CodeBlockCode>
                 </CodeBlock>
               </>
             ))}
