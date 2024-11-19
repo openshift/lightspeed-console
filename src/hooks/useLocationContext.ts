@@ -13,6 +13,17 @@ const resources = {
   routes: 'Route',
   services: 'Service',
   statefulsets: 'StatefulSet',
+
+  // Virtualization
+  'cdi.kubevirt.io~v1beta1~DataSource': 'cdi.kubevirt.io~v1beta1~DataSource',
+  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype':
+    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype',
+  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference':
+    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference',
+  'kubevirt.io~v1~VirtualMachine': 'kubevirt.io~v1~VirtualMachine',
+  'migrations.kubevirt.io~v1alpha1~MigrationPolicy':
+    'migrations.kubevirt.io~v1alpha1~MigrationPolicy',
+  templates: 'Template',
 };
 
 export const useLocationContext = () => {
@@ -39,6 +50,14 @@ export const useLocationContext = () => {
       }
 
       matches = path.match(new RegExp(`/k8s/all-namespaces/(${resourceType})/(${resourceName})`));
+      if (matches) {
+        setKind(resources[matches[1]]);
+        setName(matches[2]);
+        setNamespace(undefined);
+        return;
+      }
+
+      matches = path.match(new RegExp(`/k8s/cluster/(${resourceType})/(${resourceName})`));
       if (matches) {
         setKind(resources[matches[1]]);
         setName(matches[2]);

@@ -180,6 +180,7 @@ const AttachMenu: React.FC = () => {
     'DaemonSet',
     'Deployment',
     'Job',
+    'kubevirt.io~v1~VirtualMachine',
     'Pod',
     'ReplicaSet',
     'StatefulSet',
