@@ -308,7 +308,7 @@ const PrivacyAlert: React.FC = () => {
   return (
     <Alert className="ols-plugin__alert" isInline title={t('Important')} variant="info">
       {t(
-        'OpenShift Lightspeed can answer questions related to OpenShift. Do not include personal or business sensitive information in your input. Interactions with OpenShift Lightspeed may be reviewed and used to improve our products and services.',
+        "OpenShift Lightspeed can answer questions related to OpenShift. This feature uses AI technology. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
       )}
     </Alert>
   );
@@ -598,7 +598,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
           <HelperText>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-              {t('Always check AI/LLM generated responses for accuracy prior to use.')}
+              {t('Always review AI generated content prior to use.')}
             </HelperTextItem>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
               {t('Want to contact the OpenShift Lightspeed team?')}{' '}
