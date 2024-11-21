@@ -21,6 +21,9 @@ const resources = {
   'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference':
     'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference',
   'kubevirt.io~v1~VirtualMachine': 'kubevirt.io~v1~VirtualMachine',
+  'kubevirt.io~v1~VirtualMachineInstance': 'kubevirt.io~v1~VirtualMachineInstance',
+  'kubevirt.io~v1~VirtualMachineInstanceMigration':
+    'kubevirt.io~v1~VirtualMachineInstanceMigration',
   'migrations.kubevirt.io~v1alpha1~MigrationPolicy':
     'migrations.kubevirt.io~v1alpha1~MigrationPolicy',
   templates: 'Template',
