@@ -181,21 +181,29 @@ const AttachMenu: React.FC = () => {
     'Deployment',
     'Job',
     'kubevirt.io~v1~VirtualMachine',
+    'kubevirt.io~v1~VirtualMachineInstance',
     'Pod',
     'ReplicaSet',
     'StatefulSet',
   ].includes(kind);
 
-  const showLogs = ['DaemonSet', 'Deployment', 'Job', 'Pod', 'ReplicaSet', 'StatefulSet'].includes(
-    kind,
-  );
+  const showLogs = [
+    'DaemonSet',
+    'Deployment',
+    'Job',
+    'kubevirt.io~v1~VirtualMachine',
+    'kubevirt.io~v1~VirtualMachineInstance',
+    'Pod',
+    'ReplicaSet',
+    'StatefulSet',
+  ].includes(kind);
 
   return (
     <>
       {showEvents && context && context.metadata?.uid && (
         <AttachEventsModal
           isOpen={isEventsModalOpen}
-          kind={kind}
+          kind={context.kind}
           name={name}
           namespace={namespace}
           onClose={closeEventsModal}

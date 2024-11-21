@@ -239,7 +239,13 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   const [previewError, setPreviewError] = React.useState(false);
   const [isPreviewLoading, setIsPreviewLoading] = React.useState(false);
 
-  const selector = kind === 'Job' ? { 'job-name': name } : resource.spec?.selector;
+  let selector = resource.spec?.selector;
+  if (kind === 'Job') {
+    selector = { 'job-name': name };
+  } else if (kind === 'VirtualMachine' || kind === 'VirtualMachineInstance') {
+    selector = { 'vm.kubevirt.io/name': name };
+  }
+
   const [pods, podsLoaded, podsError] = useK8sWatchResource<K8sResourceKind[]>(
     showPodInput ? { isList: true, kind: 'Pod', namespace, selector } : null,
   );
