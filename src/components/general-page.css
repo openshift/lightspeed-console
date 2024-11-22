@@ -67,6 +67,7 @@
 }
 
 .ols-plugin__code-block {
+  margin: 1rem 0;
   overflow: hidden;
 }
 
@@ -87,7 +88,7 @@
 }
 
 .ols-plugin__code-block--preview {
-  margin-top: 1rem;
+  margin: 0;
 }
 
 .ols-plugin__code-block--preview .ols-plugin__code-block-code {
