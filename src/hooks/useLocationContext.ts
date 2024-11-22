@@ -9,6 +9,7 @@ const resources = {
   jobs: 'Job',
   networkpolicies: 'NetworkPolicy',
   pods: 'Pod',
+  poddisruptionbudgets: 'PodDisruptionBudget',
   replicasets: 'ReplicaSet',
   routes: 'Route',
   services: 'Service',

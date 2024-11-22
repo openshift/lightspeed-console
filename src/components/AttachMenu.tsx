@@ -183,6 +183,7 @@ const AttachMenu: React.FC = () => {
     'kubevirt.io~v1~VirtualMachine',
     'kubevirt.io~v1~VirtualMachineInstance',
     'Pod',
+    'PodDisruptionBudget',
     'ReplicaSet',
     'StatefulSet',
   ].includes(kind);
@@ -194,6 +195,7 @@ const AttachMenu: React.FC = () => {
     'kubevirt.io~v1~VirtualMachine',
     'kubevirt.io~v1~VirtualMachineInstance',
     'Pod',
+    'PodDisruptionBudget',
     'ReplicaSet',
     'StatefulSet',
   ].includes(kind);
