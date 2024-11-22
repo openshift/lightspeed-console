@@ -135,42 +135,42 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
         )}
       </Text>
       <Form>
-        <FormGroup isRequired label={t('Most recent {{numEvents}} events', { numEvents })}>
-          {isLoading && <Spinner size="md" />}
-          {!isLoading &&
-            (events.length === 0 ? (
-              <HelperText>
-                <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
-              </HelperText>
-            ) : (
-              <>
+        {isLoading && <Spinner size="md" />}
+        {!isLoading &&
+          (events.length === 0 ? (
+            <HelperText>
+              <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
+            </HelperText>
+          ) : (
+            <>
+              <FormGroup isRequired label={t('Most recent {{numEvents}} events', { numEvents })}>
                 <Slider
                   max={events.length}
                   min={1}
                   onChange={onInputNumEventsChange}
                   value={numEvents}
                 />
-                <CodeBlock
-                  actions={
-                    <>
-                      <CodeBlockAction />
-                      <CodeBlockAction>
-                        <CopyAction value={yaml} />
-                      </CodeBlockAction>
-                    </>
-                  }
-                  className="ols-plugin__code-block ols-plugin__code-block--preview"
+              </FormGroup>
+              <CodeBlock
+                actions={
+                  <>
+                    <CodeBlockAction />
+                    <CodeBlockAction>
+                      <CopyAction value={yaml} />
+                    </CodeBlockAction>
+                  </>
+                }
+                className="ols-plugin__code-block ols-plugin__code-block--preview"
+              >
+                <CodeBlockCode
+                  className="ols-plugin__code-block-code"
+                  style={{ whiteSpace: 'pre' }}
                 >
-                  <CodeBlockCode
-                    className="ols-plugin__code-block-code"
-                    style={{ whiteSpace: 'pre' }}
-                  >
-                    {yaml}
-                  </CodeBlockCode>
-                </CodeBlock>
-              </>
-            ))}
-        </FormGroup>
+                  {yaml}
+                </CodeBlockCode>
+              </CodeBlock>
+            </>
+          ))}
         {error && <Error title={t('Failed to load events')}>{error}</Error>}
         <ActionGroup>
           <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
