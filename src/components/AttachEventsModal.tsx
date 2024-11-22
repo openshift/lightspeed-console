@@ -143,7 +143,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
             </HelperText>
           ) : (
             <>
-              <FormGroup isRequired label={t('Most recent {{numEvents}} events', { numEvents })}>
+              <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
                 <Slider
                   max={events.length}
                   min={1}
