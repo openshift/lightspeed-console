@@ -2,29 +2,32 @@ import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 
 const resources = {
-  cronjobs: 'CronJob',
-  daemonsets: 'DaemonSet',
-  deployments: 'Deployment',
-  ingresses: 'Ingress',
-  jobs: 'Job',
-  networkpolicies: 'NetworkPolicy',
   pods: 'Pod',
-  poddisruptionbudgets: 'PodDisruptionBudget',
-  replicasets: 'ReplicaSet',
-  routes: 'Route',
-  services: 'Service',
+  deployments: 'Deployment',
   statefulsets: 'StatefulSet',
+  cronjobs: 'CronJob',
+  jobs: 'Job',
+  daemonsets: 'DaemonSet',
+  replicasets: 'ReplicaSet',
+  horizontalpodautoscalers: 'HorizontalPodAutoscaler',
+  poddisruptionbudgets: 'PodDisruptionBudget',
+
+  // Networking
+  services: 'Service',
+  routes: 'Route',
+  ingresses: 'Ingress',
+  networkpolicies: 'NetworkPolicy',
 
   // Virtualization
-  'cdi.kubevirt.io~v1beta1~DataSource': 'cdi.kubevirt.io~v1beta1~DataSource',
-  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype':
-    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype',
-  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference':
-    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference',
   'kubevirt.io~v1~VirtualMachine': 'kubevirt.io~v1~VirtualMachine',
   'kubevirt.io~v1~VirtualMachineInstance': 'kubevirt.io~v1~VirtualMachineInstance',
   'kubevirt.io~v1~VirtualMachineInstanceMigration':
     'kubevirt.io~v1~VirtualMachineInstanceMigration',
+  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype':
+    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype',
+  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference':
+    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference',
+  'cdi.kubevirt.io~v1beta1~DataSource': 'cdi.kubevirt.io~v1beta1~DataSource',
   'migrations.kubevirt.io~v1alpha1~MigrationPolicy':
     'migrations.kubevirt.io~v1alpha1~MigrationPolicy',
   templates: 'Template',

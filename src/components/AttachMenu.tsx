@@ -179,6 +179,7 @@ const AttachMenu: React.FC = () => {
     'CronJob',
     'DaemonSet',
     'Deployment',
+    'HorizontalPodAutoscaler',
     'Job',
     'kubevirt.io~v1~VirtualMachine',
     'kubevirt.io~v1~VirtualMachineInstance',
