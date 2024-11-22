@@ -148,6 +148,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
                   max={events.length}
                   min={1}
                   onChange={onInputNumEventsChange}
+                  showTicks={events.length <= 40}
                   value={numEvents}
                 />
               </FormGroup>
