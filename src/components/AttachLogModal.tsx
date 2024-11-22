@@ -346,7 +346,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       </Text>
       <Form>
         {showPodInput && (
-          <FormGroup isRequired label="Pod">
+          <FormGroup label="Pod">
             {podsError && <Error title={t('Failed to load pods')}>{podsError}</Error>}
             {podsLoaded ? (
               pods.length === 0 ? (
@@ -368,14 +368,14 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
         )}
         {(!showPodInput || (podsLoaded && pods.length > 0)) && (
           <>
-            <FormGroup isRequired label="Container">
+            <FormGroup label="Container">
               <ContainerInput
                 containers={containers}
                 selectedContainer={container}
                 setContainer={setContainer}
               />
             </FormGroup>
-            <FormGroup isRequired label={t('Most recent {{lines}} lines', { lines })}>
+            <FormGroup label={t('Most recent {{lines}} lines', { lines })}>
               <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
             </FormGroup>
           </>
