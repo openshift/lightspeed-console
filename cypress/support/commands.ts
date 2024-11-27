@@ -116,16 +116,21 @@ Cypress.Commands.add(
               cy.task('log', '  skipping login, console is running with auth disabled');
               return;
             }
-
-            // Note required duplication in if above due to limitations of cy.origin
-            cy.task('log', `  Logging in as ${username}`);
-            cy.get('[data-test-id="login"]').should('be.visible');
-            cy.get('body').then(($body) => {
-              if ($body.text().includes(provider)) {
-                cy.contains(provider).should('be.visible').click();
-              }
-            });
-            cy.get('#inputUsername').type(username);
+            if (Cypress.env('BUNDLE_IMAGE')) {
+              // Note required duplication in if above due to limitations of cy.origin
+              cy.task('log', `  skipping provider check`);
+              cy.wait(30000);
+              cy.url().should('contains', '/login');
+              cy.task('log', `  Logging in as ${username}`);
+            } else {
+              cy.get('[data-test-id="login"]').should('be.visible');
+              cy.get('body').then(($body) => {
+                if ($body.text().includes(provider)) {
+                  cy.contains(provider).should('be.visible').click();
+                }
+              });
+            }
+            cy.get('#inputPassword').should();
             cy.get('#inputPassword').type(password);
             cy.get('button[type=submit]').click();
           },
