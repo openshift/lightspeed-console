@@ -6,6 +6,7 @@ import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useHideLightspeed } from '../hooks/useHideLightspeed';
 import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
 import { State } from '../redux-reducers';
 import ErrorBoundary from './ErrorBoundary';
@@ -28,6 +29,7 @@ const Popover: React.FC = () => {
   const isOpen = useSelector((s: State) => s.plugins?.ols?.get('isOpen'));
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
+  const [isHidden] = useHideLightspeed();
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -54,6 +56,10 @@ const Popover: React.FC = () => {
   const close = React.useCallback(() => {
     dispatch(closeOLS());
   }, [dispatch]);
+
+  if (isHidden) {
+    return null;
+  }
 
   const title = t('Red Hat OpenShift Lightspeed');
 
