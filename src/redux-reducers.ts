@@ -10,6 +10,11 @@ export type State = {
   plugins: {
     ols: OLSState;
   };
+  sdkCore: {
+    user: {
+      username: string;
+    };
+  };
 };
 
 const reducer = (state: OLSState, action: OLSAction): OLSState => {
