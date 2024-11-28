@@ -117,17 +117,27 @@ Cypress.Commands.add(
               return;
             }
 
-            // Note required duplication in if above due to limitations of cy.origin
-            cy.task('log', `  Logging in as ${username}`);
-            cy.get('[data-test-id="login"]').should('be.visible');
-            cy.get('body').then(($body) => {
-              if ($body.text().includes(provider)) {
-                cy.contains(provider).should('be.visible').click();
-              }
-            });
-            cy.get('#inputUsername').type(username);
-            cy.get('#inputPassword').type(password);
-            cy.get('button[type=submit]').click();
+            if (Cypress.env('BUNDLE_IMAGE')) {
+              // Note required duplication in if above due to limitations of cy.origin
+              cy.task('log', `  Logging in as ${username}`);
+              cy.get('[data-test-id="login"]').should('be.visible');
+              cy.get('body').then(($body) => {
+                if ($body.text().includes(provider)) {
+                  cy.contains(provider).should('be.visible').click();
+                }
+              });
+            } else {
+              cy.origin(
+                'TODO',
+                { args: { provider, username, password } },
+                // eslint-disable-next-line @typescript-eslint/no-shadow
+                ({ provider, username, password }) => {
+                  cy.get('#inputUsername').type(username);
+                  cy.get('#inputPassword').type(password);
+                  cy.get('button[type=submit]').click();
+                },
+              );
+            }
           },
         );
       },
