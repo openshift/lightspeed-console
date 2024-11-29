@@ -30,6 +30,12 @@ export CYPRESS_LOGIN_IDP=kube:admin
 export CYPRESS_LOGIN_PASSWORD=<kubeadmin password>
 export CYPRESS_KUBECONFIG_PATH=/path/to/kubeconfig
 ```
+if you're running an **hypershift cluster**, please also run
+```bash
+export CYPRESS_BUNDLE_IMAGE=<konflux bundle image>
+```
+The bundle image can be taken from [konflux's bundle image](https://console.redhat.com/application-pipeline/workspaces/crt-nshift-lightspeed/applications/ols-bundle/components/test-bundle)
+
 ### Start Cypress
 we can either open Cypress GUI(open) or run Cypress in headless mode(run)
 ```bash
@@ -37,3 +43,4 @@ npx cypress open
 npx cypress run 
 
 ```
+
