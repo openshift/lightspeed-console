@@ -43,6 +43,7 @@ const ImportAction: React.FC<Props> = ({ value }) => {
       importCodeBlock({
         value,
         id: _.uniqueId('ImportCodeBlock_'),
+        triggeredFrom: location?.pathname,
       }),
     );
   };
