@@ -1,37 +1,6 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
-
-const resources = {
-  pods: 'Pod',
-  deployments: 'Deployment',
-  statefulsets: 'StatefulSet',
-  cronjobs: 'CronJob',
-  jobs: 'Job',
-  daemonsets: 'DaemonSet',
-  replicasets: 'ReplicaSet',
-  horizontalpodautoscalers: 'HorizontalPodAutoscaler',
-  poddisruptionbudgets: 'PodDisruptionBudget',
-
-  // Networking
-  services: 'Service',
-  routes: 'Route',
-  ingresses: 'Ingress',
-  networkpolicies: 'NetworkPolicy',
-
-  // Virtualization
-  'kubevirt.io~v1~VirtualMachine': 'kubevirt.io~v1~VirtualMachine',
-  'kubevirt.io~v1~VirtualMachineInstance': 'kubevirt.io~v1~VirtualMachineInstance',
-  'kubevirt.io~v1~VirtualMachineInstanceMigration':
-    'kubevirt.io~v1~VirtualMachineInstanceMigration',
-  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype':
-    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterInstancetype',
-  'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference':
-    'instancetype.kubevirt.io~v1beta1~VirtualMachineClusterPreference',
-  'cdi.kubevirt.io~v1beta1~DataSource': 'cdi.kubevirt.io~v1beta1~DataSource',
-  'migrations.kubevirt.io~v1alpha1~MigrationPolicy':
-    'migrations.kubevirt.io~v1alpha1~MigrationPolicy',
-  templates: 'Template',
-};
+import { useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 
 export const useLocationContext = () => {
   const [kind, setKind] = React.useState<string>();
@@ -41,35 +10,62 @@ export const useLocationContext = () => {
   const location = useLocation();
   const path = location?.pathname;
 
+  const [models, inFlight] = useK8sModels();
+
   React.useEffect(() => {
     if (path) {
       const ns = `[a-z0-9-]+`;
-      const resourceType = Object.keys(resources).join('|');
       const resourceName = '[a-z0-9-.]+';
 
-      let matches = undefined;
-      matches = path.match(new RegExp(`/k8s/ns/(${ns})/(${resourceType})/(${resourceName})`));
-      if (matches) {
-        setKind(resources[matches[2]]);
-        setName(matches[3]);
-        setNamespace(matches[1]);
-        return;
-      }
+      if (models && inFlight === false) {
+        const resourceKey = '[a-zA-Z0-9~.]+';
+        let urlMatches = undefined;
 
-      matches = path.match(new RegExp(`/k8s/all-namespaces/(${resourceType})/(${resourceName})`));
-      if (matches) {
-        setKind(resources[matches[1]]);
-        setName(matches[2]);
-        setNamespace(undefined);
-        return;
-      }
+        urlMatches = path.match(new RegExp(`/k8s/ns/(${ns})/(${resourceKey})/(${resourceName})`));
+        if (urlMatches) {
+          const key = urlMatches[2];
 
-      matches = path.match(new RegExp(`/k8s/cluster/(${resourceType})/(${resourceName})`));
-      if (matches) {
-        setKind(resources[matches[1]]);
-        setName(matches[2]);
-        setNamespace(undefined);
-        return;
+          if (models[key]) {
+            setKind(key);
+            setName(urlMatches[3]);
+            setNamespace(urlMatches[1]);
+            return;
+          }
+
+          const modelKey = Object.keys(models).find((k) => models[k].plural === key);
+          if (modelKey) {
+            const model = models[modelKey];
+            if (model && model.kind !== 'Secret' && model.kind !== 'ConfigMap') {
+              setKind(model.kind);
+              setName(urlMatches[3]);
+              setNamespace(urlMatches[1]);
+              return;
+            }
+          }
+        }
+
+        urlMatches = path.match(new RegExp(`/k8s/cluster/(${resourceKey})/(${resourceName})`));
+        if (urlMatches) {
+          const key = urlMatches[1];
+
+          if (models[key]) {
+            setKind(key);
+            setName(urlMatches[2]);
+            setNamespace(undefined);
+            return;
+          }
+
+          const modelKey = Object.keys(models).find((k) => models[k].plural === key);
+          if (modelKey) {
+            const model = models[modelKey];
+            if (model && model.kind !== 'Secret' && model.kind !== 'ConfigMap') {
+              setKind(model.kind);
+              setName(urlMatches[2]);
+              setNamespace(undefined);
+              return;
+            }
+          }
+        }
       }
 
       if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
@@ -86,7 +82,7 @@ export const useLocationContext = () => {
       setName(undefined);
       setNamespace(undefined);
     }
-  }, [location.search, path]);
+  }, [inFlight, location.search, models, path]);
 
   return [kind, name, namespace];
 };
