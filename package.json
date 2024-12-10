@@ -82,6 +82,7 @@
   "overrides": {
     "cross-spawn": "^7.0.5",
     "express": ">=4.21.2",
+    "nanoid": "^3.3.8",
     "webpack": "5.94.0"
   },
   "consolePlugin": {
