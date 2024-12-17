@@ -361,7 +361,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
           <>
             {showPodInput && (
               <FormGroup label="Pod">
-                {podsError && <Error title={t('Failed to load pods')}>{podsError}</Error>}
+                {podsError && <Error title={t('Failed to load pods')}>{podsError.message}</Error>}
                 {podsLoaded ? (
                   pods.length === 0 ? (
                     <Alert
