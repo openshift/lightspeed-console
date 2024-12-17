@@ -221,8 +221,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
 
   const dispatch = useDispatch();
 
-  const kind = resource.kind;
-  const name = resource.metadata?.name;
+  const isHPA = resource.kind === 'HorizontalPodAutoscaler';
+  const kind = isHPA ? resource.spec?.scaleTargetRef?.kind : resource.kind;
+  const name = isHPA ? resource.spec?.scaleTargetRef?.name : resource.metadata?.name;
   const namespace = resource.metadata?.namespace;
 
   const showPodInput = kind !== 'Pod';
@@ -239,11 +240,19 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   const [previewError, setPreviewError] = React.useState(false);
   const [isPreviewLoading, setIsPreviewLoading] = React.useState(false);
 
-  let selector = resource.spec?.selector;
+  const [scaleTarget, scaleTargetLoaded, scaleTargetError] = useK8sWatchResource<K8sResourceKind>(
+    isHPA ? { isList: false, kind, name, namespace } : null,
+  );
+
+  let selector;
   if (kind === 'Job') {
     selector = { 'job-name': name };
   } else if (kind === 'VirtualMachine' || kind === 'VirtualMachineInstance') {
     selector = { 'vm.kubevirt.io/name': name };
+  } else if (scaleTarget && scaleTargetLoaded && !scaleTargetError) {
+    selector = scaleTarget.spec?.selector;
+  } else {
+    selector = resource.spec?.selector;
   }
 
   const [pods, podsLoaded, podsError] = useK8sWatchResource<K8sResourceKind[]>(
@@ -344,66 +353,76 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
           'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
         )}
       </Text>
+      {scaleTargetError && (
+        <Error title={t('Failed to load scale target')}>{scaleTargetError.message}</Error>
+      )}
       <Form>
-        {showPodInput && (
-          <FormGroup label="Pod">
-            {podsError && <Error title={t('Failed to load pods')}>{podsError}</Error>}
-            {podsLoaded ? (
-              pods.length === 0 ? (
-                <Alert
-                  className="ols-plugin__alert"
-                  isInline
-                  title={t('No pods found')}
-                  variant="info"
-                >
-                  {t('No pods found for {{kind}} {{name}}', { kind, name })}
-                </Alert>
-              ) : (
-                <PodInput pods={pods} selectedPod={pod} setPod={changePod} />
-              )
-            ) : (
-              <Spinner isInline size="md" />
-            )}
-          </FormGroup>
-        )}
-        {(!showPodInput || (podsLoaded && pods.length > 0)) && (
+        {!scaleTargetError && (
           <>
-            <FormGroup label="Container">
-              <ContainerInput
-                containers={containers}
-                selectedContainer={container}
-                setContainer={setContainer}
-              />
-            </FormGroup>
-            <FormGroup label={t('Most recent {{lines}} lines', { lines })}>
-              <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
-            </FormGroup>
-          </>
-        )}
-        {preview && (
-          <CodeBlock
-            actions={
+            {showPodInput && (
+              <FormGroup label="Pod">
+                {podsError && <Error title={t('Failed to load pods')}>{podsError}</Error>}
+                {podsLoaded ? (
+                  pods.length === 0 ? (
+                    <Alert
+                      className="ols-plugin__alert"
+                      isInline
+                      title={t('No pods found')}
+                      variant="info"
+                    >
+                      {t('No pods found for {{kind}} {{name}}', { kind, name })}
+                    </Alert>
+                  ) : (
+                    <PodInput pods={pods} selectedPod={pod} setPod={changePod} />
+                  )
+                ) : (
+                  <Spinner isInline size="md" />
+                )}
+              </FormGroup>
+            )}
+            {(!showPodInput || (podsLoaded && pods.length > 0)) && (
               <>
-                <CodeBlockAction />
-                <CodeBlockAction>
-                  <CopyAction value={preview} />
-                </CodeBlockAction>
+                <FormGroup label="Container">
+                  <ContainerInput
+                    containers={containers}
+                    selectedContainer={container}
+                    setContainer={setContainer}
+                  />
+                </FormGroup>
+                <FormGroup label={t('Most recent {{lines}} lines', { lines })}>
+                  <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
+                </FormGroup>
               </>
-            }
-            className="ols-plugin__code-block ols-plugin__code-block--preview"
-          >
-            {isPreviewLoading && (
-              <CodeBlockCode className="ols-plugin__code-block-code">
-                <Spinner size="md" />
-              </CodeBlockCode>
             )}
-            {previewError && <Error title={t('Failed to load preview')}>{previewError}</Error>}
-            {preview && !isPreviewLoading && !previewError && (
-              <CodeBlockCode className="ols-plugin__code-block-code" style={{ whiteSpace: 'pre' }}>
-                {preview}
-              </CodeBlockCode>
+            {preview && (
+              <CodeBlock
+                actions={
+                  <>
+                    <CodeBlockAction />
+                    <CodeBlockAction>
+                      <CopyAction value={preview} />
+                    </CodeBlockAction>
+                  </>
+                }
+                className="ols-plugin__code-block ols-plugin__code-block--preview"
+              >
+                {isPreviewLoading && (
+                  <CodeBlockCode className="ols-plugin__code-block-code">
+                    <Spinner size="md" />
+                  </CodeBlockCode>
+                )}
+                {previewError && <Error title={t('Failed to load preview')}>{previewError}</Error>}
+                {preview && !isPreviewLoading && !previewError && (
+                  <CodeBlockCode
+                    className="ols-plugin__code-block-code"
+                    style={{ whiteSpace: 'pre' }}
+                  >
+                    {preview}
+                  </CodeBlockCode>
+                )}
+              </CodeBlock>
             )}
-          </CodeBlock>
+          </>
         )}
         {error && <Error title={t('Failed to attach context')}>{error}</Error>}
         <ActionGroup>

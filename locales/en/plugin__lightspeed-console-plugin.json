@@ -38,6 +38,7 @@
   "Failed to load events": "Failed to load events",
   "Failed to load pods": "Failed to load pods",
   "Failed to load preview": "Failed to load preview",
+  "Failed to load scale target": "Failed to load scale target",
   "Good response": "Good response",
   "History truncated": "History truncated",
   "If this error persists, please contact an administrator. Error details: {{e}}": "If this error persists, please contact an administrator. Error details: {{e}}",
