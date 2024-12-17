@@ -10,7 +10,6 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
-  Chip,
   Icon,
   Label,
   MenuToggle,
@@ -22,7 +21,7 @@ import {
   Title,
   Tooltip,
 } from '@patternfly/react-core';
-import { FileCodeIcon, PlusCircleIcon, TaskIcon } from '@patternfly/react-icons';
+import { FileCodeIcon, InfoCircleIcon, PlusCircleIcon, TaskIcon } from '@patternfly/react-icons';
 
 import { AttachmentTypes } from '../attachments';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
@@ -35,6 +34,18 @@ import AttachLogModal from './AttachLogModal';
 import ResourceIcon from './ResourceIcon';
 
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
+
+const FilteredYAMLInfo = () => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  return (
+    <Tooltip content={t('Attach kind, metadata and status YAML')}>
+      <span className="ols-plugin__inline-icon">
+        <InfoCircleIcon />
+      </span>
+    </Tooltip>
+  );
+};
 
 const AttachMenu: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -245,7 +256,7 @@ const AttachMenu: React.FC = () => {
                   <FileCodeIcon /> YAML
                 </SelectOption>
                 <SelectOption value={AttachmentTypes.YAMLStatus}>
-                  <FileCodeIcon /> YAML <Chip isReadOnly>status</Chip> {t('only')}
+                  <FileCodeIcon /> YAML (filtered) <FilteredYAMLInfo />
                 </SelectOption>
                 {showEvents && (
                   <div title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}>
