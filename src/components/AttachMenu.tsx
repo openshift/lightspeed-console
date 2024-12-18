@@ -203,6 +203,7 @@ const AttachMenu: React.FC = () => {
   const showLogs = [
     'DaemonSet',
     'Deployment',
+    'HorizontalPodAutoscaler',
     'Job',
     'kubevirt.io~v1~VirtualMachine',
     'kubevirt.io~v1~VirtualMachineInstance',
