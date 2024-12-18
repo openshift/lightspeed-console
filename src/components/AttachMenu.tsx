@@ -190,6 +190,7 @@ const AttachMenu: React.FC = () => {
     'CronJob',
     'DaemonSet',
     'Deployment',
+    'DeploymentConfig',
     'HorizontalPodAutoscaler',
     'Job',
     'kubevirt.io~v1~VirtualMachine',
@@ -197,12 +198,14 @@ const AttachMenu: React.FC = () => {
     'Pod',
     'PodDisruptionBudget',
     'ReplicaSet',
+    'ReplicationController',
     'StatefulSet',
   ].includes(kind);
 
   const showLogs = [
     'DaemonSet',
     'Deployment',
+    'DeploymentConfig',
     'HorizontalPodAutoscaler',
     'Job',
     'kubevirt.io~v1~VirtualMachine',
@@ -210,6 +213,7 @@ const AttachMenu: React.FC = () => {
     'Pod',
     'PodDisruptionBudget',
     'ReplicaSet',
+    'ReplicationController',
     'StatefulSet',
   ].includes(kind);
 
