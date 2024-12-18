@@ -35,7 +35,7 @@ export const useLocationContext = () => {
           const modelKey = Object.keys(models).find((k) => models[k].plural === key);
           if (modelKey) {
             const model = models[modelKey];
-            if (model && model.kind !== 'Secret' && model.kind !== 'ConfigMap') {
+            if (model && model.kind !== 'Secret') {
               setKind(model.kind);
               setName(urlMatches[3]);
               setNamespace(urlMatches[1]);
@@ -58,7 +58,7 @@ export const useLocationContext = () => {
           const modelKey = Object.keys(models).find((k) => models[k].plural === key);
           if (modelKey) {
             const model = models[modelKey];
-            if (model && model.kind !== 'Secret' && model.kind !== 'ConfigMap') {
+            if (model && model.kind !== 'Secret') {
               setKind(model.kind);
               setName(urlMatches[2]);
               setNamespace(undefined);
