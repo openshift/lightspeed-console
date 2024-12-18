@@ -18,7 +18,6 @@ import {
   Form,
   HelperText,
   HelperTextItem,
-  Label,
   Level,
   LevelItem,
   Page,
@@ -28,18 +27,16 @@ import {
   SplitItem,
   TextArea,
   Title,
-  Tooltip,
 } from '@patternfly/react-core';
 import {
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
   PaperPlaneIcon,
-  PencilAltIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
-import { isAttachmentChanged, toOLSAttachment } from '../attachments';
+import { toOLSAttachment } from '../attachments';
 import { getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -48,7 +45,6 @@ import {
   attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
-  openAttachmentSet,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -56,12 +52,12 @@ import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import AttachmentModal from './AttachmentModal';
 import AttachMenu from './AttachMenu';
+import AttachmentLabel from './AttachmentLabel';
 import CopyAction from './CopyAction';
 import ImportAction from './ImportAction';
 import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
 import ReadinessAlert from './ReadinessAlert';
-import ResourceIcon from './ResourceIcon';
 
 import './general-page.css';
 
@@ -121,44 +117,6 @@ const Code = ({ children }: { children: React.ReactNode }) => {
     >
       <CodeBlockCode className="ols-plugin__code-block-code">{children}</CodeBlockCode>
     </CodeBlock>
-  );
-};
-
-type AttachmentLabelProps = {
-  attachment: Attachment;
-  isEditable?: boolean;
-  onClose?: () => void;
-};
-
-const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, isEditable, onClose }) => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
-
-  const dispatch = useDispatch();
-
-  const onClick = React.useCallback(() => {
-    dispatch(openAttachmentSet(Object.assign({}, attachment, { isEditable })));
-  }, [attachment, isEditable, dispatch]);
-
-  if (!attachment) {
-    return null;
-  }
-
-  const { attachmentType, kind, name } = attachment;
-  const isChanged = isAttachmentChanged(attachment);
-
-  return (
-    <Tooltip content={isChanged ? t('Preview attachment - modified') : t('Preview attachment')}>
-      <Label className="ols-plugin__context-label" onClick={onClick} onClose={onClose}>
-        <ResourceIcon kind={kind} />
-        <span className="ols-plugin__context-label-text">{name}</span>
-        {isChanged && (
-          <span className="ols-plugin__inline-icon">
-            <PencilAltIcon />
-          </span>
-        )}
-        {kind !== 'Alert' && <Label className="ols-plugin__inline-icon">{attachmentType}</Label>}
-      </Label>
-    </Tooltip>
   );
 };
 
