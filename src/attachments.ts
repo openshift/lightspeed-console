@@ -4,7 +4,7 @@ export enum AttachmentTypes {
   Events = 'Events',
   Log = 'Log',
   YAML = 'YAML',
-  YAMLStatus = 'YAML Status',
+  YAMLFiltered = 'YAML filtered',
 }
 
 export const isAttachmentChanged = (attachment: Attachment): boolean =>
