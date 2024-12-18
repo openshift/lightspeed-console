@@ -120,10 +120,10 @@ const AttachMenu: React.FC = () => {
           });
       } else if (
         attachmentType === AttachmentTypes.YAML ||
-        attachmentType === AttachmentTypes.YAMLStatus
+        attachmentType === AttachmentTypes.YAMLFiltered
       ) {
         const data = cloneDeep(
-          attachmentType === AttachmentTypes.YAMLStatus
+          attachmentType === AttachmentTypes.YAMLFiltered
             ? { kind: context.kind, metadata: context.metadata, status: context.status }
             : context,
         );
@@ -256,7 +256,7 @@ const AttachMenu: React.FC = () => {
                 <SelectOption value={AttachmentTypes.YAML}>
                   <FileCodeIcon /> YAML
                 </SelectOption>
-                <SelectOption value={AttachmentTypes.YAMLStatus}>
+                <SelectOption value={AttachmentTypes.YAMLFiltered}>
                   <FileCodeIcon /> YAML (filtered) <FilteredYAMLInfo />
                 </SelectOption>
                 {showEvents && (
