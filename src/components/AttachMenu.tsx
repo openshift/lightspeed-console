@@ -39,7 +39,7 @@ const FilteredYAMLInfo = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   return (
-    <Tooltip content={t('Attach kind, metadata and status YAML')}>
+    <Tooltip content={t('Kind, Metadata, and Status sections only')}>
       <span className="ols-plugin__inline-icon">
         <InfoCircleIcon />
       </span>
@@ -258,10 +258,10 @@ const AttachMenu: React.FC = () => {
             ) : (
               <>
                 <SelectOption value={AttachmentTypes.YAML}>
-                  <FileCodeIcon /> YAML
+                  <FileCodeIcon /> Full YAML file
                 </SelectOption>
                 <SelectOption value={AttachmentTypes.YAMLFiltered}>
-                  <FileCodeIcon /> YAML (filtered) <FilteredYAMLInfo />
+                  <FileCodeIcon /> Filtered YAML <FilteredYAMLInfo />
                 </SelectOption>
                 {showEvents && (
                   <div title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}>
