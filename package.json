@@ -63,7 +63,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "i18next-parser": "^9.0.2",
+    "i18next-parser": "^9.1.0",
     "pluralize": "^8.0.0",
     "prettier": "^3.4.2",
     "stylelint": "^16.13.0",
