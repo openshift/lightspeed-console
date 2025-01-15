@@ -68,7 +68,7 @@
     "prettier": "^3.4.2",
     "stylelint": "^16.13.0",
     "stylelint-config-standard": "^37.0.0",
-    "webpack-dev-server": "^5.1.0",
+    "webpack-dev-server": "^5.2.0",
     "@cypress/grep": "^4.1.0",
     "@cypress/webpack-preprocessor": "^6.0.2",
     "cypress": "^13.17.0",
