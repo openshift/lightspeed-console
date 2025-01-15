@@ -7,6 +7,13 @@
   );
 }
 
+/* Add space at bottom of web console pages, so that the OLS button doesn't obscure other elements.
+   These rules should be removed if we move the button location. */
+/* stylelint-disable-next-line selector-disallowed-list */
+.co-dashboard-body, .co-m-list .co-m-pane__body:last-of-type, .co-m-page__body .co-m-pane__body:last-of-type {
+  padding-bottom: calc(var(--popover-button-size) + 2 * var(--popover-margin));
+}
+
 .ols-plugin__popover, .ols-plugin__popover-button {
   box-shadow: var(--pf-v5-global--BoxShadow--lg);
   position: absolute;
