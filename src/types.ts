@@ -2,6 +2,14 @@ import { Map as ImmutableMap } from 'immutable';
 
 import { ErrorType } from './error';
 
+declare global {
+  interface Window {
+    SERVER_FLAGS: {
+      releaseVersion: string;
+    };
+  }
+}
+
 export type Attachment = {
   attachmentType: string;
   isEditable?: boolean;
