@@ -24,6 +24,15 @@ const ImportAction: React.FC<Props> = ({ value }) => {
 
   const [showModal, setShowModal] = React.useState(false);
 
+  // The web console only supports the import YAML action from version 4.18
+  const { releaseVersion } = window.SERVER_FLAGS;
+  if (releaseVersion) {
+    const [major, minor] = releaseVersion.split('.');
+    if (Number(major) < 4 || (Number(major) === 4 && Number(minor) < 18)) {
+      return null;
+    }
+  }
+
   const handleRedirect = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (event.currentTarget.id === 'leave') {
       history.push(`/k8s/ns/${activeNamespace}/import?ols=true`);
