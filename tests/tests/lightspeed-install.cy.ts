@@ -52,6 +52,69 @@ describe('Lightspeed related features', () => {
         oauthorigin,
       );
     });
+    if (Cypress.env('BUNDLE_IMAGE')) {
+      cy.exec(
+        `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `operator-sdk run bundle --timeout=20m --namespace ${OLS.namespace} ${Cypress.env('BUNDLE_IMAGE')} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
+        { timeout: 6 * 60 * 1000 },
+      );
+    } else {
+      operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
+      cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * 60 * 1000 }).should(
+        'include.text',
+        'ready for use',
+      );
+    }
+    if (Cypress.env('CONSOLE_IMAGE')) {
+      // If console image exists, replace it in csv
+      cy.exec(
+        `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/0/image", "value":"${Cypress.env('SERVICE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/6", "value":"--console-image=${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/5", "value":"--service-image=${Cypress.env('SERVICE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+    }
+    const config = `apiVersion: ols.openshift.io/v1alpha1
+kind: ${OLS.config.kind}
+metadata:
+  name: ${OLS.config.name}
+spec:
+  llm:
+    providers:
+      - type: openai
+        name: openai
+        credentialsSecretRef:
+          name: openai-api-keys
+        url: https://api.openai.com/v1
+        models:
+          - name: gpt-4o-mini
+  ols:
+    defaultModel: gpt-4o-mini
+    defaultProvider: openai
+    logLevel: INFO`;
+    cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
+
+    cy.get('.pf-v5-c-alert', { timeout: 2 * 60 * 1000 }).should(
+      'include.text',
+      'Web console update is available',
+    );
   });
 
   after(() => {
@@ -67,57 +130,6 @@ describe('Lightspeed related features', () => {
       `oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
     );
   });
-
-  it(
-    '(OLS-427,jfula,Lightspeed) Deploy OpenShift Lightspeed operator via web console',
-    { tags: ['e2e', 'admin', '@smoke'] },
-    () => {
-      if (Cypress.env('BUNDLE_IMAGE')) {
-        cy.exec(
-          `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-        );
-        cy.exec(
-          `operator-sdk run bundle --timeout=5m --namespace ${OLS.namespace} ${Cypress.env('BUNDLE_IMAGE')} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
-          { timeout: 6 * 60 * 1000 },
-        );
-      } else {
-        operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
-        cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * 60 * 1000 }).should(
-          'include.text',
-          'ready for use',
-        );
-      }
-
-      const config = `apiVersion: ols.openshift.io/v1alpha1
-kind: ${OLS.config.kind}
-metadata:
-  name: ${OLS.config.name}
-spec:
-  llm:
-    providers:
-      - type: openai
-        name: openai
-        credentialsSecretRef:
-          name: openai-api-keys
-        url: https://api.openai.com/v1
-        models:
-          - name: gpt-3.5-turbo
-  ols:
-    defaultModel: gpt-3.5-turbo
-    defaultProvider: openai
-    logLevel: INFO`;
-      cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
-
-      cy.get('.pf-v5-c-alert', { timeout: 2 * 60 * 1000 }).should(
-        'include.text',
-        'Web console update is available',
-      );
-
-      //Install the OpenShift Lightspeed catalog source
-      // lightUtils.installOperator(OLS.namespace, OLS.packageName, "redhat-operators", catalogSource.channel(OLS.packageName), catalogSource.version(OLS.packageName), false, OLS.operatorName);
-      //Install the OpenShift Lightspeed Operator with console plugin
-    },
-  );
 
   it(
     '(OLS-743,anpicker,Lightspeed) Test OpenShift Lightspeed with pod',
@@ -159,8 +171,8 @@ spec:
       // Test that the context menu now has options
       cy.get(attachMenuButton).click();
       cy.get(attachMenu)
-        .should('include.text', 'YAML')
-        .should('include.text', 'status')
+        .should('include.text', 'Full YAML file')
+        .should('include.text', 'Filtered YAML')
         .should('include.text', 'Events')
         .should('include.text', 'Logs');
     },
@@ -171,7 +183,7 @@ spec:
     { tags: ['e2e', 'admin', '@smoke'] },
     () => {
       // Test attaching pod YAML
-      cy.get(attachMenu).find('li:first-of-type button').contains('YAML').click();
+      cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
       cy.get(attachments)
         .should('include.text', podName)
         .should('include.text', 'YAML')
@@ -191,10 +203,10 @@ spec:
 
       // Test attaching pod YAML status section
       cy.get(attachMenuButton).click();
-      cy.get(attachMenu).find('button').contains('status').click();
+      cy.get(attachMenu).find('button').contains('Filtered YAML').click();
       cy.get(attachments)
         .should('include.text', podName)
-        .should('include.text', 'YAML Status')
+        .should('include.text', 'YAML')
         .find('button')
         .contains(podName)
         .should('have.lengthOf', 1)
