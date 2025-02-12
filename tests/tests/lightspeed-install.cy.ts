@@ -71,24 +71,23 @@ describe('Lightspeed related features', () => {
       );
     }
     if (Cypress.env('CONSOLE_IMAGE')) {
-      // If console image exists, replace it in csv
-      cy.exec(
-        `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      cy.exec(
-        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      cy.exec(
-        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/0/image", "value":"${Cypress.env('SERVICE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      cy.exec(
-        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/6", "value":"--console-image=${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      cy.exec(
-        `oc patch csv lightspeed-operator.v0.2.1 --namespace=openshift-lightspeed --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/5", "value":"--service-image=${Cypress.env('SERVICE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      cy.exec(
-        `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      cy.exec(`oc get clusterserviceversion --namespace=${OLS.namespace} -o name`).then(
+        (result) => {
+          const csvname = result.stdout;
+          // If console image exists, replace it in csv
+          cy.exec(
+            `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          );
+          cy.exec(
+            `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          );
+          cy.exec(
+            `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/6", "value":"--console-image=${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          );
+          cy.exec(
+            `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          );
+        },
       );
     }
     const config = `apiVersion: ols.openshift.io/v1alpha1

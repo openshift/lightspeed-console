@@ -76,6 +76,20 @@ spec:
                 value: "$(steps.pick-version.results.version)"
               - name: instanceType
                 value: "m5.large"
+              - name: imageContentSources
+                value: |
+                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-rhel9-operator
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-operator
+                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-operator-bundle
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/bundle
+                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-service-api-rhel9
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-service
+                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-console-plugin-rhel9
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-console
     - name: ols-install
       description: Task to install bundle onto ephemeral namespace
       runAfter:
@@ -87,10 +101,10 @@ spec:
           value: "$(params.namespace)"
       taskSpec:
         results:
-          - name: service-image
-            value: "$(steps.get-snapshot-images.results.service-image)"
           - name: console-image
             value: "$(steps.get-snapshot-images.results.console-image)"
+          - name: bundle-image
+            value: "$(steps.get-snapshot-images.results.bundle-image)"
         params:
           - name: SNAPSHOT
           - name: namespace
@@ -105,25 +119,25 @@ spec:
               - name: SNAPSHOT
                 value: $(params.SNAPSHOT)
             results:
-              - name: service-image
-                type: string
-                description: "service image from snapshot"
               - name: console-image
+                type: string
+                description: "console image from snapshot"
+              - name: bundle-image
                 type: string
                 description: "console image from snapshot"
             script: |
               dnf -y install jq
-              echo -n "$(jq -r --arg component_name "lightspeed-service" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.service-image.path)
               echo -n "$(jq -r --arg component_name "lightspeed-console" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.console-image.path)
+              echo -n "$(jq -r --arg component_name "bundle" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.bundle-image.path)
     - name: ols-e2e-tests
       description: Task to run tests from service repository
       runAfter:
         - ols-install
       params:
-        - name: service-image
-          value: $(tasks.ols-install.results.service-image)
         - name: console-image
           value: $(tasks.ols-install.results.console-image)
+        - name: bundle-image
+          value: $(tasks.ols-install.results.bundle-image)
       taskSpec:
         volumes:
           - name: openai-token
@@ -132,8 +146,8 @@ spec:
           - name: credentials
             emptyDir: {}
         params:
-          - name: service-image
           - name: console-image
+          - name: bundleimage
         steps:
           - name: get-kubeconfig
             ref:
@@ -165,10 +179,10 @@ spec:
                 value: "kube:admin"
               - name: LLM_TOKEN_PATH
                 value: "/var/run/openai/token"
-              - name: CYPRESS_SERVICE_IMAGE
-                value: "$(params.service-image)"
               - name: CYPRESS_CONSOLE_IMAGE
                 value: "$(params.console-image)"
+              - name: CYPRESS_BUNDLE_IMAGE
+                value: "$(params.bundleimage)"
               - name: PASSWORD_PATH
                 value: "/credentials/$(steps.get-kubeconfig.results.passwordPath)"
               - name: CYPRESS_BASE_URL
@@ -178,7 +192,7 @@ spec:
               echo "---------------------------------------------"
               echo "${CYPRESS_BASE_URL}"
               echo "---------------------------------------------"
-              echo "${CYPRESS_SERVICE_IMAGE}"
+              echo "${CYPRESS_BUNDLE_IMAGE}"
               echo "---------------------------------------------"
               echo "${CYPRESS_CONSOLE_IMAGE}"
               echo "---------------------------------------------"
