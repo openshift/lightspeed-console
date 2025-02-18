@@ -34,6 +34,7 @@ type ChatEntryUser = {
 
 type ChatEntryAI = {
   error?: ErrorType;
+  isStreaming: boolean;
   isTruncated: boolean;
   references?: Array<ReferencedDoc>;
   text?: string;

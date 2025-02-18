@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -38,13 +37,14 @@ import {
 
 import { toOLSAttachment } from '../attachments';
 import { getFetchErrorMessage } from '../error';
-import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
+import { AuthStatus, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import {
   attachmentDelete,
   attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
+  chatHistoryUpdateLast,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -61,17 +61,44 @@ import ReadinessAlert from './ReadinessAlert';
 
 import './general-page.css';
 
-const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/query';
+const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query';
 
-const QUERY_REQUEST_TIMEOUT = 10 * 60 * 1000; // 10 minutes
-
-type QueryResponse = {
-  conversation_id: string;
-  query: string;
-  referenced_documents: Array<ReferencedDoc>;
-  response: string;
-  truncated: boolean;
+type QueryResponseStart = {
+  event: 'start';
+  data: {
+    conversation_id: string;
+  };
 };
+
+type QueryResponseToken = {
+  event: 'token';
+  data: {
+    id: number;
+    token: string;
+  };
+};
+
+type QueryResponseError = {
+  event: 'error';
+  data: {
+    response: string;
+    cause: string;
+  };
+};
+
+type QueryResponseEnd = {
+  event: 'end';
+  data: {
+    referenced_documents: Array<ReferencedDoc>;
+    truncated: boolean;
+  };
+};
+
+type QueryResponse =
+  | QueryResponseStart
+  | QueryResponseToken
+  | QueryResponseError
+  | QueryResponseEnd;
 
 type ExternalLinkProps = {
   children: React.ReactNode;
@@ -160,6 +187,13 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         ) : (
           <>
             <Markdown components={{ code: Code }}>{entry.text}</Markdown>
+            {!entry.text && (
+              <HelperText>
+                <HelperTextItem variant="indeterminate">
+                  {t('Waiting for LLM provider...')} <Spinner size="lg" />
+                </HelperTextItem>
+              </HelperText>
+            )}
             {entry.isTruncated && (
               <Alert isInline title={t('History truncated')} variant="warning">
                 {t('Conversation history has been truncated to fit within context window.')}
@@ -172,7 +206,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
                 ))}
               </ChipGroup>
             )}
-            {isUserFeedbackEnabled && (
+            {isUserFeedbackEnabled && !entry.isStreaming && (
               <Feedback
                 conversationID={conversationID}
                 entryIndex={entryIndex}
@@ -213,21 +247,6 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
     );
   }
   return null;
-};
-
-const ChatHistoryEntryWaiting = () => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
-
-  return (
-    <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
-      <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-      <HelperText>
-        <HelperTextItem variant="indeterminate">
-          {t('Waiting for LLM provider...')} <Spinner size="lg" />
-        </HelperTextItem>
-      </HelperText>
-    </div>
-  );
 };
 
 type AuthAlertProps = {
@@ -314,7 +333,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [authStatus] = useAuth();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
-  const [isWaiting, , setWaiting, unsetWaiting] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
   const promptRef = React.useRef(null);
@@ -364,48 +382,99 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         }),
       );
       scrollIntoView();
-      setWaiting();
 
       const requestJSON = {
         attachments: attachments.valueSeq().map(toOLSAttachment),
         // eslint-disable-next-line camelcase
         conversation_id: conversationID,
+        // eslint-disable-next-line camelcase
+        media_type: 'application/json',
         query,
       };
 
-      consoleFetchJSON
-        .post(QUERY_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), QUERY_REQUEST_TIMEOUT)
-        .then((response: QueryResponse) => {
-          dispatch(setConversationID(response.conversation_id));
-          dispatch(
-            chatHistoryPush({
-              isTruncated: response.truncated === true,
-              references: response.referenced_documents,
-              text: response.response,
-              who: 'ai',
-            }),
-          );
-          scrollIntoView();
-          unsetWaiting();
-        })
-        .catch((error) => {
-          dispatch(
-            chatHistoryPush({
-              error: getFetchErrorMessage(error, t),
-              isTruncated: false,
-              who: 'ai',
-            }),
-          );
-          scrollIntoView();
-          unsetWaiting();
+      const streamResponse = async () => {
+        const response = await fetch(QUERY_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestJSON),
         });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let responseText = '';
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            break;
+          }
+          const text = decoder.decode(value);
+          text
+            .split('\n')
+            .filter((s) => s.startsWith('data: '))
+            .forEach((s) => {
+              const line = s.slice(5).trim();
+              let json: QueryResponse;
+              try {
+                json = JSON.parse(line);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(`Failed to parse JSON string "${line}"`, error);
+              }
+              if (json && json.event && json.data) {
+                if (json.event === 'start') {
+                  dispatch(setConversationID(json.data.conversation_id));
+                  dispatch(
+                    chatHistoryPush({
+                      isStreaming: true,
+                      isTruncated: false,
+                      references: [],
+                      text: responseText,
+                      who: 'ai',
+                    }),
+                  );
+                } else if (json.event === 'token') {
+                  responseText += json.data.token;
+                  dispatch(
+                    chatHistoryUpdateLast({
+                      text: responseText,
+                    }),
+                  );
+                } else if (json.event === 'end') {
+                  dispatch(
+                    chatHistoryUpdateLast({
+                      isStreaming: false,
+                      isTruncated: json.data.truncated === true,
+                      references: json.data.referenced_documents,
+                    }),
+                  );
+                } else {
+                  // eslint-disable-next-line no-console
+                  console.error(`Unrecognized event "${json.event}" in response stream`);
+                }
+              }
+            });
+        }
+      };
+      streamResponse().catch((error) => {
+        dispatch(
+          chatHistoryPush({
+            error: getFetchErrorMessage(error, t),
+            isStreaming: false,
+            isTruncated: false,
+            who: 'ai',
+          }),
+        );
+        scrollIntoView();
+      });
 
       // Clear prompt input and return focus to it
       dispatch(setQuery(''));
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [attachments, conversationID, dispatch, query, scrollIntoView, setWaiting, t, unsetWaiting],
+    [attachments, conversationID, dispatch, query, scrollIntoView, t],
   );
 
   // We use keypress instead of keydown even though keypress is deprecated to work around a problem
@@ -499,7 +568,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             scrollIntoView={scrollIntoView}
           />
         ))}
-        {isWaiting && <ChatHistoryEntryWaiting />}
         <ReadinessAlert />
         <div ref={chatHistoryEndRef} />
       </PageSection>
