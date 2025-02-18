@@ -9,6 +9,7 @@ export enum ActionType {
   AttachmentSet = 'attachmentSet',
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
+  ChatHistoryUpdateLast = 'chatHistoryUpdateLast',
   ClearContextEvents = 'clearContextEvents',
   CloseOLS = 'closeOLS',
   OpenAttachmentClear = 'openAttachmentClear',
@@ -54,6 +55,9 @@ export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 
+export const chatHistoryUpdateLast = (entry: Partial<ChatEntry>) =>
+  action(ActionType.ChatHistoryUpdateLast, { entry });
+
 export const clearContextEvents = () => action(ActionType.ClearContextEvents);
 
 export const closeOLS = () => action(ActionType.CloseOLS);
@@ -96,6 +100,7 @@ const actions = {
   attachmentSet,
   chatHistoryClear,
   chatHistoryPush,
+  chatHistoryUpdateLast,
   clearContextEvents,
   closeOLS,
   importCodeBlock,
