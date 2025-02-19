@@ -103,8 +103,8 @@ spec:
         results:
           - name: console-image
             value: "$(steps.get-snapshot-images.results.console-image)"
-          - name: bundle-image
-            value: "$(steps.get-snapshot-images.results.bundle-image)"
+          - name: commit
+            value: "$(steps.get-snapshot-images.results.commit)"
         params:
           - name: SNAPSHOT
           - name: namespace
@@ -122,13 +122,13 @@ spec:
               - name: console-image
                 type: string
                 description: "console image from snapshot"
-              - name: bundle-image
+              - name: commit
                 type: string
-                description: "console image from snapshot"
+                description: "commit sha to be used in console tests"
             script: |
               dnf -y install jq
               echo -n "$(jq -r --arg component_name "lightspeed-console" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.console-image.path)
-              echo -n "$(jq -r --arg component_name "bundle" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.bundle-image.path)
+              echo -n "$(jq -r --arg component_name "lightspeed-console" '.components[] | select(.name == $component_name) | .source.git.revision' <<< "$SNAPSHOT")" > $(step.results.commit.path)
     - name: ols-e2e-tests
       description: Task to run tests from service repository
       runAfter:
@@ -136,8 +136,8 @@ spec:
       params:
         - name: console-image
           value: $(tasks.ols-install.results.console-image)
-        - name: bundle-image
-          value: $(tasks.ols-install.results.bundle-image)
+        - name: commit
+          value: $(tasks.ols-install.results.commit)
       taskSpec:
         volumes:
           - name: openai-token
@@ -147,7 +147,7 @@ spec:
             emptyDir: {}
         params:
           - name: console-image
-          - name: bundle-image
+          - name: commit
         steps:
           - name: get-kubeconfig
             ref:
@@ -181,8 +181,8 @@ spec:
                 value: "/var/run/openai/token"
               - name: CYPRESS_CONSOLE_IMAGE
                 value: "$(params.console-image)"
-              - name: CYPRESS_BUNDLE_IMAGE
-                value: "$(params.bundle-image)"
+              - name: COMMIT_SHA
+                value: "$(params.commit)"
               - name: PASSWORD_PATH
                 value: "/credentials/$(steps.get-kubeconfig.results.passwordPath)"
               - name: CYPRESS_BASE_URL
@@ -192,7 +192,7 @@ spec:
               echo "---------------------------------------------"
               echo "${CYPRESS_BASE_URL}"
               echo "---------------------------------------------"
-              echo "${CYPRESS_BUNDLE_IMAGE}"
+              echo "${COMMIT_SHA}"
               echo "---------------------------------------------"
               echo "${CYPRESS_CONSOLE_IMAGE}"
               echo "---------------------------------------------"
@@ -228,6 +228,7 @@ spec:
               echo "---------------------------------------------"
               git clone https://github.com/openshift/lightspeed-console.git
               cd lightspeed-console
+              git pull origin ${COMMIT_SHA} --rebase
               npm install
               npm -v
               echo "---------------------------------------------"
