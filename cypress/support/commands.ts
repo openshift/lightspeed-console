@@ -118,31 +118,34 @@ Cypress.Commands.add(
               cy.task('log', '  skipping login, console is running with auth disabled');
               return;
             }
-            if (Cypress.env('BUNDLE_IMAGE')) {
-              cy.log(oauthurl);
-              cy.origin(
-                oauthurl,
-                { args: { username, password } },
-                // eslint-disable-next-line @typescript-eslint/no-shadow
-                ({ username, password }) => {
-                  cy.get('#inputUsername').type(username);
-                  cy.get('#inputPassword').type(password);
-                  cy.get('button[type=submit]').click();
-                },
-              );
-            } else {
-              // Note required duplication in if above due to limitations of cy.origin
-              cy.task('log', `  Logging in as ${username}`);
-              cy.get('[data-test-id="login"]').should('be.visible');
-              cy.get('body').then(($body) => {
-                if ($body.text().includes(provider)) {
-                  cy.contains(provider).should('be.visible').click();
-                }
-              });
-              cy.get('#inputUsername').type(username);
-              cy.get('#inputPassword').type(password);
-              cy.get('button[type=submit]').click();
-            }
+            cy.exec(`oc get node --selector=hypershift.openshift.io/managed`).then((result) => {
+              cy.log(result.stdout);
+              if (result.stdout.includes('Ready')) {
+                cy.log(oauthurl);
+                cy.origin(
+                  oauthurl,
+                  { args: { username, password } },
+                  // eslint-disable-next-line @typescript-eslint/no-shadow
+                  ({ username, password }) => {
+                    cy.get('#inputUsername').type(username);
+                    cy.get('#inputPassword').type(password);
+                    cy.get('button[type=submit]').click();
+                  },
+                );
+              } else {
+                // Note required duplication in if above due to limitations of cy.origin
+                cy.task('log', `  Logging in as ${username}`);
+                cy.get('[data-test-id="login"]').should('be.visible');
+                cy.get('body').then(($body) => {
+                  if ($body.text().includes(provider)) {
+                    cy.contains(provider).should('be.visible').click();
+                  }
+                });
+                cy.get('#inputUsername').type(username);
+                cy.get('#inputPassword').type(password);
+                cy.get('button[type=submit]').click();
+              }
+            });
           },
         );
       },
