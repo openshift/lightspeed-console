@@ -381,6 +381,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           who: 'user',
         }),
       );
+      dispatch(
+        chatHistoryPush({
+          isStreaming: true,
+          isTruncated: false,
+          references: [],
+          text: '',
+          who: 'ai',
+        }),
+      );
       scrollIntoView();
 
       const requestJSON = {
@@ -400,6 +409,17 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           },
           body: JSON.stringify(requestJSON),
         });
+        if (response.ok === false) {
+          dispatch(
+            chatHistoryUpdateLast({
+              error: getFetchErrorMessage({ response }, t),
+              isStreaming: false,
+              isTruncated: false,
+              who: 'ai',
+            }),
+          );
+          return;
+        }
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let responseText = '';
@@ -425,15 +445,6 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               if (json && json.event && json.data) {
                 if (json.event === 'start') {
                   dispatch(setConversationID(json.data.conversation_id));
-                  dispatch(
-                    chatHistoryPush({
-                      isStreaming: true,
-                      isTruncated: false,
-                      references: [],
-                      text: responseText,
-                      who: 'ai',
-                    }),
-                  );
                 } else if (json.event === 'token') {
                   responseText += json.data.token;
                   dispatch(
@@ -459,7 +470,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       };
       streamResponse().catch((error) => {
         dispatch(
-          chatHistoryPush({
+          chatHistoryUpdateLast({
             error: getFetchErrorMessage(error, t),
             isStreaming: false,
             isTruncated: false,

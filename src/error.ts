@@ -1,8 +1,9 @@
 import { TFunction } from 'react-i18next';
 
 export type ErrorType = {
-  message: string;
+  message?: string;
   moreInfo?: string;
+  response?: Response;
 };
 
 // Extracts the error message from a Fetch error
