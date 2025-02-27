@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
+import { consoleFetch } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -402,7 +403,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       };
 
       const streamResponse = async () => {
-        const response = await fetch(QUERY_ENDPOINT, {
+        const response = await consoleFetch(QUERY_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
