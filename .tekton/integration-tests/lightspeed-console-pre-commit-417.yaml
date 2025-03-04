@@ -228,6 +228,8 @@ spec:
               echo "---------------------------------------------"
               git clone https://github.com/openshift/lightspeed-console.git
               cd lightspeed-console
+              git config --global user.email olsci@redhat.com
+              git config --global user.name olsci
               git pull origin ${COMMIT_SHA} --rebase
               npm install
               npm -v
