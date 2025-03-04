@@ -52,7 +52,13 @@ describe('Lightspeed related features', () => {
         oauthorigin,
       );
     });
-    if (Cypress.env('BUNDLE_IMAGE')) {
+    if (Cypress.env('UI_INSTALL')) {
+      operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
+      cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * 60 * 1000 }).should(
+        'include.text',
+        'ready for use',
+      );
+    } else {
       cy.exec(
         `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
@@ -60,18 +66,13 @@ describe('Lightspeed related features', () => {
         `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
       cy.exec(
-        `operator-sdk run bundle --timeout=20m --namespace ${OLS.namespace} ${Cypress.env('BUNDLE_IMAGE')} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
+        `operator-sdk run bundle --timeout=20m --namespace ${OLS.namespace} quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
         { timeout: 6 * 60 * 1000 },
-      );
-    } else {
-      operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
-      cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * 60 * 1000 }).should(
-        'include.text',
-        'ready for use',
       );
     }
     if (Cypress.env('CONSOLE_IMAGE')) {
-      cy.exec(`oc get clusterserviceversion --namespace=${OLS.namespace} -o name`).then(
+      cy.exec(
+        `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
         (result) => {
           if (expect(result.stderr).to.be.empty) {
             const csvname = result.stdout;
