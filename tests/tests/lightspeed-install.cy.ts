@@ -52,11 +52,25 @@ describe('Lightspeed related features', () => {
         oauthorigin,
       );
     });
+    // If UI_install exists, install via UI
+    // If running in nudges or pre-release, install with BUNDLE_IMAGE
+    // Otherwise install the latest operator
     if (Cypress.env('UI_INSTALL')) {
       operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
       cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * 60 * 1000 }).should(
         'include.text',
         'ready for use',
+      );
+    } else if (Cypress.env('BUNDLE_IMAGE')) {
+      cy.exec(
+        `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
+      cy.exec(
+        `operator-sdk run bundle --timeout=20m --namespace ${OLS.namespace} ${Cypress.env('BUNDLE_IMAGE')} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
+        { timeout: 6 * 60 * 1000 },
       );
     } else {
       cy.exec(
@@ -70,6 +84,8 @@ describe('Lightspeed related features', () => {
         { timeout: 6 * 60 * 1000 },
       );
     }
+    // If the console image exists, replace image in csv and restart operator
+    // Console pod will restart automatically.
     if (Cypress.env('CONSOLE_IMAGE')) {
       cy.exec(
         `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
