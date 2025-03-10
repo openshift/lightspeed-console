@@ -60,9 +60,11 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     case ActionType.ChatHistoryClear:
       return state.set('chatHistory', ImmutableList());
 
-    case ActionType.ChatHistoryUpdateLast: {
-      const lastKey = state.get('chatHistory').keySeq().last();
-      return state.mergeIn(['chatHistory', lastKey], action.payload.entry);
+    case ActionType.chatHistoryUpdateByID: {
+      const index = state
+        .get('chatHistory')
+        .findIndex((entry) => entry.get('id') === action.payload.id);
+      return state.mergeIn(['chatHistory', index], action.payload.entry);
     }
 
     case ActionType.ChatHistoryPush:

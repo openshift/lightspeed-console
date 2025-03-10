@@ -1,5 +1,5 @@
 import { List as ImmutableList } from 'immutable';
-import { defer, omit } from 'lodash';
+import { defer, omit, uniqueId } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -45,7 +45,7 @@ import {
   attachmentsClear,
   chatHistoryClear,
   chatHistoryPush,
-  chatHistoryUpdateLast,
+  chatHistoryUpdateByID,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -382,8 +382,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           who: 'user',
         }),
       );
+      const chatEntryID = uniqueId('ChatEntry_');
       dispatch(
         chatHistoryPush({
+          id: chatEntryID,
           isStreaming: true,
           isTruncated: false,
           references: [],
@@ -412,7 +414,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         });
         if (response.ok === false) {
           dispatch(
-            chatHistoryUpdateLast({
+            chatHistoryUpdateByID(chatEntryID, {
               error: getFetchErrorMessage({ response }, t),
               isStreaming: false,
               isTruncated: false,
@@ -448,14 +450,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                   dispatch(setConversationID(json.data.conversation_id));
                 } else if (json.event === 'token') {
                   responseText += json.data.token;
-                  dispatch(
-                    chatHistoryUpdateLast({
-                      text: responseText,
-                    }),
-                  );
+                  dispatch(chatHistoryUpdateByID(chatEntryID, { text: responseText }));
                 } else if (json.event === 'end') {
                   dispatch(
-                    chatHistoryUpdateLast({
+                    chatHistoryUpdateByID(chatEntryID, {
                       isStreaming: false,
                       isTruncated: json.data.truncated === true,
                       references: json.data.referenced_documents,
@@ -471,7 +469,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       };
       streamResponse().catch((error) => {
         dispatch(
-          chatHistoryUpdateLast({
+          chatHistoryUpdateByID(chatEntryID, {
             error: getFetchErrorMessage(error, t),
             isStreaming: false,
             isTruncated: false,
