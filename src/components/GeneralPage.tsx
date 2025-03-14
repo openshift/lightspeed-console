@@ -117,13 +117,17 @@ type DocLinkProps = {
 };
 
 const DocLink: React.FC<DocLinkProps> = ({ reference }) => {
-  if (!reference || typeof reference.docs_url !== 'string' || typeof reference.title !== 'string') {
+  if (
+    !reference ||
+    typeof reference.doc_title !== 'string' ||
+    typeof reference.doc_url !== 'string'
+  ) {
     return null;
   }
 
   return (
     <Chip isReadOnly textMaxWidth="16rem">
-      <ExternalLink href={reference.docs_url}>{reference.title}</ExternalLink>
+      <ExternalLink href={reference.doc_url}>{reference.doc_title}</ExternalLink>
     </Chip>
   );
 };

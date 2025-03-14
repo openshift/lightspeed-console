@@ -22,8 +22,8 @@ export type Attachment = {
 };
 
 export type ReferencedDoc = {
-  docs_url: string;
-  title: string;
+  doc_title: string;
+  doc_url: string;
 };
 
 type ChatEntryUser = {
