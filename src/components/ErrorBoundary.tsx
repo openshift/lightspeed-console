@@ -17,7 +17,6 @@ ${error?.stack}`);
   }
 
   render() {
-    // eslint-disable-next-line react/prop-types
     return this.state.isError ? null : this.props.children;
   }
 }
