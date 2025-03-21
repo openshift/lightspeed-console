@@ -156,14 +156,12 @@ type ChatHistoryEntryProps = {
   conversationID: string;
   entry: ChatEntry;
   entryIndex: number;
-  scrollIntoView: () => void;
 };
 
 const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   conversationID,
   entry,
   entryIndex,
-  scrollIntoView,
 }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -212,11 +210,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
               </ChipGroup>
             )}
             {isUserFeedbackEnabled && !entry.isStreaming && (
-              <Feedback
-                conversationID={conversationID}
-                entryIndex={entryIndex}
-                scrollIntoView={scrollIntoView}
-              />
+              <Feedback conversationID={conversationID} entryIndex={entryIndex} />
             )}
           </>
         )}
@@ -574,13 +568,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         <AuthAlert authStatus={authStatus} />
         <PrivacyAlert />
         {chatHistory.toJS().map((entry, i) => (
-          <ChatHistoryEntry
-            conversationID={conversationID}
-            entry={entry}
-            entryIndex={i}
-            key={i}
-            scrollIntoView={scrollIntoView}
-          />
+          <ChatHistoryEntry conversationID={conversationID} entry={entry} entryIndex={i} key={i} />
         ))}
         <ReadinessAlert />
         <div ref={chatHistoryEndRef} />
