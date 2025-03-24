@@ -1,4 +1,4 @@
-import { dump } from 'js-yaml';
+import { dump as dumpYAML, load as loadYAML } from 'js-yaml';
 import { cloneDeep, each, isMatch } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,13 @@ import {
   Title,
   Tooltip,
 } from '@patternfly/react-core';
-import { FileCodeIcon, InfoCircleIcon, PlusCircleIcon, TaskIcon } from '@patternfly/react-icons';
+import {
+  FileCodeIcon,
+  FileUploadIcon,
+  InfoCircleIcon,
+  PlusCircleIcon,
+  TaskIcon,
+} from '@patternfly/react-icons';
 
 import { AttachmentTypes } from '../attachments';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
@@ -34,6 +40,81 @@ import AttachLogModal from './AttachLogModal';
 import ResourceIcon from './ResourceIcon';
 
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
+
+// Sanity check on the YAML file size
+const MAX_FILE_SIZE_KB = 500;
+
+type AttachUploadProps = {
+  setError: (error: string) => void;
+};
+
+const AttachUpload: React.FC<AttachUploadProps> = ({ setError }) => {
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+
+  const dispatch = useDispatch();
+
+  const fileInput = React.useRef(null);
+
+  const onClick = () => {
+    fileInput.current.click();
+  };
+
+  const onChange = React.useCallback(
+    (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_KB * 1024) {
+        setError(
+          t('Uploaded file is too large. Max size is {{max}} KB.', { max: MAX_FILE_SIZE_KB }),
+        );
+        return;
+      }
+      setError(undefined);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const yaml = event.target.result as string;
+          const content = loadYAML(yaml);
+          if (typeof content !== 'object') {
+            setError(t('Uploaded file is not valid YAML'));
+            return;
+          }
+          const name = content.metadata?.name;
+          dispatch(
+            attachmentSet(
+              AttachmentTypes.YAML,
+              content.kind || '?',
+              name ? `${name} (${file.name})` : file.name,
+              undefined,
+              content.metadata?.namespace,
+              yaml,
+            ),
+          );
+        } catch {
+          setError(t('Uploaded file is not valid YAML'));
+        }
+      };
+      reader.readAsText(file);
+    },
+    [dispatch, setError, t],
+  );
+
+  return (
+    <div onClick={onClick}>
+      <FileUploadIcon /> {t('Upload from computer')}
+      <input
+        accept=".yaml,.yml"
+        onChange={onChange}
+        ref={fileInput}
+        style={{ display: 'none' }}
+        type="file"
+      />
+    </div>
+  );
+};
 
 const FilteredYAMLInfo = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -71,11 +152,6 @@ const AttachMenu: React.FC = () => {
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent | undefined, attachmentType: string) => {
-      if (!kind || !name) {
-        setError(t('Could not get context'));
-        return;
-      }
-
       if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
         close();
@@ -101,7 +177,7 @@ const AttachMenu: React.FC = () => {
             });
             if (alert) {
               try {
-                const yaml = dump(alert, { lineWidth: -1 }).trim();
+                const yaml = dumpYAML(alert, { lineWidth: -1 }).trim();
                 dispatch(
                   attachmentSet(AttachmentTypes.YAML, kind, name, undefined, namespace, yaml),
                 );
@@ -130,7 +206,7 @@ const AttachMenu: React.FC = () => {
         // We ignore the managedFields section because it doesn't have much value
         delete data.metadata.managedFields;
         try {
-          const yaml = dump(data, { lineWidth: -1 }).trim();
+          const yaml = dumpYAML(data, { lineWidth: -1 }).trim();
           dispatch(attachmentSet(attachmentType, kind, name, undefined, namespace, yaml));
           close();
         } catch (e) {
@@ -153,23 +229,13 @@ const AttachMenu: React.FC = () => {
     ],
   );
 
-  const isDisabled = !kind || !name;
-
   const toggle = React.useCallback(
     (toggleRef: React.Ref<MenuToggleElement>) => (
-      <Tooltip
-        content={
-          isDisabled
-            ? t('The current page your are viewing does not contain any supported context')
-            : t('Attach context')
-        }
-        style={isOpen ? { visibility: 'hidden' } : undefined}
-      >
+      <Tooltip content={t('Attach context')} style={isOpen ? { visibility: 'hidden' } : undefined}>
         <div>
           <MenuToggle
             className="ols-plugin__attach-menu"
-            isDisabled={isDisabled}
-            isExpanded={isOpen && !isDisabled}
+            isExpanded={isOpen}
             onClick={toggleIsOpen}
             ref={toggleRef}
             variant="plain"
@@ -183,7 +249,7 @@ const AttachMenu: React.FC = () => {
         </div>
       </Tooltip>
     ),
-    [isDisabled, isOpen, t, toggleIsOpen],
+    [isOpen, t, toggleIsOpen],
   );
 
   const showEvents = [
@@ -217,6 +283,8 @@ const AttachMenu: React.FC = () => {
     'StatefulSet',
   ].includes(kind);
 
+  const isResourceContext = !!kind && !!name;
+
   return (
     <>
       {showEvents && context && context.metadata?.uid && (
@@ -236,16 +304,24 @@ const AttachMenu: React.FC = () => {
       <Select isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
         <SelectList className="ols-plugin__context-menu">
           <>
-            <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-              {t('Currently viewing')}
-            </Title>
-            <Label
-              className="ols-plugin__context-label"
-              textMaxWidth="10rem"
-              title={t('{{kind}} {{name}} in namespace {{namespace}}', { kind, name, namespace })}
-            >
-              <ResourceIcon kind={kind} /> {name}
-            </Label>
+            {isResourceContext && (
+              <>
+                <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
+                  {t('Currently viewing')}
+                </Title>
+                <Label
+                  className="ols-plugin__context-label"
+                  textMaxWidth="10rem"
+                  title={t('{{kind}} {{name}} in namespace {{namespace}}', {
+                    kind,
+                    name,
+                    namespace,
+                  })}
+                >
+                  <ResourceIcon kind={kind} /> {name}
+                </Label>
+              </>
+            )}
 
             <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
               {t('Attach')}
@@ -257,12 +333,16 @@ const AttachMenu: React.FC = () => {
               </SelectOption>
             ) : (
               <>
-                <SelectOption value={AttachmentTypes.YAML}>
-                  <FileCodeIcon /> Full YAML file
-                </SelectOption>
-                <SelectOption value={AttachmentTypes.YAMLFiltered}>
-                  <FileCodeIcon /> Filtered YAML <FilteredYAMLInfo />
-                </SelectOption>
+                {isResourceContext && (
+                  <>
+                    <SelectOption value={AttachmentTypes.YAML}>
+                      <FileCodeIcon /> Full YAML file
+                    </SelectOption>
+                    <SelectOption value={AttachmentTypes.YAMLFiltered}>
+                      <FileCodeIcon /> Filtered YAML <FilteredYAMLInfo />
+                    </SelectOption>
+                  </>
+                )}
                 {showEvents && (
                   <div title={!isEventsLoading && events.length === 0 ? t('No events') : undefined}>
                     <SelectOption
@@ -280,13 +360,16 @@ const AttachMenu: React.FC = () => {
                 )}
               </>
             )}
+            <SelectOption value={AttachmentTypes.YAMLUpload}>
+              <AttachUpload setError={setError} />
+            </SelectOption>
           </>
 
           {error && (
             <Alert
               className="ols-plugin__alert"
               isInline
-              title={t('Failed to attach context')}
+              title={t('Failed to attach')}
               variant="danger"
             >
               {error}
