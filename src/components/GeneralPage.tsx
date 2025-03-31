@@ -1,4 +1,4 @@
-import { List as ImmutableList } from 'immutable';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 import { defer, omit, uniqueId } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -320,7 +320,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const dispatch = useDispatch();
 
   const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
-  const chatHistory: ImmutableList<ChatEntry> = useSelector((s: State) =>
+  const chatHistory: ImmutableList<ImmutableMap<string, ChatEntry>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
 
