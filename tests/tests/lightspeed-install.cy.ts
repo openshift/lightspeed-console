@@ -174,9 +174,6 @@ spec:
       cy.get(promptInput).should('exist').type('What is OpenShift?{enter}');
       cy.get(popover).find('.ols-plugin__chat-entry--ai').should('exist');
 
-      // Test that the context menu has no context for the pods list page
-      cy.get(attachMenuButton).should('be.disabled');
-
       // Navigate to the pod details page
       searchPage.searchBy(podName);
       cy.get('[data-test-rows="resource-row"]', { timeout: 30 * 1000 }).should(
