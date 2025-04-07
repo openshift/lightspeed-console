@@ -1,4 +1,4 @@
-import { debounce, throttle } from 'lodash';
+import { debounce, isEmpty, throttle } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -237,7 +237,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   const [lines, setLines] = React.useState<number>(DEFAULT_LOG_LINES);
   const [pod, setPod] = React.useState<K8sResourceKind>();
   const [preview, setPreview] = React.useState<string>();
-  const [previewError, setPreviewError] = React.useState(false);
+  const [previewError, setPreviewError] = React.useState<string>();
   const [isPreviewLoading, setIsPreviewLoading] = React.useState(false);
 
   const [scaleTarget, scaleTargetLoaded, scaleTargetError] = useK8sWatchResource<K8sResourceKind>(
@@ -294,8 +294,12 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       setIsPreviewLoading(true);
       setPreviewError(undefined);
       consoleFetchText(url, getRequestInitWithAuthHeader())
-        .then((response: string) => {
-          setPreview(response);
+        .then((response) => {
+          if (isEmpty(response) || typeof response !== 'string') {
+            setPreviewError(t('No logs found'));
+          } else {
+            setPreview(response);
+          }
           setIsPreviewLoading(false);
         })
         .catch((err) => {
@@ -326,17 +330,21 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       consoleFetchText(url, getRequestInitWithAuthHeader())
         .then((response: string) => {
           setIsLoading(false);
-          dispatch(
-            attachmentSet(
-              AttachmentTypes.Log,
-              'Container',
-              container,
-              podName,
-              namespace,
-              `Most recent lines from the log for Container '${container}', belonging to pod '${podName}':\n\n${response?.trim()}`,
-            ),
-          );
-          onClose();
+          if (isEmpty(response) || typeof response !== 'string') {
+            setError(t('Failed to fetch logs'));
+          } else {
+            dispatch(
+              attachmentSet(
+                AttachmentTypes.Log,
+                'Container',
+                container,
+                podName,
+                namespace,
+                `Most recent lines from the log for Container '${container}', belonging to pod '${podName}':\n\n${response?.trim()}`,
+              ),
+            );
+            onClose();
+          }
         })
         .catch((err) => {
           setIsLoading(false);
@@ -411,8 +419,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
                     <Spinner size="md" />
                   </CodeBlockCode>
                 )}
-                {previewError && <Error title={t('Failed to load preview')}>{previewError}</Error>}
-                {preview && !isPreviewLoading && !previewError && (
+                {!isPreviewLoading && !previewError && (
                   <CodeBlockCode
                     className="ols-plugin__code-block-code"
                     style={{ whiteSpace: 'pre' }}
@@ -422,11 +429,17 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
                 )}
               </CodeBlock>
             )}
+            {previewError && <Error title={t('Failed to load logs')}>{previewError}</Error>}
           </>
         )}
         {error && <Error title={t('Failed to attach context')}>{error}</Error>}
         <ActionGroup>
-          <Button isDisabled={!container} onClick={onSubmit} type="submit" variant="primary">
+          <Button
+            isDisabled={!container || !!previewError}
+            onClick={onSubmit}
+            type="submit"
+            variant="primary"
+          >
             {t('Attach')}
           </Button>
           <Button onClick={onClose} type="submit" variant="link">
