@@ -27,6 +27,10 @@
   padding-left: calc(var(--logo-size) + var(--pf-v5-global--spacer--md));
 }
 
+.ols-plugin__chat-entry-cancelled {
+  margin-top: var(--pf-v5-global--spacer--sm);
+}
+
 .ols-plugin__chat-entry--ai {
   background-image: url('../assets/logo.svg');
 }

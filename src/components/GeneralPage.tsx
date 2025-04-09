@@ -33,6 +33,7 @@ import {
   ExpandIcon,
   ExternalLinkAltIcon,
   PaperPlaneIcon,
+  StopIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
@@ -190,7 +191,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         ) : (
           <>
             <Markdown components={{ code: Code }}>{entry.text}</Markdown>
-            {!entry.text && (
+            {!entry.text && !entry.isCancelled && (
               <HelperText>
                 <HelperTextItem variant="indeterminate">
                   {t('Waiting for LLM provider...')} <Spinner size="lg" />
@@ -202,6 +203,15 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
                 {t('Conversation history has been truncated to fit within context window.')}
               </Alert>
             )}
+            {entry.isCancelled && (
+              <Alert
+                className="ols-plugin__chat-entry-cancelled"
+                isInline
+                isPlain
+                title={t('Cancelled')}
+                variant="info"
+              />
+            )}
             {entry.references && (
               <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
                 {entry.references.map((r, i) => (
@@ -209,7 +219,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
                 ))}
               </ChipGroup>
             )}
-            {isUserFeedbackEnabled && !entry.isStreaming && (
+            {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
               <Feedback conversationID={conversationID} entryIndex={entryIndex} />
             )}
           </>
@@ -320,7 +330,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const dispatch = useDispatch();
 
   const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
-  const chatHistory: ImmutableList<ImmutableMap<string, ChatEntry>> = useSelector((s: State) =>
+  const chatHistory: ImmutableList<ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
 
@@ -328,6 +338,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
+
+  const [streamController, setStreamController] = React.useState(new AbortController());
 
   const [authStatus] = useAuth();
 
@@ -364,9 +376,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     [dispatch],
   );
 
+  const isStreaming = !!chatHistory.last()?.get('isStreaming');
+
   const onSubmit = React.useCallback(
     (e) => {
       e.preventDefault();
+
+      if (isStreaming) {
+        return;
+      }
 
       if (!query || query.trim().length === 0) {
         setValidated('error');
@@ -384,6 +402,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       dispatch(
         chatHistoryPush({
           id: chatEntryID,
+          isCancelled: false,
           isStreaming: true,
           isTruncated: false,
           references: [],
@@ -403,12 +422,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       };
 
       const streamResponse = async () => {
+        const controller = new AbortController();
+        setStreamController(controller);
         const response = await consoleFetch(QUERY_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(requestJSON),
+          signal: controller.signal,
         });
         if (response.ok === false) {
           dispatch(
@@ -466,14 +488,16 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         }
       };
       streamResponse().catch((error) => {
-        dispatch(
-          chatHistoryUpdateByID(chatEntryID, {
-            error: getFetchErrorMessage(error, t),
-            isStreaming: false,
-            isTruncated: false,
-            who: 'ai',
-          }),
-        );
+        if (error.name !== 'AbortError') {
+          dispatch(
+            chatHistoryUpdateByID(chatEntryID, {
+              error: getFetchErrorMessage(error, t),
+              isStreaming: false,
+              isTruncated: false,
+              who: 'ai',
+            }),
+          );
+        }
         scrollIntoView();
       });
 
@@ -482,7 +506,26 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [attachments, conversationID, dispatch, query, scrollIntoView, t],
+    [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t],
+  );
+
+  const streamingResponseID: string = isStreaming
+    ? (chatHistory.last()?.get('id') as string)
+    : undefined;
+  const onStreamCancel = React.useCallback(
+    (e) => {
+      e.preventDefault();
+      if (streamingResponseID) {
+        streamController.abort();
+        dispatch(
+          chatHistoryUpdateByID(streamingResponseID, {
+            isCancelled: true,
+            isStreaming: false,
+          }),
+        );
+      }
+    },
+    [dispatch, streamController, streamingResponseID],
   );
 
   // We use keypress instead of keydown even though keypress is deprecated to work around a problem
@@ -567,7 +610,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         {isWelcomePage && <Welcome />}
         <AuthAlert authStatus={authStatus} />
         <PrivacyAlert />
-        {chatHistory.toJS().map((entry, i) => (
+        {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
           <ChatHistoryEntry conversationID={conversationID} entry={entry} entryIndex={i} key={i} />
         ))}
         <ReadinessAlert />
@@ -576,7 +619,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
         <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
-          <Form onSubmit={onSubmit}>
+          <Form onSubmit={isStreaming ? onStreamCancel : onSubmit}>
             <Split hasGutter>
               <SplitItem>
                 <AttachMenu />
@@ -605,7 +648,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               </SplitItem>
               <SplitItem className="ols-plugin__chat-prompt-submit">
                 <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">
-                  <PaperPlaneIcon />
+                  {isStreaming ? <StopIcon /> : <PaperPlaneIcon />}
                 </Button>
               </SplitItem>
             </Split>
