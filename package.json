@@ -45,6 +45,7 @@
     "react-redux": "7.2.2",
     "react-router": "5.3.4",
     "react-router-dom": "5.3.4",
+    "react-router-dom-v5-compat": "^6.30.0",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
