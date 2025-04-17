@@ -26,6 +26,13 @@ export type ReferencedDoc = {
   doc_url: string;
 };
 
+export type Tool = {
+  args: { [key: string]: Array<string> };
+  content: string;
+  name: string;
+  status: 'error' | 'success';
+};
+
 type ChatEntryUser = {
   attachments: { [key: string]: Attachment };
   text: string;
@@ -40,6 +47,7 @@ type ChatEntryAI = {
   isTruncated: boolean;
   references?: Array<ReferencedDoc>;
   text?: string;
+  tools?: ImmutableMap<string, Tool>;
   userFeedback?: ImmutableMap<string, object>;
   who: 'ai';
 };

@@ -30,6 +30,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       isOpen: false,
       isUserFeedbackEnabled: true,
       openAttachment: null,
+      openTool: ImmutableMap({ chatEntryIndex: null, id: null }),
       query: '',
     });
   }
@@ -67,6 +68,16 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       return state.mergeIn(['chatHistory', index], action.payload.entry);
     }
 
+    case ActionType.chatHistoryUpdateTool: {
+      const index = state
+        .get('chatHistory')
+        .findIndex((entry) => entry.get('id') === action.payload.id);
+      return state.mergeIn(
+        ['chatHistory', index, 'tools', action.payload.toolID],
+        action.payload.tool,
+      );
+    }
+
     case ActionType.ChatHistoryPush:
       return state.set(
         'chatHistory',
@@ -87,6 +98,14 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.OpenOLS:
       return state.set('isOpen', true);
+
+    case ActionType.OpenToolClear:
+      return state.setIn(['openTool', 'chatEntryIndex'], null).setIn(['openTool', 'id'], null);
+
+    case ActionType.OpenToolSet:
+      return state
+        .setIn(['openTool', 'chatEntryIndex'], action.payload.chatEntryIndex)
+        .setIn(['openTool', 'id'], action.payload.id);
 
     case ActionType.SetIsContextEventsLoading:
       return state.set('isContextEventsLoading', action.payload.isLoading);

@@ -105,6 +105,11 @@
   padding-top: var(--pf-global--spacer--form-element);
 }
 
+.ols-plugin__code-inline {
+  font-family: var(--pf-v5-global--FontFamily--monospace);
+  font-weight: var(--pf-v5-global--FontWeight--bold);
+}
+
 .ols-plugin__feedback {
   margin-top: var(--pf-v5-global--spacer--sm);
 }
