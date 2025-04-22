@@ -15,6 +15,7 @@ import {
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
+  Content,
   Dropdown,
   DropdownItem,
   DropdownList,
@@ -25,7 +26,6 @@ import {
   Slider,
   SliderOnChangeEvent,
   Spinner,
-  Text,
 } from '@patternfly/react-core';
 
 import { AttachmentTypes } from '../attachments';
@@ -63,8 +63,13 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
       onOpenChange={setIsOpen}
       onSelect={onSelect}
       toggle={(toggleRef) => (
-        <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
-          <ResourceIcon kind="Container" /> {selectedContainer}
+        <MenuToggle
+          icon={<ResourceIcon kind="Container" />}
+          isExpanded={isOpen}
+          onClick={toggleIsOpen}
+          ref={toggleRef}
+        >
+          {selectedContainer}
         </MenuToggle>
       )}
     >
@@ -137,11 +142,14 @@ const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => 
   const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
-    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newPod: K8sResourceKind) => {
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, podUID: string) => {
       close();
-      setPod(newPod);
+      const newPod = pods.find((p: K8sResourceKind) => p.metadata?.uid === podUID);
+      if (newPod) {
+        setPod(newPod);
+      }
     },
-    [close, setPod],
+    [close, pods, setPod],
   );
 
   return (
@@ -157,7 +165,7 @@ const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => 
     >
       <DropdownList>
         {pods.map((pod) => (
-          <DropdownItem key={pod.metadata?.uid} value={pod}>
+          <DropdownItem key={pod.metadata?.uid} value={pod.metadata?.uid}>
             <ResourceIcon kind="Pod" /> {pod.metadata?.name}
           </DropdownItem>
         ))}
@@ -383,11 +391,11 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('Configure log attachment')}>
-      <Text>
+      <Content component="p">
         {t(
           'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
         )}
-      </Text>
+      </Content>
       {scaleTargetError && (
         <Error title={t('Failed to load scale target')}>{scaleTargetError.message}</Error>
       )}
