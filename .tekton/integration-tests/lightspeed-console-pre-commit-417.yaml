@@ -202,7 +202,7 @@ spec:
               echo "${CYPRESS_LOGIN_PASSWORD}"
               echo "---------------------------------------------"
               dnf -y update && \
-                  dnf -y install golang wget git
+                  dnf -y install golang wget git awk
               echo "---------------------------------------------"
               dnf install -y xorg-x11-server-Xvfb
               curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
