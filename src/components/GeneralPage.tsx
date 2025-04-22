@@ -20,11 +20,11 @@ import {
   LabelGroup,
   Level,
   LevelItem,
-  Page,
-  PageSection,
   Spinner,
   Split,
   SplitItem,
+  Stack,
+  StackItem,
   TextArea,
   Title,
 } from '@patternfly/react-core';
@@ -235,7 +235,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             <Markdown components={{ code: Code }}>{entry.text}</Markdown>
             {!entry.text && !entry.isCancelled && (
               <HelperText>
-                <HelperTextItem variant="indeterminate">
+                <HelperTextItem>
                   {t('Waiting for LLM provider...')} <Spinner size="lg" />
                 </HelperTextItem>
               </HelperText>
@@ -341,10 +341,10 @@ const Welcome: React.FC = () => {
   return (
     <>
       <div className="ols-plugin__welcome-logo"></div>
-      <Title className="pf-v5-u-text-align-center" headingLevel="h1">
+      <Title className="pf-v6-u-text-align-center" headingLevel="h1">
         {t('Red Hat OpenShift Lightspeed')}
       </Title>
-      <Title className="ols-plugin__welcome-subheading pf-v5-u-text-align-center" headingLevel="h4">
+      <Title className="ols-plugin__welcome-subheading pf-v6-u-text-align-center" headingLevel="h5">
         {t(
           'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
         )}
@@ -599,36 +599,35 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const isWelcomePage = chatHistory.size === 0;
 
   return (
-    <Page>
-      <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
+    <Stack hasGutter>
+      <StackItem
+        className={`ols-plugin__header${isWelcomePage ? ' ' : ' ols-plugin__header--with-title'}`}
+      >
         {onExpand && (
           <Button
             className="ols-plugin__popover-control"
+            icon={<ExpandIcon />}
             onClick={onExpand}
             title={t('Expand')}
             variant="plain"
-          >
-            <ExpandIcon />
-          </Button>
+          />
         )}
         {onCollapse && (
           <Button
             className="ols-plugin__popover-control"
+            icon={<CompressIcon />}
             onClick={onCollapse}
             title={t('Collapse')}
             variant="plain"
-          >
-            <CompressIcon />
-          </Button>
+          />
         )}
         <Button
           className="ols-plugin__popover-control"
+          icon={<WindowMinimizeIcon />}
           onClick={onClose}
           title={t('Minimize')}
           variant="plain"
-        >
-          <WindowMinimizeIcon />
-        </Button>
+        />
         {!isWelcomePage && (
           <Level>
             <LevelItem>
@@ -647,14 +646,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             </LevelItem>
           </Level>
         )}
-      </PageSection>
+      </StackItem>
 
-      <PageSection
+      <StackItem
         aria-label={t('OpenShift Lightspeed chat history')}
         className="ols-plugin__chat-history"
-        hasOverflowScroll
         isFilled
-        variant="light"
       >
         {isWelcomePage && <Welcome />}
         <AuthAlert authStatus={authStatus} />
@@ -664,10 +661,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         ))}
         <ReadinessAlert />
         <div ref={chatHistoryEndRef} />
-      </PageSection>
+      </StackItem>
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-        <PageSection className="ols-plugin__chat-prompt" isFilled={false} variant="light">
+        <StackItem className="ols-plugin__chat-prompt">
           <Form onSubmit={isStreaming ? onStreamCancel : onSubmit}>
             <Split hasGutter>
               <SplitItem>
@@ -717,10 +714,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           </div>
 
           <HelperText>
-            <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
+            <HelperTextItem className="ols-plugin__footer">
               {t('Always review AI generated content prior to use.')}
             </HelperTextItem>
-            <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
+            <HelperTextItem className="ols-plugin__footer">
               {t('Want to contact the OpenShift Lightspeed team?')}{' '}
               <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
                 Click here
@@ -736,9 +733,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             onClose={closeNewChatModal}
             onConfirm={onConfirmNewChat}
           />
-        </PageSection>
+        </StackItem>
       )}
-    </Page>
+    </Stack>
   );
 };
 

@@ -166,7 +166,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex }) => {
               value={text}
             />
             <HelperText>
-              <HelperTextItem className="ols-plugin__feedback-footer" variant="indeterminate">
+              <HelperTextItem className="ols-plugin__feedback-footer">
                 {t(
                   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
                 )}
