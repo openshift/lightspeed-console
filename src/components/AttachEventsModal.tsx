@@ -9,6 +9,7 @@ import {
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
+  Content,
   Form,
   FormGroup,
   HelperText,
@@ -16,7 +17,6 @@ import {
   Slider,
   SliderOnChangeEvent,
   Spinner,
-  Text,
 } from '@patternfly/react-core';
 
 import { AttachmentTypes } from '../attachments';
@@ -129,17 +129,17 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('Configure events attachment')}>
-      <Text>
+      <Content component="p">
         {t(
           'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
         )}
-      </Text>
+      </Content>
       <Form>
         {isLoading && <Spinner size="md" />}
         {!isLoading &&
           (events.length === 0 ? (
             <HelperText>
-              <HelperTextItem variant="indeterminate">{t('No events')}</HelperTextItem>
+              <HelperTextItem>{t('No events')}</HelperTextItem>
             </HelperText>
           ) : (
             <>
