@@ -14,9 +14,6 @@ import GeneralPage from './GeneralPage';
 
 import './popover.css';
 
-// TODO: Include this for now to work around bug where CSS is not pulled in by console plugin SDK
-import './pf-styles.css';
-
 const FEEDBACK_STATUS_ENDPOINT =
   '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback/status';
 const REQUEST_TIMEOUT = 5 * 60 * 1000;
