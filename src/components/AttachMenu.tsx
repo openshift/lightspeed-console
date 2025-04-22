@@ -10,7 +10,6 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
-  Icon,
   Label,
   MenuToggle,
   MenuToggleElement,
@@ -235,17 +234,16 @@ const AttachMenu: React.FC = () => {
         <div>
           <MenuToggle
             className="ols-plugin__attach-menu"
+            icon={
+              <PlusCircleIcon
+                className={isOpen ? 'ols-plugin__context-menu-icon--active' : undefined}
+              />
+            }
             isExpanded={isOpen}
             onClick={toggleIsOpen}
             ref={toggleRef}
             variant="plain"
-          >
-            <Icon size="md">
-              <PlusCircleIcon
-                className={isOpen ? 'ols-plugin__context-menu-icon--active' : undefined}
-              />
-            </Icon>
-          </MenuToggle>
+          />
         </div>
       </Tooltip>
     ),
@@ -310,9 +308,7 @@ const AttachMenu: React.FC = () => {
           <>
             {isResourceContext && (
               <>
-                <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-                  {t('Currently viewing')}
-                </Title>
+                <Title headingLevel="h5">{t('Currently viewing')}</Title>
                 <Label
                   className="ols-plugin__context-label"
                   textMaxWidth="10rem"
@@ -327,9 +323,7 @@ const AttachMenu: React.FC = () => {
               </>
             )}
 
-            <Title className="ols-plugin__context-menu-heading" headingLevel="h5">
-              {t('Attach')}
-            </Title>
+            <Title headingLevel="h5">{t('Attach')}</Title>
 
             {kind === 'Alert' ? (
               <SelectOption value={AttachmentTypes.YAML}>

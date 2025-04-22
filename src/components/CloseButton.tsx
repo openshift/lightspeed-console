@@ -12,13 +12,12 @@ const CloseButton: React.FC<Props> = ({ onClose }) => {
 
   return (
     <Button
-      className="ols-plugin__popover-control"
+      className="ols-plugin__popover-close"
+      icon={<TimesIcon />}
       onClick={onClose}
       title={t('Close')}
       variant="plain"
-    >
-      <TimesIcon />
-    </Button>
+    />
   );
 };
 
