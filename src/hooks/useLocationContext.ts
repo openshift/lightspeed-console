@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom-v5-compat';
 import { useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 
 export const useLocationContext = () => {
