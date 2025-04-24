@@ -72,7 +72,7 @@
   "Stay": "Stay",
   "Submit": "Submit",
   "Thank you for your feedback!": "Thank you for your feedback!",
-  "The OpenShift Lightspeed service is not yet ready to receive requests.": "The OpenShift Lightspeed service is not yet ready to receive requests.",
+  "The OpenShift Lightspeed service is not yet ready to receive requests. If this message persists, please check the OLSConfig.": "The OpenShift Lightspeed service is not yet ready to receive requests. If this message persists, please check the OLSConfig.",
   "Upload from computer": "Upload from computer",
   "Uploaded file is not valid YAML": "Uploaded file is not valid YAML",
   "Uploaded file is too large. Max size is {{max}} KB.": "Uploaded file is too large. Max size is {{max}} KB.",
