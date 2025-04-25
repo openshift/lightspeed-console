@@ -45,7 +45,9 @@ const ReadinessAlert: React.FC = () => {
       title={t('Waiting for OpenShift Lightspeed service')}
       variant="warning"
     >
-      {t('The OpenShift Lightspeed service is not yet ready to receive requests.')}{' '}
+      {t(
+        'The OpenShift Lightspeed service is not yet ready to receive requests. If this message persists, please check the OLSConfig.',
+      )}{' '}
       <Spinner isInline size="md" />
     </Alert>
   );
