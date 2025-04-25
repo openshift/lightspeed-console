@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { Attachment, ChatEntry, CodeBlock } from './types';
+import { Attachment, ChatEntry, CodeBlock, Tool } from './types';
 
 export enum ActionType {
   AddContextEvent = 'addContextEvent',
@@ -10,11 +10,14 @@ export enum ActionType {
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
   chatHistoryUpdateByID = 'chatHistoryUpdateByID',
+  chatHistoryUpdateTool = 'chatHistoryUpdateTool',
   ClearContextEvents = 'clearContextEvents',
   CloseOLS = 'closeOLS',
   OpenAttachmentClear = 'openAttachmentClear',
   OpenAttachmentSet = 'openAttachmentSet',
   OpenOLS = 'openOLS',
+  OpenToolClear = 'openToolClear',
+  OpenToolSet = 'openToolSet',
   SetConversationID = 'setConversationID',
   SetIsContextEventsLoading = 'setIsContextEventsLoading',
   SetQuery = 'setQuery',
@@ -58,6 +61,9 @@ export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHisto
 export const chatHistoryUpdateByID = (id: string, entry: Partial<ChatEntry>) =>
   action(ActionType.chatHistoryUpdateByID, { entry, id });
 
+export const chatHistoryUpdateTool = (id: string, toolID: string, tool: Partial<Tool>) =>
+  action(ActionType.chatHistoryUpdateTool, { id, tool, toolID });
+
 export const clearContextEvents = () => action(ActionType.ClearContextEvents);
 
 export const closeOLS = () => action(ActionType.CloseOLS);
@@ -68,6 +74,11 @@ export const openAttachmentSet = (attachment: Attachment) =>
   action(ActionType.OpenAttachmentSet, { attachment });
 
 export const openOLS = () => action(ActionType.OpenOLS);
+
+export const openToolClear = () => action(ActionType.OpenToolClear);
+
+export const openToolSet = (chatEntryIndex: number, id: string) =>
+  action(ActionType.OpenToolSet, { chatEntryIndex, id });
 
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
 
@@ -101,12 +112,15 @@ const actions = {
   chatHistoryClear,
   chatHistoryPush,
   chatHistoryUpdateByID,
+  chatHistoryUpdateTool,
   clearContextEvents,
   closeOLS,
   importCodeBlock,
   openAttachmentClear,
   openAttachmentSet,
   openOLS,
+  openToolClear,
+  openToolSet,
   setConversationID,
   setIsContextEventsLoading,
   setQuery,

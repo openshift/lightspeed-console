@@ -47,6 +47,7 @@ import {
   chatHistoryClear,
   chatHistoryPush,
   chatHistoryUpdateByID,
+  chatHistoryUpdateTool,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -60,6 +61,8 @@ import ImportAction from './ImportAction';
 import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
 import ReadinessAlert from './ReadinessAlert';
+import ResponseTools from './ResponseTools';
+import ToolModal from './ResponseToolModal';
 
 import './general-page.css';
 
@@ -96,11 +99,31 @@ type QueryResponseEnd = {
   };
 };
 
+type QueryResponseToolRequest = {
+  event: 'tool_call';
+  data: {
+    args: { [key: string]: Array<string> };
+    id: string;
+    name: string;
+  };
+};
+
+type QueryResponseToolExecution = {
+  event: 'tool_result';
+  data: {
+    content: string;
+    id: string;
+    status: 'error' | 'success';
+  };
+};
+
 type QueryResponse =
   | QueryResponseStart
   | QueryResponseToken
   | QueryResponseError
-  | QueryResponseEnd;
+  | QueryResponseEnd
+  | QueryResponseToolRequest
+  | QueryResponseToolExecution;
 
 type ExternalLinkProps = {
   children: React.ReactNode;
@@ -212,6 +235,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
                 variant="info"
               />
             )}
+            {entry.tools && <ResponseTools entryIndex={entryIndex} />}
             {entry.references && (
               <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
                 {entry.references.map((r, i) => (
@@ -407,6 +431,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           isTruncated: false,
           references: [],
           text: '',
+          tools: ImmutableMap(),
           who: 'ai',
         }),
       );
@@ -479,9 +504,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                       references: json.data.referenced_documents,
                     }),
                   );
+                } else if (json.event === 'tool_call') {
+                  const { args, id, name } = json.data;
+                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { name, args }));
+                } else if (json.event === 'tool_result') {
+                  const { content, id, status } = json.data;
+                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { content, status }));
                 } else {
                   // eslint-disable-next-line no-console
-                  console.error(`Unrecognized event "${json.event}" in response stream`);
+                  console.warn(`Unrecognized event "${json.event}" in response stream`);
                 }
               }
             });
@@ -681,6 +712,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           </HelperText>
 
           <AttachmentModal />
+          <ToolModal />
           <NewChatModal
             isOpen={isNewChatModalOpen}
             onClose={closeNewChatModal}
