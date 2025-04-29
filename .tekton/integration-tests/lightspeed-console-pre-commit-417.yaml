@@ -239,7 +239,7 @@ spec:
               npm -v
               echo "---------------------------------------------"
               echo "---------------------------------------------"
-              npx cypress run
+              npx cypress run -- --disable-gpu
           - name: gather-cluster-resources
             ref:
               resolver: git
