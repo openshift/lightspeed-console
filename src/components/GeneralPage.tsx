@@ -136,23 +136,40 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
   </a>
 );
 
-type DocLinkProps = {
-  reference: ReferencedDoc;
+const isURL = (s: string): boolean => {
+  try {
+    const url = new URL(s);
+    return !!(url.protocol && url.host);
+  } catch {
+    return false;
+  }
 };
 
-const DocLink: React.FC<DocLinkProps> = ({ reference }) => {
-  if (
-    !reference ||
-    typeof reference.doc_title !== 'string' ||
-    typeof reference.doc_url !== 'string'
-  ) {
+type ReferenceDocsProps = {
+  references: Array<ReferencedDoc>;
+};
+
+const ReferenceDocs: React.FC<ReferenceDocsProps> = ({ references }) => {
+  let validReferences: Array<ReferencedDoc> = [];
+  if (Array.isArray(references)) {
+    validReferences = references.filter(
+      (r) =>
+        r && typeof r.doc_title === 'string' && typeof r.doc_url === 'string' && isURL(r.doc_url),
+    );
+  }
+
+  if (validReferences.length === 0) {
     return null;
   }
 
   return (
-    <Chip isReadOnly textMaxWidth="16rem">
-      <ExternalLink href={reference.doc_url}>{reference.doc_title}</ExternalLink>
-    </Chip>
+    <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
+      {validReferences.map((r, i) => (
+        <Chip isReadOnly key={i} textMaxWidth="16rem">
+          <ExternalLink href={r.doc_url}>{r.doc_title}</ExternalLink>
+        </Chip>
+      ))}
+    </ChipGroup>
   );
 };
 
@@ -236,13 +253,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
               />
             )}
             {entry.tools && <ResponseTools entryIndex={entryIndex} />}
-            {entry.references && (
-              <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
-                {entry.references.map((r, i) => (
-                  <DocLink key={i} reference={r} />
-                ))}
-              </ChipGroup>
-            )}
+            <ReferenceDocs references={entry.references} />
             {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
               <Feedback conversationID={conversationID} entryIndex={entryIndex} />
             )}
