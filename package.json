@@ -27,8 +27,8 @@
     "merge-reports": "jrm combined.xml \"gui_test_screenshots/junit_cypress-*.xml\""
   },
   "dependencies": {
-    "@openshift-console/dynamic-plugin-sdk": "1.0.0",
-    "@openshift-console/dynamic-plugin-sdk-webpack": "1.0.2",
+    "@openshift-console/dynamic-plugin-sdk": "4.19.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "4.19.0",
     "@patternfly/react-code-editor": "6.2.2",
     "@patternfly/react-core": "6.2.2",
     "@patternfly/react-icons": "6.2.2",

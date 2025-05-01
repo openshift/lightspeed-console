@@ -13,9 +13,6 @@ const usePopover = () => {
 
   React.useEffect(() => {
     if (!isLaunched && launchModal) {
-      // @ts-expect-error: The plugin SDK expects launchModal to take 2 arguments, but depending on
-      // the web console version, it may actually be dynamically linked to a version that accepts
-      // the optional third ID argument
       launchModal?.(Popover, {}, POPOVER_ID);
       setLaunched();
     }
