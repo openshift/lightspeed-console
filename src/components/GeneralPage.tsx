@@ -9,8 +9,6 @@ import {
   Alert,
   Badge,
   Button,
-  Chip,
-  ChipGroup,
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
@@ -18,6 +16,8 @@ import {
   Form,
   HelperText,
   HelperTextItem,
+  Label,
+  LabelGroup,
   Level,
   LevelItem,
   Page,
@@ -163,13 +163,15 @@ const ReferenceDocs: React.FC<ReferenceDocsProps> = ({ references }) => {
   }
 
   return (
-    <ChipGroup categoryName="Related documentation" className="ols-plugin__references">
-      {validReferences.map((r, i) => (
-        <Chip isReadOnly key={i} textMaxWidth="16rem">
-          <ExternalLink href={r.doc_url}>{r.doc_title}</ExternalLink>
-        </Chip>
-      ))}
-    </ChipGroup>
+    <div className="ols-plugin__references">
+      <LabelGroup categoryName="Related documentation">
+        {validReferences.map((r, i) => (
+          <Label key={i} textMaxWidth="16rem">
+            <ExternalLink href={r.doc_url}>{r.doc_title}</ExternalLink>
+          </Label>
+        ))}
+      </LabelGroup>
+    </div>
   );
 };
 

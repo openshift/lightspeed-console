@@ -7,7 +7,6 @@ import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Button,
-  Chip,
   HelperText,
   HelperTextItem,
   Label,
@@ -152,7 +151,8 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex }) => {
           <div className="ols-plugin__feedback-comment">
             <Title headingLevel="h3">
               <CloseButton onClose={onClose} />
-              {t('Why did you choose this rating?')} <Chip isReadOnly>{t('Optional')}</Chip>
+              {t('Why did you choose this rating?')}{' '}
+              <Label variant="outline">{t('Optional')}</Label>
             </Title>
             <TextArea
               aria-label={t('Provide additional feedback')}
