@@ -331,7 +331,7 @@ const PrivacyAlert: React.FC = () => {
   return (
     <Alert className="ols-plugin__alert" isInline title={t('Important')} variant="info">
       {t(
-        "OpenShift Lightspeed can answer questions related to OpenShift. This feature uses AI technology. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
+        "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
       )}
     </Alert>
   );
