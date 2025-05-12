@@ -3,10 +3,10 @@ import * as fs from 'fs';
 import * as console from 'console';
 
 export default defineConfig({
-  screenshotsFolder: './gui_test_screenshots/cypress/screenshots',
+  screenshotsFolder: '/gui_test_screenshots/cypress/screenshots',
   screenshotOnRunFailure: true,
   trashAssetsBeforeRuns: true,
-  videosFolder: './gui_test_screenshots/cypress/videos',
+  videosFolder: '/gui_test_screenshots/cypress/videos',
   video: true,
   videoCompression: false,
   reporter: './node_modules/cypress-multi-reporters',
@@ -50,6 +50,11 @@ export default defineConfig({
           if (browser.family === 'chromium' && browser.name !== 'electron') {
             // Auto open devtools
             launchOptions.args.push('--enable-precise-memory-info');
+            if (browser.isHeadless) {
+              launchOptions.args.push('--no-sandbox');
+              launchOptions.args.push('--disable-gl-drawing-for-tests');
+              launchOptions.args.push('--disable-gpu');
+            }
           }
 
           return launchOptions;
