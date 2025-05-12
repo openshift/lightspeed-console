@@ -272,14 +272,12 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         {entry.attachments && Object.keys(entry.attachments).length > 0 && (
           <ExpandableSection
             className="ols-plugin__chat-history-context"
+            displaySize="lg"
             isExpanded={isContextExpanded}
             onToggle={toggleContextExpanded}
             toggleContent={
               <>
-                Context
-                <Badge className="ols-plugin__chat-history-context-count">
-                  {Object.keys(entry.attachments).length}
-                </Badge>
+                Context <Badge>{Object.keys(entry.attachments).length}</Badge>
               </>
             }
           >
