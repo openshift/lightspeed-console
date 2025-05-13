@@ -523,9 +523,16 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 } else if (json.event === 'tool_result') {
                   const { content, id, status } = json.data;
                   dispatch(chatHistoryUpdateTool(chatEntryID, id, { content, status }));
+                } else if (json.event === 'error') {
+                  dispatch(
+                    chatHistoryUpdateByID(chatEntryID, {
+                      error: getFetchErrorMessage({ json: { detail: json.data } }, t),
+                      isStreaming: false,
+                    }),
+                  );
                 } else {
                   // eslint-disable-next-line no-console
-                  console.warn(`Unrecognized event "${json.event}" in response stream`);
+                  console.warn(`Unrecognized event in response stream:`, JSON.stringify(json));
                 }
               }
             });
