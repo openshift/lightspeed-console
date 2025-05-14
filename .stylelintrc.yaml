@@ -11,6 +11,7 @@ rules:
   function-disallowed-list:
     - rgb
   media-feature-range-notation: null
+  no-descending-specificity: null
   # Disable the standard rule to allow BEM-style classnames with underscores.
   selector-class-pattern: null
   # Disallow CSS classnames prefixed with .pf- or .co- as these prefixes are
