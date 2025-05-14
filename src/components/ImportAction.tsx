@@ -1,17 +1,20 @@
 import * as _ from 'lodash';
 import * as React from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
+import { useActiveNamespace } from '@openshift-console/dynamic-plugin-sdk';
 import { Button, ButtonVariant, Tooltip } from '@patternfly/react-core';
 import { PlusCircleIcon } from '@patternfly/react-icons';
-import { useActiveNamespace } from '@openshift-console/dynamic-plugin-sdk';
+
 import { closeOLS, importCodeBlock } from '../redux-actions';
 import ConfirmationModal from './ConfirmationModal';
 
 type Props = {
   value: string;
 };
+
+const ALL_NAMESPACES_KEY = '#ALL_NS#';
 
 const ImportAction: React.FC<Props> = ({ value }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -35,7 +38,11 @@ const ImportAction: React.FC<Props> = ({ value }) => {
 
   const handleRedirect = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (event.currentTarget.id === 'leave') {
-      navigate(`/k8s/ns/${activeNamespace}/import?ols=true`);
+      navigate(
+        activeNamespace === ALL_NAMESPACES_KEY
+          ? `/k8s/all-namespaces/import?ols=true`
+          : `/k8s/ns/${activeNamespace}/import?ols=true`,
+      );
       dispatch(closeOLS());
     }
     setShowModal(false);
