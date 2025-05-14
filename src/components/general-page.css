@@ -66,10 +66,6 @@
   padding: var(--pf-global--spacer--sm);
 }
 
-.ols-plugin__chat-history-context-count {
-  margin-left: var(--pf-global--spacer--sm);
-}
-
 .ols-plugin__code-block {
   margin: 1rem 0;
   overflow: hidden;
