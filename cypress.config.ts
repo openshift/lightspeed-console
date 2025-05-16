@@ -3,10 +3,10 @@ import * as fs from 'fs';
 import * as console from 'console';
 
 export default defineConfig({
-  screenshotsFolder: '/gui_test_screenshots/cypress/screenshots',
+  screenshotsFolder: './gui_test_screenshots/cypress/screenshots',
   screenshotOnRunFailure: true,
   trashAssetsBeforeRuns: true,
-  videosFolder: '/gui_test_screenshots/cypress/videos',
+  videosFolder: './gui_test_screenshots/cypress/videos',
   video: true,
   videoCompression: false,
   reporter: './node_modules/cypress-multi-reporters',

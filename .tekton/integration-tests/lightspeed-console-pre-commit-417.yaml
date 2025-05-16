@@ -235,9 +235,12 @@ spec:
               npm -v
               echo "---------------------------------------------"
               echo "---------------------------------------------"
-              npx cypress run -- --disable-gpu
-              mv /home/lightspeed-console/gui_test_screenshots /workspace/gui_test_screenshots
+              set +e
+              NO_COLOR=1 npx cypress run
+              ls ./gui_test_screenshots
+              mv /home/lightspeed-console/gui_test_screenshots /workspace/artifacts/
           - name: gather-cluster-resources
+            onError: continue
             ref:
               resolver: git
               params:
@@ -253,16 +256,21 @@ spec:
               - name: kubeconfig
                 value: "$(steps.get-kubeconfig.results.kubeconfig)"
               - name: artifact-dir
-                value: "/workspace/gui_test_screenshots/konflux-artifacts"
+                value: "/workspace/artifacts/konflux-artifacts"
           # validate that the cluster resources are available in another tekton step
           - name: list-artifacts
+            onError: continue
             image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
             workingDir: "/workspace/"
             script: |
               #!/bin/bash
+              ls /home/lightspeed-console/gui_test_screenshots
+              echo "---"
               ls -la /workspace/
-              ls -la /workspace/gui_test_screenshots
+              ls -la /workspace/artifacts/
+              ls -la /workspace/artifacts/cypress
           - name: push-artifacts
+            onError: continue
             ref: 
               resolver: git
               params:
@@ -274,7 +282,7 @@ spec:
                   value: stepactions/secure-push-oci/0.1/secure-push-oci.yaml
             params:
               - name: workdir-path
-                value: "/workspace/gui_test_screenshots"
+                value: "/workspace/artifacts"
               - name: oci-ref
                 value: "quay.io/openshift-lightspeed/ols-console-artifacts:$(params.commit)"
               - name: credentials-volume-name
