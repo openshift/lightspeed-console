@@ -20,4 +20,4 @@ LABEL name="openshift-lightspeed/lightspeed-console" \
       io.openshift.tags="openshift-lightspeed,ols"
 USER 1001
 
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["nginx", "-g", "daemon off;", "-e", "stderr"]
