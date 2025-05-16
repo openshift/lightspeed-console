@@ -62,8 +62,11 @@
 .ols-plugin__chat-history-context {
   background-color: var(--pf-v5-global--BackgroundColor--200);
   box-shadow: 3px 0 0 0 var(--pf-v5-global--primary-color--100) inset;
-  margin-top: var(--pf-global--spacer--md);
-  padding: var(--pf-global--spacer--sm);
+  margin-top: var(--pf-v5-global--spacer--md);
+}
+
+.ols-plugin__chat-history-context .ols-plugin__context-label {
+  margin: 0 0 var(--pf-v5-global--spacer--sm) var(--pf-v5-global--spacer--sm);
 }
 
 .ols-plugin__code-block {
@@ -97,8 +100,8 @@
 }
 
 .ols-plugin__code-block__title {
-  padding-left: var(--pf-global--spacer--md);
-  padding-top: var(--pf-global--spacer--form-element);
+  padding-left: var(--pf-v5-global--spacer--md);
+  padding-top: var(--pf-v5-global--spacer--form-element);
 }
 
 .ols-plugin__code-inline {
@@ -241,7 +244,7 @@
 }
 
 .ols-plugin__inline-icon {
-  margin-left: var(--pf-global--spacer--sm);
+  margin-left: var(--pf-v5-global--spacer--sm);
 }
 
 .ols-plugin__modal {
