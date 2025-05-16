@@ -236,6 +236,8 @@ spec:
               echo "---------------------------------------------"
               echo "---------------------------------------------"
               npx cypress run -- --disable-gpu
+              ls /home/lightspeed-console/gui_test_screenshots
+              ls /home/lightspeed-console
               mv /home/lightspeed-console/gui_test_screenshots /workspace/gui_test_screenshots
           - name: gather-cluster-resources
             ref:
@@ -262,6 +264,8 @@ spec:
               #!/bin/bash
               ls -la /workspace/
               ls -la /workspace/gui_test_screenshots
+              ls -la /gui_test_screenshots
+              ls -la /gui_test_screenshots/cypress/videos
           - name: push-artifacts
             ref: 
               resolver: git

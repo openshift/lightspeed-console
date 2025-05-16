@@ -206,7 +206,7 @@ spec:
       cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
       cy.get(attachments)
         .should('include.text', podName)
-        .should('include.text', 'YAML')
+        .should('include.text', 'coconuts')
         .find('button')
         .contains(podName)
         .should('have.lengthOf', 1)
