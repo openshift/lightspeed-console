@@ -50,6 +50,11 @@ export default defineConfig({
           if (browser.family === 'chromium' && browser.name !== 'electron') {
             // Auto open devtools
             launchOptions.args.push('--enable-precise-memory-info');
+            if (browser.isHeadless) {
+              launchOptions.args.push('--no-sandbox');
+              launchOptions.args.push('--disable-gl-drawing-for-tests');
+              launchOptions.args.push('--disable-gpu');
+            }
           }
 
           return launchOptions;
