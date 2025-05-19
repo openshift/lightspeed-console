@@ -205,8 +205,6 @@ spec:
               export CYPRESS_LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
               echo "${CYPRESS_LOGIN_PASSWORD}"
               echo "---------------------------------------------"
-              apt-get update \
-                  && apt-get install curl
               echo "---------------------------------------------"
               wget -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
                   && tar -xvzf oc.tar.gz \
@@ -264,11 +262,9 @@ spec:
             workingDir: "/workspace/"
             script: |
               #!/bin/bash
-              ls /home/lightspeed-console/gui_test_screenshots
-              echo "---"
               ls -la /workspace/
               ls -la /workspace/artifacts/
-              ls -la /workspace/artifacts/cypress
+              ls -la /workspace/artifacts/gui_test_screenshots
           - name: push-artifacts
             onError: continue
             ref: 
