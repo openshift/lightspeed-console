@@ -21,6 +21,8 @@ const modal = '.ols-plugin__modal';
 
 const podName = 'lightspeed-console-plugin';
 
+const MINUTE = 60 * 1000;
+
 describe('Lightspeed related features', () => {
   before(() => {
     cy.adminCLI(
@@ -57,7 +59,7 @@ describe('Lightspeed related features', () => {
     // Otherwise install the latest operator
     if (Cypress.env('UI_INSTALL')) {
       operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
-      cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * 60 * 1000 }).should(
+      cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * MINUTE }).should(
         'include.text',
         'ready for use',
       );
@@ -70,7 +72,7 @@ describe('Lightspeed related features', () => {
       );
       cy.exec(
         `operator-sdk run bundle --timeout=20m --namespace ${OLS.namespace} ${Cypress.env('BUNDLE_IMAGE')} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
-        { timeout: 6 * 60 * 1000 },
+        { timeout: 6 * MINUTE },
       );
     } else {
       cy.exec(
@@ -81,7 +83,7 @@ describe('Lightspeed related features', () => {
       );
       cy.exec(
         `operator-sdk run bundle --timeout=20m --namespace ${OLS.namespace} quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} --verbose `,
-        { timeout: 6 * 60 * 1000 },
+        { timeout: 6 * MINUTE },
       );
     }
     // If the console image exists, replace image in csv and restart operator
@@ -135,7 +137,7 @@ spec:
     cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
     cy.get('.pf-v5-c-alert')
-      .contains('Web console update is available', { timeout: 2 * 60 * 1000 })
+      .contains('Web console update is available', { timeout: 2 * MINUTE })
       .should('exist');
   });
 
@@ -159,7 +161,7 @@ spec:
     () => {
       Pages.gotoPodsList();
 
-      cy.get('.ols-plugin__popover-button', { timeout: 5 * 30 * 1000 })
+      cy.get('.ols-plugin__popover-button', { timeout: 5 * MINUTE })
         .should('exist')
         .click();
 
@@ -175,21 +177,19 @@ spec:
 
       // Navigate to the pod details page
       searchPage.searchBy(podName);
-      cy.get('[data-test-rows="resource-row"]', { timeout: 30 * 1000 }).should(
+      cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
         'have.length.at.least',
         1,
       );
 
-      cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a', {
-        timeout: 30 * 1000,
-      }).click();
+      cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a').click();
 
       // There should be not prompt attachments initially
       cy.get(attachments).should('be.empty');
 
       // Test that the context menu now has options
       cy.get(attachMenuButton).click();
-      cy.get(attachMenu)
+      cy.get(attachMenu, { timeout: MINUTE })
         .should('include.text', 'Full YAML file')
         .should('include.text', 'Filtered YAML')
         .should('include.text', 'Events')
