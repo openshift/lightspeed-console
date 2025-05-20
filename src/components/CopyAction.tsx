@@ -17,10 +17,15 @@ const CopyAction: React.FC<Props> = ({ value }) => {
     <ClipboardCopyButton
       aria-label={t('Copy to clipboard')}
       exitDelay={isCopied ? 1500 : 600}
-      id="basic-copy-button"
+      id="ols-plugin-copy-button"
       onClick={() => {
-        navigator.clipboard.writeText(value);
-        setCopied();
+        try {
+          navigator.clipboard.writeText(value);
+          setCopied();
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to copy to clipboard: ', err);
+        }
       }}
       onTooltipHidden={setNotCopied}
       textId="code-content"
