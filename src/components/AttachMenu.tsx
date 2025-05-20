@@ -195,8 +195,8 @@ const AttachMenu: React.FC = () => {
             setLoaded();
           });
       } else if (
-        attachmentType === AttachmentTypes.YAML ||
-        attachmentType === AttachmentTypes.YAMLFiltered
+        context &&
+        (attachmentType === AttachmentTypes.YAML || attachmentType === AttachmentTypes.YAMLFiltered)
       ) {
         const data = cloneDeep(
           attachmentType === AttachmentTypes.YAMLFiltered
@@ -252,38 +252,42 @@ const AttachMenu: React.FC = () => {
     [isOpen, t, toggleIsOpen],
   );
 
-  const showEvents = [
-    'CronJob',
-    'DaemonSet',
-    'Deployment',
-    'DeploymentConfig',
-    'HorizontalPodAutoscaler',
-    'Job',
-    'kubevirt.io~v1~VirtualMachine',
-    'kubevirt.io~v1~VirtualMachineInstance',
-    'Pod',
-    'PodDisruptionBudget',
-    'ReplicaSet',
-    'ReplicationController',
-    'StatefulSet',
-  ].includes(kind);
+  const showEvents =
+    !!context &&
+    [
+      'CronJob',
+      'DaemonSet',
+      'Deployment',
+      'DeploymentConfig',
+      'HorizontalPodAutoscaler',
+      'Job',
+      'kubevirt.io~v1~VirtualMachine',
+      'kubevirt.io~v1~VirtualMachineInstance',
+      'Pod',
+      'PodDisruptionBudget',
+      'ReplicaSet',
+      'ReplicationController',
+      'StatefulSet',
+    ].includes(kind);
 
-  const showLogs = [
-    'DaemonSet',
-    'Deployment',
-    'DeploymentConfig',
-    'HorizontalPodAutoscaler',
-    'Job',
-    'kubevirt.io~v1~VirtualMachine',
-    'kubevirt.io~v1~VirtualMachineInstance',
-    'Pod',
-    'PodDisruptionBudget',
-    'ReplicaSet',
-    'ReplicationController',
-    'StatefulSet',
-  ].includes(kind);
+  const showLogs =
+    !!context &&
+    [
+      'DaemonSet',
+      'Deployment',
+      'DeploymentConfig',
+      'HorizontalPodAutoscaler',
+      'Job',
+      'kubevirt.io~v1~VirtualMachine',
+      'kubevirt.io~v1~VirtualMachineInstance',
+      'Pod',
+      'PodDisruptionBudget',
+      'ReplicaSet',
+      'ReplicationController',
+      'StatefulSet',
+    ].includes(kind);
 
-  const isResourceContext = !!kind && !!name;
+  const isResourceContext = !!context && !!kind && !!name;
 
   return (
     <>
@@ -297,7 +301,7 @@ const AttachMenu: React.FC = () => {
           uid={context.metadata?.uid}
         />
       )}
-      {showLogs && context && (
+      {showLogs && (
         <AttachLogModal isOpen={isLogModalOpen} onClose={closeLogModal} resource={context} />
       )}
 
