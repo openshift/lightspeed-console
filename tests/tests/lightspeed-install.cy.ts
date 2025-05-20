@@ -155,146 +155,130 @@ spec:
     );
   });
 
-  it(
-    '(OLS-743,anpicker,Lightspeed) Test OpenShift Lightspeed with pod',
-    { tags: ['e2e', 'admin', '@smoke'] },
-    () => {
-      Pages.gotoPodsList();
+  it('Test OpenShift Lightspeed with pod (OLS-743)', () => {
+    Pages.gotoPodsList();
 
-      cy.get('.ols-plugin__popover-button', { timeout: 5 * MINUTE })
-        .should('exist')
-        .click();
+    cy.get('.ols-plugin__popover-button', { timeout: 5 * MINUTE })
+      .should('exist')
+      .click();
 
-      // Test that popover UI was opened
-      cy.get(popover)
-        .should('exist')
-        .find('h1')
-        .should('include.text', 'Red Hat OpenShift Lightspeed');
+    // Test that popover UI was opened
+    cy.get(popover)
+      .should('exist')
+      .find('h1')
+      .should('include.text', 'Red Hat OpenShift Lightspeed');
 
-      // Test that we can submit a prompt
-      cy.get(promptInput).should('exist').type('What is OpenShift?{enter}');
-      cy.get(popover).find('.ols-plugin__chat-entry--ai').should('exist');
+    // Test that we can submit a prompt
+    cy.get(promptInput).should('exist').type('What is OpenShift?{enter}');
+    cy.get(popover).find('.ols-plugin__chat-entry--ai').should('exist');
 
-      // Navigate to the pod details page
-      searchPage.searchBy(podName);
-      cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
-        'have.length.at.least',
-        1,
-      );
+    // Navigate to the pod details page
+    searchPage.searchBy(podName);
+    cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
+      'have.length.at.least',
+      1,
+    );
 
-      cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a').click();
+    cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a').click();
 
-      // There should be not prompt attachments initially
-      cy.get(attachments).should('be.empty');
+    // There should be not prompt attachments initially
+    cy.get(attachments).should('be.empty');
 
-      // Test that the context menu now has options
-      cy.get(attachMenuButton).click();
-      cy.get(attachMenu, { timeout: MINUTE })
-        .should('include.text', 'Full YAML file')
-        .should('include.text', 'Filtered YAML')
-        .should('include.text', 'Events')
-        .should('include.text', 'Logs');
-    },
-  );
+    // Test that the context menu now has options
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu, { timeout: MINUTE })
+      .should('include.text', 'Full YAML file')
+      .should('include.text', 'Filtered YAML')
+      .should('include.text', 'Events')
+      .should('include.text', 'Logs');
+  });
 
-  it(
-    '(OLS-745,anpicker,Lightspeed) Test attaching YAML',
-    { tags: ['e2e', 'admin', '@smoke'] },
-    () => {
-      // Test attaching pod YAML
-      cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
-      cy.get(attachments)
-        .should('include.text', podName)
-        .should('include.text', 'YAML')
-        .find('button')
-        .contains(podName)
-        .should('have.lengthOf', 1)
-        .click();
-      cy.get(modal)
-        .should('include.text', 'Preview attachment')
-        .should('include.text', podName)
-        .should('include.text', 'kind: Pod')
-        .should('include.text', 'apiVersion: v1')
-        .find('button')
-        .contains('Dismiss')
-        .click();
-      cy.get(promptInput).type('Test{enter}');
+  it('Test attaching YAML (OLS-745)', () => {
+    // Test attaching pod YAML
+    cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
+    cy.get(attachments)
+      .should('include.text', podName)
+      .should('include.text', 'YAML')
+      .find('button')
+      .contains(podName)
+      .should('have.lengthOf', 1)
+      .click();
+    cy.get(modal)
+      .should('include.text', 'Preview attachment')
+      .should('include.text', podName)
+      .should('include.text', 'kind: Pod')
+      .should('include.text', 'apiVersion: v1')
+      .find('button')
+      .contains('Dismiss')
+      .click();
+    cy.get(promptInput).type('Test{enter}');
 
-      // Test attaching pod YAML status section
-      cy.get(attachMenuButton).click();
-      cy.get(attachMenu).find('button').contains('Filtered YAML').click();
-      cy.get(attachments)
-        .should('include.text', podName)
-        .should('include.text', 'YAML')
-        .find('button')
-        .contains(podName)
-        .should('have.lengthOf', 1)
-        .click();
-      cy.get(modal)
-        .should('include.text', 'Preview attachment')
-        .should('include.text', podName)
-        .should('include.text', 'kind: Pod')
-        .should('not.contain', 'apiVersion: v1')
-        .find('button')
-        .contains('Dismiss')
-        .click();
-      cy.get(promptInput).type('Test{enter}');
-    },
-  );
+    // Test attaching pod YAML status section
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu).find('button').contains('Filtered YAML').click();
+    cy.get(attachments)
+      .should('include.text', podName)
+      .should('include.text', 'YAML')
+      .find('button')
+      .contains(podName)
+      .should('have.lengthOf', 1)
+      .click();
+    cy.get(modal)
+      .should('include.text', 'Preview attachment')
+      .should('include.text', podName)
+      .should('include.text', 'kind: Pod')
+      .should('not.contain', 'apiVersion: v1')
+      .find('button')
+      .contains('Dismiss')
+      .click();
+    cy.get(promptInput).type('Test{enter}');
+  });
 
-  it(
-    '(OLS-746,anpicker,Lightspeed) Test attaching events',
-    { tags: ['e2e', 'admin', '@smoke'] },
-    () => {
-      cy.get(attachMenuButton).click();
-      cy.get(attachMenu).find('button').contains('Events').click();
-      cy.get(modal).should('include.text', 'Configure events attachment');
-      cy.get(modal).find('button').contains('Attach').click();
-      cy.get(attachments)
-        .should('include.text', podName)
-        .should('include.text', 'Events')
-        .find('button')
-        .contains(podName)
-        .should('have.lengthOf', 1)
-        .click();
-      cy.get(modal)
-        .should('include.text', 'Preview attachment')
-        .should('include.text', podName)
-        .should('include.text', 'kind: Event')
-        .find('button')
-        .contains('Dismiss')
-        .click();
-      cy.get(promptInput).type('Test{enter}');
-    },
-  );
+  it('Test attaching events (OLS-746)', () => {
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu).find('button').contains('Events').click();
+    cy.get(modal).should('include.text', 'Configure events attachment');
+    cy.get(modal).find('button').contains('Attach').click();
+    cy.get(attachments)
+      .should('include.text', podName)
+      .should('include.text', 'Events')
+      .find('button')
+      .contains(podName)
+      .should('have.lengthOf', 1)
+      .click();
+    cy.get(modal)
+      .should('include.text', 'Preview attachment')
+      .should('include.text', podName)
+      .should('include.text', 'kind: Event')
+      .find('button')
+      .contains('Dismiss')
+      .click();
+    cy.get(promptInput).type('Test{enter}');
+  });
 
-  it(
-    '(OLS-747,anpicker,Lightspeed) Test attaching logs',
-    { tags: ['e2e', 'admin', '@smoke'] },
-    () => {
-      cy.get(attachMenuButton).click();
-      cy.get(attachMenu).find('button').contains('Logs').click();
-      cy.get(modal)
-        .should('include.text', 'Configure log attachment')
-        .should('include.text', 'Most recent 25 lines')
-        .find('button')
-        .contains('Attach')
-        .click();
-      cy.get(attachments)
-        .should('include.text', podName)
-        .should('include.text', 'Log')
-        .find('button')
-        .contains(podName)
-        .should('have.lengthOf', 1)
-        .click();
-      cy.get(modal)
-        .should('include.text', 'Preview attachment')
-        .should('include.text', podName)
-        .should('include.text', 'Most recent lines from the log for')
-        .find('button')
-        .contains('Dismiss')
-        .click();
-      cy.get(promptInput).type('Test{enter}');
-    },
-  );
+  it('Test attaching logs (OLS-747)', () => {
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu).find('button').contains('Logs').click();
+    cy.get(modal)
+      .should('include.text', 'Configure log attachment')
+      .should('include.text', 'Most recent 25 lines')
+      .find('button')
+      .contains('Attach')
+      .click();
+    cy.get(attachments)
+      .should('include.text', podName)
+      .should('include.text', 'Log')
+      .find('button')
+      .contains(podName)
+      .should('have.lengthOf', 1)
+      .click();
+    cy.get(modal)
+      .should('include.text', 'Preview attachment')
+      .should('include.text', podName)
+      .should('include.text', 'Most recent lines from the log for')
+      .find('button')
+      .contains('Dismiss')
+      .click();
+    cy.get(promptInput).type('Test{enter}');
+  });
 });
