@@ -12,7 +12,13 @@ const OLS = {
   },
 };
 
-const popover = '.ols-plugin__popover-container';
+const popover = '.ols-plugin__popover';
+const mainButton = '.ols-plugin__popover-button';
+const minimizeButton = '.ols-plugin__popover-control[title=Minimize]';
+const expandButton = '.ols-plugin__popover-control[title=Expand]';
+const collapseButton = '.ols-plugin__popover-control[title=Collapse]';
+const userChatEntry = '.ols-plugin__chat-entry--user';
+const aiChatEntry = '.ols-plugin__chat-entry--ai';
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
 const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
@@ -22,6 +28,10 @@ const modal = '.ols-plugin__modal';
 const podName = 'lightspeed-console-plugin';
 
 const MINUTE = 60 * 1000;
+
+const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
+const PROMPT_SUBMITTED = 'What is OpenShift?';
+const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
 
 describe('Lightspeed related features', () => {
   before(() => {
@@ -155,24 +165,100 @@ spec:
     );
   });
 
-  it('Test OpenShift Lightspeed with pod (OLS-743)', () => {
-    Pages.gotoPodsList();
+  it('OpenShift Lightspeed popover UI is loaded and basic functionality is working', () => {
+    cy.visit('/');
 
-    cy.get('.ols-plugin__popover-button', { timeout: 5 * MINUTE })
+    cy.get(mainButton, { timeout: 5 * MINUTE })
       .should('exist')
       .click();
 
     // Test that popover UI was opened
-    cy.get(popover)
-      .should('exist')
-      .find('h1')
-      .should('include.text', 'Red Hat OpenShift Lightspeed');
+    cy.get(popover).should('exist').find('h1').should('include.text', POPOVER_TITLE);
 
     // Test that we can submit a prompt
-    cy.get(promptInput).should('exist').type('What is OpenShift?{enter}');
-    cy.get(popover).find('.ols-plugin__chat-entry--ai').should('exist');
+    cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.get(popover).find(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(popover).find(aiChatEntry).should('exist');
 
+    // Populate the prompt input, but don't submit it
+    cy.get(promptInput).should('exist').type(PROMPT_NOT_SUBMITTED);
+
+    // Minimize the popover UI
+    cy.get(minimizeButton).click();
+    cy.get(popover).should('not.exist');
+
+    // Open the popover UI again
+    // Previous messages and text in the prompt input should have been preserved
+    cy.get(mainButton).click();
+    cy.get(popover).find(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(popover).find(aiChatEntry).should('exist');
+    cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+
+    // When expanded, the popover width should fill most of the viewport
+    const isExpanded = (popoverElement) =>
+      Cypress.config('viewportWidth') - popoverElement.getBoundingClientRect().width < 200;
+
+    // When collapsed, the popover width should be less than half the viewport width
+    const isCollapsed = (popoverElement) =>
+      popoverElement.getBoundingClientRect().width < Cypress.config('viewportWidth') / 2;
+
+    // Expand UI button
+    cy.get(expandButton).click();
+    cy.get(popover)
+      .should('exist')
+      .should((els) => {
+        expect(isExpanded(els[0])).to.be.true;
+      });
+
+    // Minimize the popover UI
+    cy.get(minimizeButton).click();
+    cy.get(popover).should('not.exist');
+
+    // Reopen the UI by clicking the main OLS button
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
+    // Main OLS button should toggle between closed and open states and preserve the expanded state
+    cy.get(mainButton).click();
+    cy.get(popover).should('not.exist');
+    cy.get(mainButton).click();
+    cy.get(popover)
+      .should('exist')
+      .should((els) => {
+        expect(isExpanded(els[0])).to.be.true;
+      });
+
+    // Collapse UI button
+    cy.get(collapseButton).click();
+    cy.get(popover)
+      .should('exist')
+      .should((els) => {
+        expect(isCollapsed(els[0])).to.be.true;
+      });
+
+    // Main OLS button should toggle between closed and open states and preserve the collapsed state
+    cy.get(mainButton).click();
+    cy.get(popover).should('not.exist');
+    cy.get(mainButton).click();
+    cy.get(popover)
+      .should('exist')
+      .should((els) => {
+        expect(isCollapsed(els[0])).to.be.true;
+      });
+
+    // Previous messages and text in the prompt input should have been preserved
+    cy.get(popover).find(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(popover).find(aiChatEntry).should('exist');
+    cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+  });
+
+  it('Test OpenShift Lightspeed with pod (OLS-743)', () => {
     // Navigate to the pod details page
+    Pages.gotoPodsList();
+
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
     searchPage.searchBy(podName);
     cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
       'have.length.at.least',
