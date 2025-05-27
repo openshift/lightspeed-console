@@ -44,11 +44,11 @@ const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
 // Sanity check on the YAML file size
 const MAX_FILE_SIZE_KB = 500;
 
-type AttachUploadProps = {
+type FileUploadSelectOptionProps = {
   setError: (error: string) => void;
 };
 
-const AttachUpload: React.FC<AttachUploadProps> = ({ setError }) => {
+const FileUploadSelectOption: React.FC<FileUploadSelectOptionProps> = ({ setError }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -103,7 +103,7 @@ const AttachUpload: React.FC<AttachUploadProps> = ({ setError }) => {
   );
 
   return (
-    <div onClick={onClick}>
+    <SelectOption onClick={onClick} value={AttachmentTypes.YAMLUpload}>
       <FileUploadIcon /> {t('Upload from computer')}
       <input
         accept=".yaml,.yml"
@@ -112,7 +112,7 @@ const AttachUpload: React.FC<AttachUploadProps> = ({ setError }) => {
         style={{ display: 'none' }}
         type="file"
       />
-    </div>
+    </SelectOption>
   );
 };
 
@@ -364,9 +364,7 @@ const AttachMenu: React.FC = () => {
                 )}
               </>
             )}
-            <SelectOption value={AttachmentTypes.YAMLUpload}>
-              <AttachUpload setError={setError} />
-            </SelectOption>
+            <FileUploadSelectOption setError={setError} />
           </>
 
           {error && (
