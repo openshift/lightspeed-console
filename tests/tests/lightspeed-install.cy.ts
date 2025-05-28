@@ -14,11 +14,11 @@ const OLS = {
 
 const popover = '.ols-plugin__popover';
 const mainButton = '.ols-plugin__popover-button';
-const minimizeButton = '.ols-plugin__popover-control[title=Minimize]';
-const expandButton = '.ols-plugin__popover-control[title=Expand]';
-const collapseButton = '.ols-plugin__popover-control[title=Collapse]';
-const userChatEntry = '.ols-plugin__chat-entry--user';
-const aiChatEntry = '.ols-plugin__chat-entry--ai';
+const minimizeButton = `${popover} .ols-plugin__popover-control[title=Minimize]`;
+const expandButton = `${popover} .ols-plugin__popover-control[title=Expand]`;
+const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`;
+const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
+const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
 const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
@@ -177,8 +177,8 @@ spec:
 
     // Test that we can submit a prompt
     cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).find(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-    cy.get(popover).find(aiChatEntry).should('exist');
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(aiChatEntry).should('exist');
 
     // Populate the prompt input, but don't submit it
     cy.get(promptInput).should('exist').type(PROMPT_NOT_SUBMITTED);
@@ -190,8 +190,8 @@ spec:
     // Open the popover UI again
     // Previous messages and text in the prompt input should have been preserved
     cy.get(mainButton).click();
-    cy.get(popover).find(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-    cy.get(popover).find(aiChatEntry).should('exist');
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(aiChatEntry).should('exist');
     cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
 
     // When expanded, the popover width should fill most of the viewport
@@ -247,8 +247,8 @@ spec:
       });
 
     // Previous messages and text in the prompt input should have been preserved
-    cy.get(popover).find(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-    cy.get(popover).find(aiChatEntry).should('exist');
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(aiChatEntry).should('exist');
     cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
   });
 
