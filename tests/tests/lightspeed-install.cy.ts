@@ -33,6 +33,10 @@ const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
 const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
 
+const FOOTER_TEXT = 'Always review AI generated content prior to use.';
+const PRIVACY_TEXT =
+  "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.";
+
 describe('Lightspeed related features', () => {
   before(() => {
     cy.adminCLI(
@@ -174,6 +178,10 @@ spec:
 
     // Test that popover UI was opened
     cy.get(popover).should('exist').find('h1').should('include.text', POPOVER_TITLE);
+    cy.get(popover)
+      .should('exist')
+      .should('include.text', FOOTER_TEXT)
+      .should('include.text', PRIVACY_TEXT);
 
     // Test that we can submit a prompt
     cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
