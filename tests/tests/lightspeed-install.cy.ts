@@ -22,6 +22,7 @@ const aiChatEntry = '.ols-plugin__chat-entry--ai';
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
 const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
+const fileInput = 'input[type="file"]';
 const promptInput = `${popover} textarea`;
 const modal = '.ols-plugin__modal';
 
@@ -366,5 +367,47 @@ spec:
       .contains('Dismiss')
       .click();
     cy.get(promptInput).type('Test{enter}');
+  });
+
+  it('Test file upload', () => {
+    const MAX_FILE_SIZE_KB = 500;
+
+    cy.visit('/');
+    cy.get(mainButton).click();
+    cy.get(attachMenuButton).click();
+    cy.contains('Upload from computer').click();
+
+    // File with invalid YAML
+    cy.get(fileInput).selectFile(
+      {
+        contents: Cypress.Buffer.from(`abc`),
+      },
+      // Use `force: true` because the input is display:none
+      { force: true },
+    );
+    cy.get(attachMenu).contains('Uploaded file is not valid YAML');
+
+    // File that is too large
+    const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_KB * 1024 + 1);
+    cy.get(fileInput).selectFile(
+      {
+        contents: Cypress.Buffer.from(largeFileContent),
+      },
+      { force: true },
+    );
+    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_KB} KB.`);
+
+    // Valid YAML Upload
+    cy.get(fileInput).selectFile(
+      {
+        contents: Cypress.Buffer.from(`
+kind: Pod
+metadata:
+  name: my-test-pod
+  namespace: test-namespace
+`),
+      },
+      { force: true },
+    );
   });
 });
