@@ -13,6 +13,8 @@ updates:
       patternfly:
         patterns:
           - "@patternfly/*"
-      typescript-eslint:
+      lint:
         patterns:
           - "@typescript-eslint/*"
+          - "stylelint"
+          - "stylelint-config-standard"
