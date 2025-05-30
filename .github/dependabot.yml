@@ -16,5 +16,9 @@ updates:
       lint:
         patterns:
           - "@typescript-eslint/*"
+          - "eslint"
+          - "eslint-config-prettier"
+          - "eslint-plugin-*"
+          - "prettier"
           - "stylelint"
           - "stylelint-config-standard"
