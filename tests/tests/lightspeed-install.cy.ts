@@ -30,6 +30,7 @@ const podName = 'lightspeed-console-plugin';
 
 const MINUTE = 60 * 1000;
 
+const CONVERSATION_ID = '5f424596-a4f9-4a3a-932b-46a768de3e7c';
 const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
 const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
@@ -190,7 +191,7 @@ spec:
     cy.get(aiChatEntry).should('exist');
 
     // Populate the prompt input, but don't submit it
-    cy.get(promptInput).should('exist').type(PROMPT_NOT_SUBMITTED);
+    cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
 
     // Minimize the popover UI
     cy.get(minimizeButton).click();
@@ -259,6 +260,68 @@ spec:
     cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
     cy.get(aiChatEntry).should('exist');
     cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+  });
+
+  it('Test submitting a prompt and fetching the streamed response', () => {
+    cy.visit('/search/all-namespaces');
+    cy.get(mainButton).click();
+
+    const mockStreamedResponseBody = `
+data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " OLS"}}
+
+data: {"event": "token", "data": {"id": 2, "token": " response"}}
+
+data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
+`;
+
+    cy.intercept(
+      'POST',
+      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
+      (request) => {
+        expect(request.body.attachments).to.deep.equal([]);
+        expect(request.body.conversation_id).to.equal(null);
+        expect(request.body.media_type).to.equal('application/json');
+        expect(request.body.query).to.equal(PROMPT_SUBMITTED);
+        request.reply({ body: mockStreamedResponseBody, delay: 1000 });
+      },
+    ).as('promptStub');
+
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.get(popover).contains('Waiting for LLM provider...');
+    cy.wait('@promptStub');
+
+    // Prompt should now be empty
+    cy.get(promptInput).should('have.value', '');
+
+    // Our prompt should now be shown in the chat history along with a response from OLS
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
+    cy.get(aiChatEntry).should('exist').contains('Mock OLS response');
+
+    // Sending a second prompt should now send the conversation_id along with the prompt
+    const PROMPT_SUBMITTED_2 = 'Test prompt 2';
+    cy.intercept(
+      'POST',
+      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
+      (request) => {
+        expect(request.body.attachments).to.deep.equal([]);
+        expect(request.body.conversation_id).to.equal(CONVERSATION_ID);
+        expect(request.body.media_type).to.equal('application/json');
+        expect(request.body.query).to.equal(PROMPT_SUBMITTED_2);
+        request.reply({ body: mockStreamedResponseBody, delay: 1000 });
+      },
+    ).as('promptStub2');
+
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
+    cy.get(popover).contains('Waiting for LLM provider...');
+    cy.wait('@promptStub2');
+
+    cy.get(promptInput).should('have.value', '');
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
+    cy.get(aiChatEntry).should('exist').contains('Mock OLS response');
   });
 
   it('Test OpenShift Lightspeed with pod (OLS-743)', () => {
