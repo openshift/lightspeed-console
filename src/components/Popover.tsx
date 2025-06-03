@@ -21,6 +21,7 @@ const FEEDBACK_STATUS_ENDPOINT =
   '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback/status';
 const REQUEST_TIMEOUT = 5 * 60 * 1000;
 
+// Test PR
 const Popover: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
