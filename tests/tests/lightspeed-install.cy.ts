@@ -24,6 +24,10 @@ const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
 const fileInput = 'input[type="file"]';
 const promptInput = `${popover} textarea`;
+const userFeedback = `${popover} .ols-plugin__feedback`;
+const userFeedbackIcon = `${userFeedback} .ols-plugin__feedback-icon`;
+const userFeedbackInput = `${userFeedback} textarea`;
+const userFeedbackSubmit = `${userFeedback} button.pf-m-primary`;
 const modal = '.ols-plugin__modal';
 
 const podName = 'lightspeed-console-plugin';
@@ -34,10 +38,28 @@ const CONVERSATION_ID = '5f424596-a4f9-4a3a-932b-46a768de3e7c';
 const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
 const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
+const USER_FEEDBACK_SUBMITTED = 'Good answer!';
 
 const FOOTER_TEXT = 'Always review AI generated content prior to use.';
 const PRIVACY_TEXT =
   "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.";
+const USER_FEEDBACK_TITLE = 'Why did you choose this rating?';
+const USER_FEEDBACK_TEXT =
+  "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.";
+const USER_FEEDBACK_RECEIVED_TEXT = 'Thank you for your feedback!';
+
+const MOCK_STREAMED_RESPONSE_BODY = `
+data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " OLS"}}
+
+data: {"event": "token", "data": {"id": 2, "token": " response"}}
+
+data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
+`;
+const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
 
 describe('Lightspeed related features', () => {
   before(() => {
@@ -266,18 +288,6 @@ spec:
     cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
 
-    const mockStreamedResponseBody = `
-data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
-
-data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
-
-data: {"event": "token", "data": {"id": 1, "token": " OLS"}}
-
-data: {"event": "token", "data": {"id": 2, "token": " response"}}
-
-data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
-`;
-
     cy.intercept(
       'POST',
       '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
@@ -286,7 +296,7 @@ data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
         expect(request.body.conversation_id).to.equal(null);
         expect(request.body.media_type).to.equal('application/json');
         expect(request.body.query).to.equal(PROMPT_SUBMITTED);
-        request.reply({ body: mockStreamedResponseBody, delay: 1000 });
+        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
       },
     ).as('promptStub');
 
@@ -299,7 +309,7 @@ data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
 
     // Our prompt should now be shown in the chat history along with a response from OLS
     cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
-    cy.get(aiChatEntry).should('exist').contains('Mock OLS response');
+    cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
 
     // Sending a second prompt should now send the conversation_id along with the prompt
     const PROMPT_SUBMITTED_2 = 'Test prompt 2';
@@ -311,7 +321,7 @@ data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
         expect(request.body.conversation_id).to.equal(CONVERSATION_ID);
         expect(request.body.media_type).to.equal('application/json');
         expect(request.body.query).to.equal(PROMPT_SUBMITTED_2);
-        request.reply({ body: mockStreamedResponseBody, delay: 1000 });
+        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
       },
     ).as('promptStub2');
 
@@ -321,7 +331,78 @@ data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
 
     cy.get(promptInput).should('have.value', '');
     cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
-    cy.get(aiChatEntry).should('exist').contains('Mock OLS response');
+    cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+  });
+
+  it('Test user feedback form', () => {
+    cy.visit('/search/all-namespaces');
+    cy.get(mainButton).click();
+
+    cy.intercept(
+      'POST',
+      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
+      (request) => {
+        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
+      },
+    ).as('promptStub');
+
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.get(popover).contains('Waiting for LLM provider...');
+    cy.wait('@promptStub');
+
+    // Should have 2 feedback buttons (thumbs up and thumbs down)
+    cy.get(userFeedbackIcon).should('have.lengthOf', 2);
+
+    // Clicking a user feedback button should select it and open the user feedback form
+    cy.get(userFeedbackIcon)
+      .eq(0)
+      .should('not.have.class', 'ols-plugin__feedback-icon--selected')
+      .click()
+      .should('have.class', 'ols-plugin__feedback-icon--selected');
+    cy.get(popover).contains(USER_FEEDBACK_TITLE);
+    cy.get(popover).contains(USER_FEEDBACK_TEXT);
+
+    // Clicking the other user feedback button should select that instead and leave the user
+    // feedback form open
+    cy.get(userFeedbackIcon)
+      .eq(1)
+      .should('not.have.class', 'ols-plugin__feedback-icon--selected')
+      .click()
+      .should('have.class', 'ols-plugin__feedback-icon--selected');
+    cy.get(popover).contains(USER_FEEDBACK_TITLE);
+    cy.get(popover).contains(USER_FEEDBACK_TEXT);
+
+    // Clicking the same button again should deselect it and close the user feedback form
+    cy.get(userFeedbackIcon)
+      .eq(1)
+      .click()
+      .should('not.have.class', 'ols-plugin__feedback-icon--selected');
+    cy.get(popover)
+      .should('not.contain', USER_FEEDBACK_TITLE)
+      .should('not.contain', USER_FEEDBACK_TEXT);
+
+    // Reopen the form and submit some feedback
+    cy.intercept(
+      'POST',
+      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback',
+      (request) => {
+        expect(request.body.conversation_id).to.equal(CONVERSATION_ID);
+        expect(request.body.sentiment).to.equal(1);
+        expect(request.body.user_feedback).to.equal(USER_FEEDBACK_SUBMITTED);
+        expect(request.body.llm_response).to.equal(MOCK_STREAMED_RESPONSE_TEXT);
+        request.reply({
+          body: {
+            message: 'Feedback received',
+          },
+        });
+      },
+    ).as('userFeedbackStub');
+
+    cy.get(userFeedbackIcon).eq(0).click();
+    cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
+    cy.get(userFeedbackSubmit).click();
+    cy.wait('@userFeedbackStub');
+    cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
   });
 
   it('Test OpenShift Lightspeed with pod (OLS-743)', () => {
