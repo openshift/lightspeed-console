@@ -17,6 +17,7 @@ const mainButton = '.ols-plugin__popover-button';
 const minimizeButton = `${popover} .ols-plugin__popover-control[title=Minimize]`;
 const expandButton = `${popover} .ols-plugin__popover-control[title=Expand]`;
 const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`;
+const clearChatButton = `${popover} .ols-plugin__popover-clear-chat`;
 const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
 const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
@@ -40,9 +41,14 @@ const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
 const USER_FEEDBACK_SUBMITTED = 'Good answer!';
 
+const CLEAR_CHAT_TEXT =
+  'Are you sure you want to erase the current chat conversation and start a new chat? This action cannot be undone.';
+const CLEAR_CHAT_CONFIRM_BUTTON = 'Erase and start new chat';
+
 const FOOTER_TEXT = 'Always review AI generated content prior to use.';
 const PRIVACY_TEXT =
   "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.";
+
 const USER_FEEDBACK_TITLE = 'Why did you choose this rating?';
 const USER_FEEDBACK_TEXT =
   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.";
@@ -201,11 +207,12 @@ spec:
       .click();
 
     // Test that popover UI was opened
-    cy.get(popover).should('exist').find('h1').should('include.text', POPOVER_TITLE);
     cy.get(popover)
       .should('exist')
       .should('include.text', FOOTER_TEXT)
-      .should('include.text', PRIVACY_TEXT);
+      .should('include.text', PRIVACY_TEXT)
+      .find('h1')
+      .should('include.text', POPOVER_TITLE);
 
     // Test that we can submit a prompt
     cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
@@ -332,6 +339,20 @@ spec:
     cy.get(promptInput).should('have.value', '');
     cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
     cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+
+    // The clear chat action should clear the current conversation, but leave any text in the prompt
+    cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
+    cy.get(clearChatButton).should('exist').contains('Clear chat').click();
+    cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
+    cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
+    cy.get(userChatEntry).should('not.exist');
+    cy.get(aiChatEntry).should('not.exist');
+    cy.get(popover)
+      .should('include.text', FOOTER_TEXT)
+      .should('include.text', PRIVACY_TEXT)
+      .find('h1')
+      .should('include.text', POPOVER_TITLE);
+    cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
   });
 
   it('Test user feedback form', () => {
