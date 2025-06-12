@@ -405,7 +405,21 @@ spec:
     cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
   });
 
-  it('Test OpenShift Lightspeed with pod (OLS-743)', () => {
+  it('Test attach options on pods list page', () => {
+    Pages.gotoPodsList();
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
+    // The only attach option should be the upload file option
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu)
+      .should('include.text', 'Upload from computer')
+      .should('not.include.text', 'YAML')
+      .should('not.include.text', 'Events')
+      .should('not.include.text', 'Logs');
+  });
+
+  it('Test attach options on pod details page', () => {
     // Navigate to the pod details page
     Pages.gotoPodsList();
 
@@ -429,7 +443,8 @@ spec:
       .should('include.text', 'Full YAML file')
       .should('include.text', 'Filtered YAML')
       .should('include.text', 'Events')
-      .should('include.text', 'Logs');
+      .should('include.text', 'Logs')
+      .should('include.text', 'Upload from computer');
   });
 
   it('Test attaching YAML (OLS-745)', () => {
