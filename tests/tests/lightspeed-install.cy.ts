@@ -375,6 +375,10 @@ spec:
       'POST',
       '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
       (request) => {
+        expect(request.body.attachments).to.deep.equal([]);
+        expect(request.body.conversation_id).to.equal(null);
+        expect(request.body.media_type).to.equal('application/json');
+        expect(request.body.query).to.equal(PROMPT_SUBMITTED);
         request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
       },
     ).as('promptStub');
