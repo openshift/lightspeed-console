@@ -1,6 +1,5 @@
 import { operatorHubPage } from '../views/operator-hub-page';
-import { Pages } from '../views/pages';
-import { searchPage } from '../views/search';
+import { listPage, pages } from '../views/pages';
 
 const OLS = {
   namespace: 'openshift-lightspeed',
@@ -443,7 +442,7 @@ spec:
   });
 
   it('Test attach options on pods list page', () => {
-    Pages.gotoPodsList();
+    pages.goToPodsList();
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -458,12 +457,12 @@ spec:
 
   it('Test attach options on pod details page', () => {
     // Navigate to the pod details page
-    Pages.gotoPodsList();
+    pages.goToPodsList();
 
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
-    searchPage.searchBy(podName);
+    listPage.filter.byName(podName);
     cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
       'have.length.at.least',
       1,

@@ -118,8 +118,8 @@ export const listPage = {
   },
 };
 
-export const Pages = {
-  gotoPodsList: () => {
+export const pages = {
+  goToPodsList: () => {
     cy.visit('/k8s/all-namespaces/core~v1~Pod');
     listPage.rows.shouldBeLoaded();
   },
