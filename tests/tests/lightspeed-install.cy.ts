@@ -36,23 +36,29 @@ const podName = 'lightspeed-console-plugin';
 const MINUTE = 60 * 1000;
 
 const CONVERSATION_ID = '5f424596-a4f9-4a3a-932b-46a768de3e7c';
-const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
+
 const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
 const USER_FEEDBACK_SUBMITTED = 'Good answer!';
+
+const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
+const FOOTER_TEXT = 'Always review AI generated content prior to use.';
+const PRIVACY_TEXT =
+  "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.";
 
 const CLEAR_CHAT_TEXT =
   'Are you sure you want to erase the current chat conversation and start a new chat? This action cannot be undone.';
 const CLEAR_CHAT_CONFIRM_BUTTON = 'Erase and start new chat';
 
-const FOOTER_TEXT = 'Always review AI generated content prior to use.';
-const PRIVACY_TEXT =
-  "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.";
+const READINESS_TITLE = 'Waiting for OpenShift Lightspeed service';
+const READINESS_TEXT =
+  'The OpenShift Lightspeed service is not yet ready to receive requests. If this message persists, please check the OLSConfig.';
 
 const USER_FEEDBACK_TITLE = 'Why did you choose this rating?';
 const USER_FEEDBACK_TEXT =
   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.";
 const USER_FEEDBACK_RECEIVED_TEXT = 'Thank you for your feedback!';
+const WAITING_FOR_RESPONSE_TEXT = 'Waiting for LLM provider...';
 
 const MOCK_STREAMED_RESPONSE_BODY = `
 data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
@@ -211,6 +217,8 @@ spec:
       .should('exist')
       .should('include.text', FOOTER_TEXT)
       .should('include.text', PRIVACY_TEXT)
+      .should('include.text', READINESS_TITLE)
+      .should('include.text', READINESS_TEXT)
       .find('h1')
       .should('include.text', POPOVER_TITLE);
 
@@ -247,7 +255,11 @@ spec:
       .should('exist')
       .should((els) => {
         expect(isExpanded(els[0])).to.be.true;
-      });
+      })
+      .should('include.text', FOOTER_TEXT)
+      .should('include.text', PRIVACY_TEXT)
+      .should('include.text', READINESS_TITLE)
+      .should('include.text', READINESS_TEXT);
 
     // Minimize the popover UI
     cy.get(minimizeButton).click();
@@ -308,7 +320,7 @@ spec:
     ).as('promptStub');
 
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains('Waiting for LLM provider...');
+    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
     cy.wait('@promptStub');
 
     // Prompt should now be empty
@@ -333,7 +345,7 @@ spec:
     ).as('promptStub2');
 
     cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
-    cy.get(popover).contains('Waiting for LLM provider...');
+    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
     cy.wait('@promptStub2');
 
     cy.get(promptInput).should('have.value', '');
@@ -368,7 +380,7 @@ spec:
     ).as('promptStub');
 
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains('Waiting for LLM provider...');
+    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
     cy.wait('@promptStub');
 
     // Should have 2 feedback buttons (thumbs up and thumbs down)
