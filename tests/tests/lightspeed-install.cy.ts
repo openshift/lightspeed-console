@@ -442,7 +442,7 @@ spec:
   });
 
   it('Test attach options on pods list page', () => {
-    pages.goToPodsList();
+    pages.goToPodsList('openshift-lightspeed');
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -468,7 +468,19 @@ spec:
       1,
     );
 
-    cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a').click();
+    // The only attach option should be the upload file option
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu)
+      .should('include.text', 'Upload from computer')
+      .should('not.include.text', 'YAML')
+      .should('not.include.text', 'Events')
+      .should('not.include.text', 'Logs');
+  });
+
+  it('Test attach options on pod details page', () => {
+    pages.goToPodDetails('openshift-lightspeed', podName);
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
 
     // There should be not prompt attachments initially
     cy.get(attachments).should('be.empty');
@@ -484,7 +496,12 @@ spec:
   });
 
   it('Test attaching YAML (OLS-745)', () => {
+    pages.goToPodDetails('openshift-lightspeed', podName);
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
     // Test attaching pod YAML
+    cy.get(attachMenuButton).click();
     cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
     cy.get(attachments)
       .should('include.text', podName)
@@ -525,6 +542,10 @@ spec:
   });
 
   it('Test attaching events (OLS-746)', () => {
+    pages.goToPodDetails('openshift-lightspeed', podName);
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
     cy.get(attachMenuButton).click();
     cy.get(attachMenu).find('button').contains('Events').click();
     cy.get(modal).should('include.text', 'Configure events attachment');
@@ -547,6 +568,10 @@ spec:
   });
 
   it('Test attaching logs (OLS-747)', () => {
+    pages.goToPodDetails('openshift-lightspeed', podName);
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
     cy.get(attachMenuButton).click();
     cy.get(attachMenu).find('button').contains('Logs').click();
     cy.get(modal)
@@ -575,7 +600,7 @@ spec:
   it('Test file upload', () => {
     const MAX_FILE_SIZE_KB = 500;
 
-    cy.visit('/');
+    cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
     cy.get(attachMenuButton).click();
     cy.contains('Upload from computer').click();
