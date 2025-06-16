@@ -83,8 +83,8 @@ export const listPage = {
     countShouldBeWithin: (min: number, max: number) => {
       cy.get('[data-test-rows="resource-row"]').should('have.length.within', min, max);
     },
-    clickFirstLinkInFirstRow: () => {
-      cy.get('[data-test-rows="resource-row"]').first().find('a').first().click({ force: true }); // After applying row filter, resource rows detached from DOM according to cypress, need to force the click
+    clickFirst: () => {
+      cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a').click();
     },
     clickKebabAction: (resourceName: string, actionName: string) => {
       cy.get('[data-test-rows="resource-row"]')
@@ -119,8 +119,14 @@ export const listPage = {
 };
 
 export const pages = {
-  goToPodsList: () => {
-    cy.visit('/k8s/all-namespaces/core~v1~Pod');
+  goToPodDetails: (ns, podName) => {
+    pages.goToPodsList(ns);
+    listPage.filter.byName(podName);
+    listPage.rows.countShouldBeWithin(1, 3);
+    listPage.rows.clickFirst();
+  },
+  goToPodsList: (ns = null) => {
+    cy.visit(ns ? `/k8s/ns/${ns}/pods` : '/k8s/all-namespaces/pods');
     listPage.rows.shouldBeLoaded();
   },
 };
