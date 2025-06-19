@@ -125,7 +125,7 @@ export const pages = {
     listPage.rows.countShouldBeWithin(1, 3);
     listPage.rows.clickFirst();
   },
-  goToPodsList: (ns = null) => {
+  goToPodsList: (ns: string | null = null) => {
     cy.visit(ns ? `/k8s/ns/${ns}/pods` : '/k8s/all-namespaces/pods');
     listPage.rows.shouldBeLoaded();
   },
