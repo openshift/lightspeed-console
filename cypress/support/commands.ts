@@ -34,9 +34,6 @@ declare global {
 
 declare global {
   interface Chainable {
-    switchPerspective(perspective: string);
-    uiLogin(provider: string, username: string, password: string);
-    uiLogout();
     cliLogin(username?, password?, hostapi?);
     cliLogout();
     adminCLI(command: string, options?);
@@ -165,64 +162,6 @@ Cypress.Commands.add(
 );
 
 const kubeconfig = Cypress.env('KUBECONFIG_PATH');
-Cypress.Commands.add('switchPerspective', (perspective: string) => {
-  /* If side bar is collapsed then expand it
-  before switching perspecting */
-  cy.get('body').then((body) => {
-    if (body.find('.pf-m-collapsed').length > 0) {
-      cy.get('#nav-toggle').click();
-    }
-  });
-  nav.sidenav.switcher.changePerspectiveTo(perspective);
-  nav.sidenav.switcher.shouldHaveText(perspective);
-});
-
-// To avoid influence from upstream login change
-Cypress.Commands.add('uiLogin', (provider: string, username: string, password: string) => {
-  cy.clearCookie('openshift-session-token');
-  cy.visit('/');
-  cy.window().then(
-    (
-      win: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    ) => {
-      if (win.SERVER_FLAGS?.authDisabled) {
-        cy.task('log', 'Skipping login, console is running with auth disabled');
-        return;
-      }
-      cy.get('[data-test-id="login"]').should('be.visible');
-      cy.get('body').then(($body) => {
-        if ($body.text().includes(provider)) {
-          cy.contains(provider).should('be.visible').click();
-        } else if ($body.find('li.idp').length > 0) {
-          //Using the last idp if doesn't provider idp name
-          cy.get('li.idp').last().click();
-        }
-      });
-      cy.get('#inputUsername').type(username);
-      cy.get('#inputPassword').type(password);
-      cy.get('button[type=submit]').click();
-      cy.byTestID('username', { timeout: 120000 }).should('be.visible');
-    },
-  );
-  cy.switchPerspective('Administrator');
-});
-
-Cypress.Commands.add('uiLogout', () => {
-  cy.window().then(
-    (
-      win: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    ) => {
-      if (win.SERVER_FLAGS?.authDisabled) {
-        cy.log('Skipping logout, console is running with auth disabled');
-        return;
-      }
-      cy.log('Log out UI');
-      cy.byTestID('user-dropdown').click();
-      cy.byTestID('log-out').should('be.visible');
-      cy.byTestID('log-out').click({ force: true });
-    },
-  );
-});
 
 Cypress.Commands.add('cliLogin', (username?, password?, hostapi?) => {
   const loginUsername = username || Cypress.env('LOGIN_USERNAME');
