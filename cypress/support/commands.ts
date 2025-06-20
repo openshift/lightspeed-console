@@ -6,38 +6,41 @@ import Shadow = Cypress.Shadow;
 
 export {};
 declare global {
-  interface Chainable {
-    byTestID(
-      selector: string,
-      options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-    ): Chainable<Element>;
-    byTestActionID(selector: string): Chainable<JQuery<HTMLElement>>;
-    byLegacyTestID(
-      selector: string,
-      options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-    ): Chainable<JQuery<HTMLElement>>;
-    byButtonText(selector: string): Chainable<JQuery<HTMLElement>>;
-    byDataID(selector: string): Chainable<JQuery<HTMLElement>>;
-    byTestSelector(
-      selector: string,
-      options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-    ): Chainable<JQuery<HTMLElement>>;
-    byTestDropDownMenu(selector: string): Chainable<JQuery<HTMLElement>>;
-    byTestOperatorRow(
-      selector: string,
-      options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-    ): Chainable<JQuery<HTMLElement>>;
-    byTestSectionHeading(selector: string): Chainable<JQuery<HTMLElement>>;
-    byTestOperandLink(selector: string): Chainable<JQuery<HTMLElement>>;
-  }
-}
-
-declare global {
-  interface Chainable {
-    cliLogin(username?, password?, hostapi?);
-    cliLogout();
-    adminCLI(command: string, options?);
-    login(provider?: string, username?: string, password?: string): Chainable<Element>;
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface Chainable {
+      byTestID(
+        selector: string,
+        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
+      ): Chainable<Element>;
+      byTestActionID(selector: string): Chainable<JQuery<HTMLElement>>;
+      byLegacyTestID(
+        selector: string,
+        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
+      ): Chainable<JQuery<HTMLElement>>;
+      byButtonText(selector: string): Chainable<JQuery<HTMLElement>>;
+      byDataID(selector: string): Chainable<JQuery<HTMLElement>>;
+      byTestSelector(
+        selector: string,
+        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
+      ): Chainable<JQuery<HTMLElement>>;
+      byTestDropDownMenu(selector: string): Chainable<JQuery<HTMLElement>>;
+      byTestOperatorRow(
+        selector: string,
+        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
+      ): Chainable<JQuery<HTMLElement>>;
+      byTestSectionHeading(selector: string): Chainable<JQuery<HTMLElement>>;
+      byTestOperandLink(selector: string): Chainable<JQuery<HTMLElement>>;
+      cliLogin(username?, password?, hostapi?);
+      cliLogout();
+      adminCLI(command: string, options?);
+      login(
+        provider?: string,
+        username?: string,
+        password?: string,
+        oauthurl?: string,
+      ): Chainable<Element>;
+    }
   }
 }
 
@@ -161,8 +164,6 @@ Cypress.Commands.add(
   },
 );
 
-const kubeconfig = Cypress.env('KUBECONFIG_PATH');
-
 Cypress.Commands.add('cliLogin', (username?, password?, hostapi?) => {
   const loginUsername = username || Cypress.env('LOGIN_USERNAME');
   const loginPassword = password || Cypress.env('LOGIN_PASSWORD');
@@ -185,5 +186,5 @@ Cypress.Commands.add('cliLogout', () => {
 
 Cypress.Commands.add('adminCLI', (command: string) => {
   cy.log(`Run admin command: ${command}`);
-  cy.exec(`${command} --kubeconfig ${kubeconfig}`);
+  cy.exec(`${command} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 });
