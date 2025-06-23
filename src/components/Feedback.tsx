@@ -33,6 +33,7 @@ import {
 import { State } from '../redux-reducers';
 import { Attachment } from '../types';
 import CloseButton from './CloseButton';
+import CopyAction from './CopyAction';
 import ErrorBoundary from './ErrorBoundary';
 
 const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
@@ -129,8 +130,8 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex }) => {
       <div className="ols-plugin__feedback">
         <Tooltip content={t('Good response')}>
           <div
-            className={`ols-plugin__feedback-icon${
-              sentiment === THUMBS_UP ? ' ols-plugin__feedback-icon--selected' : ''
+            className={`ols-plugin__response-action${
+              sentiment === THUMBS_UP ? ' ols-plugin__response-action--selected' : ''
             }`}
             onClick={onThumbsUp}
           >
@@ -139,14 +140,15 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex }) => {
         </Tooltip>
         <Tooltip content={t('Bad response')}>
           <div
-            className={`ols-plugin__feedback-icon${
-              sentiment === THUMBS_DOWN ? ' ols-plugin__feedback-icon--selected' : ''
+            className={`ols-plugin__response-action${
+              sentiment === THUMBS_DOWN ? ' ols-plugin__response-action--selected' : ''
             }`}
             onClick={onThumbsDown}
           >
             {sentiment === THUMBS_DOWN ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
           </div>
         </Tooltip>
+        <CopyAction className="ols-plugin__response-action" value={response} />
         {isOpen && sentiment !== undefined && (
           <div className="ols-plugin__feedback-comment">
             <Title headingLevel="h3">

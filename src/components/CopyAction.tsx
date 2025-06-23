@@ -5,10 +5,11 @@ import { ClipboardCopyButton } from '@patternfly/react-core';
 import { useBoolean } from '../hooks/useBoolean';
 
 type Props = {
+  className?: string;
   value: string;
 };
 
-const CopyAction: React.FC<Props> = ({ value }) => {
+const CopyAction: React.FC<Props> = ({ className, value }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
@@ -16,6 +17,7 @@ const CopyAction: React.FC<Props> = ({ value }) => {
   return (
     <ClipboardCopyButton
       aria-label={t('Copy to clipboard')}
+      className={className}
       exitDelay={isCopied ? 1500 : 600}
       id="ols-plugin-copy-button"
       onClick={() => {

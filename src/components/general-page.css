@@ -123,23 +123,23 @@
   margin-bottom: var(--pf-v5-global--spacer--md);
 }
 
-.ols-plugin__feedback-icon {
+.ols-plugin__response-action {
   color: var(--pf-v5-global--Color--200);
   display: inline-block;
   margin-right: var(--pf-v5-global--spacer--md);
   padding: var(--pf-v5-global--spacer--sm);
 }
 
-.ols-plugin__feedback-icon:hover {
+.ols-plugin__response-action:hover {
   color: var(--pf-v5-global--Color--100);
 }
 
-.ols-plugin__feedback-icon--selected {
+.ols-plugin__response-action--selected {
   background-color: var(--pf-v5-global--palette--blue-50);
   color: var(--pf-v5-global--primary-color--100);
 }
 
-.ols-plugin__feedback-icon--selected:hover {
+.ols-plugin__response-action--selected:hover {
   color: var(--pf-v5-global--primary-color--100);
 }
 

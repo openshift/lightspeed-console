@@ -26,7 +26,8 @@ const attachMenu = `${popover} .ols-plugin__context-menu`;
 const fileInput = 'input[type="file"]';
 const promptInput = `${popover} textarea`;
 const userFeedback = `${popover} .ols-plugin__feedback`;
-const userFeedbackIcon = `${userFeedback} .ols-plugin__feedback-icon`;
+const responseAction = `${userFeedback} .ols-plugin__response-action`;
+const copyButton = `${userFeedback} #ols-plugin-copy-button`;
 const userFeedbackInput = `${userFeedback} textarea`;
 const userFeedbackSubmit = `${userFeedback} button.pf-m-primary`;
 const modal = '.ols-plugin__modal';
@@ -346,33 +347,33 @@ spec:
     cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
     cy.wait('@queryStub');
 
-    // Should have 2 feedback buttons (thumbs up and thumbs down)
-    cy.get(userFeedbackIcon).should('have.lengthOf', 2);
+    // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
+    cy.get(responseAction).should('have.lengthOf', 3);
 
     // Clicking a user feedback button should select it and open the user feedback form
-    cy.get(userFeedbackIcon)
+    cy.get(responseAction)
       .eq(0)
-      .should('not.have.class', 'ols-plugin__feedback-icon--selected')
+      .should('not.have.class', 'ols-plugin__response-action--selected')
       .click()
-      .should('have.class', 'ols-plugin__feedback-icon--selected');
+      .should('have.class', 'ols-plugin__response-action--selected');
     cy.get(popover).contains(USER_FEEDBACK_TITLE);
     cy.get(popover).contains(USER_FEEDBACK_TEXT);
 
     // Clicking the other user feedback button should select that instead and leave the user
     // feedback form open
-    cy.get(userFeedbackIcon)
+    cy.get(responseAction)
       .eq(1)
-      .should('not.have.class', 'ols-plugin__feedback-icon--selected')
+      .should('not.have.class', 'ols-plugin__response-action--selected')
       .click()
-      .should('have.class', 'ols-plugin__feedback-icon--selected');
+      .should('have.class', 'ols-plugin__response-action--selected');
     cy.get(popover).contains(USER_FEEDBACK_TITLE);
     cy.get(popover).contains(USER_FEEDBACK_TEXT);
 
     // Clicking the same button again should deselect it and close the user feedback form
-    cy.get(userFeedbackIcon)
+    cy.get(responseAction)
       .eq(1)
       .click()
-      .should('not.have.class', 'ols-plugin__feedback-icon--selected');
+      .should('not.have.class', 'ols-plugin__response-action--selected');
     cy.get(popover)
       .should('not.contain', USER_FEEDBACK_TITLE)
       .should('not.contain', USER_FEEDBACK_TEXT);
@@ -386,7 +387,7 @@ spec:
       `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
     );
 
-    cy.get(userFeedbackIcon).eq(0).click();
+    cy.get(responseAction).eq(0).click();
     cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
     cy.get(userFeedbackSubmit).click();
     cy.wait('@userFeedbackStub');
@@ -401,11 +402,32 @@ spec:
       `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
     );
 
-    cy.get(userFeedbackIcon).eq(1).click();
+    cy.get(responseAction).eq(1).click();
     cy.get(userFeedbackInput).clear();
     cy.get(userFeedbackSubmit).click();
     cy.wait('@userFeedbackWithoutCommentStub');
     cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+  });
+
+  it('Test copy response functionality', () => {
+    cy.visit('/search/all-namespaces');
+    cy.get(mainButton).click();
+
+    cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.wait('@queryStub');
+
+    cy.get(copyButton)
+      .should('exist')
+      .should('have.class', 'ols-plugin__response-action')
+      .should('not.have.class', 'ols-plugin__response-action--selected')
+      .click();
+
+    // Verify that none of the response action buttons changed state
+    cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');
+    cy.get(responseAction).eq(0).should('not.have.class', 'ols-plugin__response-action--selected');
+    cy.get(responseAction).eq(1).should('not.have.class', 'ols-plugin__response-action--selected');
   });
 
   it('Test attach options on pods list page', () => {
@@ -550,7 +572,7 @@ spec:
       `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[\n  {\n    "attachment_type": "event",\n    "content": "- kind: Event`,
     );
 
-    cy.get(userFeedbackIcon).eq(0).click();
+    cy.get(responseAction).eq(0).click();
     cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
     cy.get(userFeedbackSubmit).click();
     cy.wait('@userFeedbackWithAttachmentStub');
