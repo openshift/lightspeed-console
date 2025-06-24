@@ -608,7 +608,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             title={t('Expand')}
             variant="plain"
           >
-            <ExpandIcon className="ols-plugin__popover-control-icon" />
+            <ExpandIcon />
           </Button>
         )}
         {onCollapse && (
@@ -618,7 +618,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             title={t('Collapse')}
             variant="plain"
           >
-            <CompressIcon className="ols-plugin__popover-control-icon" />
+            <CompressIcon />
           </Button>
         )}
         <Button
@@ -627,7 +627,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           title={t('Minimize')}
           variant="plain"
         >
-          <WindowMinimizeIcon className="ols-plugin__popover-control-icon" />
+          <WindowMinimizeIcon />
         </Button>
         {!isWelcomePage && (
           <Level>
