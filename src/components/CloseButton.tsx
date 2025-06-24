@@ -17,7 +17,7 @@ const CloseButton: React.FC<Props> = ({ onClose }) => {
       title={t('Close')}
       variant="plain"
     >
-      <TimesIcon className="ols-plugin__popover-control-icon" />
+      <TimesIcon />
     </Button>
   );
 };
