@@ -1,3 +1,4 @@
+import '../../cypress/support/commands';
 import { operatorHubPage } from '../views/operator-hub-page';
 import { listPage, pages } from '../views/pages';
 
@@ -30,7 +31,7 @@ const userFeedbackInput = `${userFeedback} textarea`;
 const userFeedbackSubmit = `${userFeedback} button.pf-m-primary`;
 const modal = '.ols-plugin__modal';
 
-const podName = 'lightspeed-console-plugin';
+const podNamePrefix = 'console';
 
 const MINUTE = 60 * 1000;
 
@@ -38,7 +39,7 @@ const CONVERSATION_ID = '5f424596-a4f9-4a3a-932b-46a768de3e7c';
 
 const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
-const USER_FEEDBACK_SUBMITTED = 'Good answer!';
+const USER_FEEDBACK_SUBMITTED = 'Good answer!\nMultiple lines\n\n(@#$%^&*) 😀 文字';
 
 const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
 const FOOTER_TEXT = 'Always review AI generated content prior to use.';
@@ -57,19 +58,11 @@ const USER_FEEDBACK_TITLE = 'Why did you choose this rating?';
 const USER_FEEDBACK_TEXT =
   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.";
 const USER_FEEDBACK_RECEIVED_TEXT = 'Thank you for your feedback!';
+const THUMBS_DOWN = -1;
+const THUMBS_UP = 1;
+
 const WAITING_FOR_RESPONSE_TEXT = 'Waiting for LLM provider...';
 
-const MOCK_STREAMED_RESPONSE_BODY = `
-data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
-
-data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
-
-data: {"event": "token", "data": {"id": 1, "token": " OLS"}}
-
-data: {"event": "token", "data": {"id": 2, "token": " response"}}
-
-data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
-`;
 const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
 
 describe('Lightspeed related features', () => {
@@ -306,21 +299,10 @@ spec:
     cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
 
-    cy.intercept(
-      'POST',
-      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
-      (request) => {
-        expect(request.body.attachments).to.deep.equal([]);
-        expect(request.body.conversation_id).to.equal(null);
-        expect(request.body.media_type).to.equal('application/json');
-        expect(request.body.query).to.equal(PROMPT_SUBMITTED);
-        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
-      },
-    ).as('promptStub');
-
+    cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
     cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@promptStub');
+    cy.wait('@queryStub');
 
     // Prompt should now be empty
     cy.get(promptInput).should('have.value', '');
@@ -331,21 +313,10 @@ spec:
 
     // Sending a second prompt should now send the conversation_id along with the prompt
     const PROMPT_SUBMITTED_2 = 'Test prompt 2';
-    cy.intercept(
-      'POST',
-      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
-      (request) => {
-        expect(request.body.attachments).to.deep.equal([]);
-        expect(request.body.conversation_id).to.equal(CONVERSATION_ID);
-        expect(request.body.media_type).to.equal('application/json');
-        expect(request.body.query).to.equal(PROMPT_SUBMITTED_2);
-        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
-      },
-    ).as('promptStub2');
-
+    cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
     cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@promptStub2');
+    cy.wait('@queryWithConversationIdStub');
 
     cy.get(promptInput).should('have.value', '');
     cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
@@ -370,21 +341,10 @@ spec:
     cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
 
-    cy.intercept(
-      'POST',
-      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
-      (request) => {
-        expect(request.body.attachments).to.deep.equal([]);
-        expect(request.body.conversation_id).to.equal(null);
-        expect(request.body.media_type).to.equal('application/json');
-        expect(request.body.query).to.equal(PROMPT_SUBMITTED);
-        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
-      },
-    ).as('promptStub');
-
+    cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
     cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@promptStub');
+    cy.wait('@queryStub');
 
     // Should have 2 feedback buttons (thumbs up and thumbs down)
     cy.get(userFeedbackIcon).should('have.lengthOf', 2);
@@ -418,31 +378,38 @@ spec:
       .should('not.contain', USER_FEEDBACK_TEXT);
 
     // Reopen the form and submit some feedback
-    cy.intercept(
-      'POST',
-      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback',
-      (request) => {
-        expect(request.body.conversation_id).to.equal(CONVERSATION_ID);
-        expect(request.body.sentiment).to.equal(1);
-        expect(request.body.user_feedback).to.equal(USER_FEEDBACK_SUBMITTED);
-        expect(request.body.llm_response).to.equal(MOCK_STREAMED_RESPONSE_TEXT);
-        request.reply({
-          body: {
-            message: 'Feedback received',
-          },
-        });
-      },
-    ).as('userFeedbackStub');
+    cy.interceptFeedback(
+      'userFeedbackStub',
+      CONVERSATION_ID,
+      THUMBS_UP,
+      USER_FEEDBACK_SUBMITTED,
+      `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+    );
 
     cy.get(userFeedbackIcon).eq(0).click();
     cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
     cy.get(userFeedbackSubmit).click();
     cy.wait('@userFeedbackStub');
     cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+
+    // It should also be possible to submit user feedback without a comment
+    cy.interceptFeedback(
+      'userFeedbackWithoutCommentStub',
+      CONVERSATION_ID,
+      THUMBS_DOWN,
+      '',
+      `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+    );
+
+    cy.get(userFeedbackIcon).eq(1).click();
+    cy.get(userFeedbackInput).clear();
+    cy.get(userFeedbackSubmit).click();
+    cy.wait('@userFeedbackWithoutCommentStub');
+    cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
   });
 
   it('Test attach options on pods list page', () => {
-    pages.goToPodsList('openshift-lightspeed');
+    pages.goToPodsList('openshift-console');
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -462,7 +429,7 @@ spec:
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
-    listPage.filter.byName(podName);
+    listPage.filter.byName(podNamePrefix);
     cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
       'have.length.at.least',
       1,
@@ -478,7 +445,7 @@ spec:
   });
 
   it('Test attach options on pod details page', () => {
-    pages.goToPodDetails('openshift-lightspeed', podName);
+    pages.goToPodDetails('openshift-console', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -496,7 +463,7 @@ spec:
   });
 
   it('Test attaching YAML (OLS-745)', () => {
-    pages.goToPodDetails('openshift-lightspeed', podName);
+    pages.goToPodDetails('openshift-console', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -504,15 +471,15 @@ spec:
     cy.get(attachMenuButton).click();
     cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
     cy.get(attachments)
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'YAML')
       .find('button')
-      .contains(podName)
+      .contains(podNamePrefix)
       .should('have.lengthOf', 1)
       .click();
     cy.get(modal)
       .should('include.text', 'Preview attachment')
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'kind: Pod')
       .should('include.text', 'apiVersion: v1')
       .find('button')
@@ -524,15 +491,15 @@ spec:
     cy.get(attachMenuButton).click();
     cy.get(attachMenu).find('button').contains('Filtered YAML').click();
     cy.get(attachments)
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'YAML')
       .find('button')
-      .contains(podName)
+      .contains(podNamePrefix)
       .should('have.lengthOf', 1)
       .click();
     cy.get(modal)
       .should('include.text', 'Preview attachment')
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'kind: Pod')
       .should('not.contain', 'apiVersion: v1')
       .find('button')
@@ -542,7 +509,7 @@ spec:
   });
 
   it('Test attaching events (OLS-746)', () => {
-    pages.goToPodDetails('openshift-lightspeed', podName);
+    pages.goToPodDetails('openshift-lightspeed', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -551,24 +518,47 @@ spec:
     cy.get(modal).should('include.text', 'Configure events attachment');
     cy.get(modal).find('button').contains('Attach').click();
     cy.get(attachments)
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'Events')
       .find('button')
-      .contains(podName)
+      .contains(podNamePrefix)
       .should('have.lengthOf', 1)
       .click();
     cy.get(modal)
       .should('include.text', 'Preview attachment')
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'kind: Event')
       .find('button')
       .contains('Dismiss')
       .click();
-    cy.get(promptInput).type('Test{enter}');
+    cy.interceptQuery(
+      'queryStub',
+      PROMPT_SUBMITTED,
+      null,
+      // eslint-disable-next-line camelcase
+      [{ attachment_type: 'event', content_type: 'application/yaml' }],
+    );
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.wait('@queryStub');
+
+    // Submitting user feedback should now include the attachment information
+    cy.interceptFeedback(
+      'userFeedbackWithAttachmentStub',
+      CONVERSATION_ID,
+      THUMBS_UP,
+      USER_FEEDBACK_SUBMITTED,
+      `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[\n  {\n    "attachment_type": "event",\n    "content": "- kind: Event`,
+    );
+
+    cy.get(userFeedbackIcon).eq(0).click();
+    cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
+    cy.get(userFeedbackSubmit).click();
+    cy.wait('@userFeedbackWithAttachmentStub');
+    cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
   });
 
   it('Test attaching logs (OLS-747)', () => {
-    pages.goToPodDetails('openshift-lightspeed', podName);
+    pages.goToPodDetails('openshift-console', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
@@ -581,15 +571,15 @@ spec:
       .contains('Attach')
       .click();
     cy.get(attachments)
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'Log')
       .find('button')
-      .contains(podName)
+      .contains(podNamePrefix)
       .should('have.lengthOf', 1)
       .click();
     cy.get(modal)
       .should('include.text', 'Preview attachment')
-      .should('include.text', podName)
+      .should('include.text', podNamePrefix)
       .should('include.text', 'Most recent lines from the log for')
       .find('button')
       .contains('Dismiss')
