@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import * as _ from 'lodash';
+
 import Loggable = Cypress.Loggable;
 import Timeoutable = Cypress.Timeoutable;
 import Withinable = Cypress.Withinable;
@@ -39,6 +41,19 @@ declare global {
         username?: string,
         password?: string,
         oauthurl?: string,
+      ): Chainable<Element>;
+      interceptFeedback(
+        alias: string,
+        conversationId: string,
+        sentiment: number,
+        userFeedback: string,
+        userQuestionStartsWith: string,
+      ): Chainable<Element>;
+      interceptQuery(
+        alias: string,
+        query: string,
+        conversationId?: string | null,
+        attachments?: Array<{ attachment_type: string; content_type: string }>,
       ): Chainable<Element>;
     }
   }
@@ -188,3 +203,75 @@ Cypress.Commands.add('adminCLI', (command: string) => {
   cy.log(`Run admin command: ${command}`);
   cy.exec(`${command} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 });
+
+const MOCK_STREAMED_RESPONSE_BODY = `data: {"event": "start", "data": {"conversation_id": "5f424596-a4f9-4a3a-932b-46a768de3e7c"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " OLS"}}
+
+data: {"event": "token", "data": {"id": 2, "token": " response"}}
+
+data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
+`;
+
+type Attachment = { attachment_type: string; content_type: string };
+
+Cypress.Commands.add(
+  'interceptQuery',
+  (
+    alias: string,
+    query: string,
+    conversationId: string | null = null,
+    attachments: Array<Attachment> = [],
+  ) => {
+    cy.intercept(
+      'POST',
+      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
+      (request) => {
+        expect(request.body.media_type).to.equal('application/json');
+        expect(request.body.conversation_id).to.equal(conversationId);
+        expect(request.body.query).to.equal(query);
+
+        expect(request.body.attachments).to.have.lengthOf(attachments.length);
+        attachments.forEach((a, i) => {
+          expect(request.body.attachments[i].attachment_type).to.equal(a.attachment_type);
+          expect(request.body.attachments[i].content_type).to.equal(a.content_type);
+        });
+
+        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
+      },
+    ).as(alias);
+  },
+);
+
+const USER_FEEDBACK_MOCK_RESPONSE = { body: { message: 'Feedback received' } };
+
+Cypress.Commands.add(
+  'interceptFeedback',
+  (
+    alias: string,
+    conversationId: string,
+    sentiment: number,
+    userFeedback: string,
+    userQuestionStartsWith: string,
+  ) => {
+    cy.intercept(
+      'POST',
+      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback',
+      (request) => {
+        expect(_.omit(request.body, 'user_question')).to.deep.equal({
+          /* eslint-disable camelcase */
+          conversation_id: conversationId,
+          sentiment,
+          user_feedback: userFeedback,
+          llm_response: 'Mock OLS response',
+          /* eslint-enable camelcase */
+        });
+        expect(request.body.user_question.startsWith(userQuestionStartsWith)).to.equal(true);
+
+        request.reply(USER_FEEDBACK_MOCK_RESPONSE);
+      },
+    ).as(alias);
+  },
+);
