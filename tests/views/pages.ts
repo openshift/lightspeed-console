@@ -45,7 +45,11 @@ export const listPage = {
   },
   filter: {
     byName: (name: string) => {
-      cy.byTestID('name-filter-input').clear().type(name);
+      cy.byTestID('name-filter-input', { timeout: 10000 })
+        .should('be.visible')
+        .and('be.enabled')
+        .clear()
+        .type(name);
     },
     clickSearchByDropdown: () => {
       cy.byTestID('filter-toolbar').within(() => {
@@ -84,7 +88,7 @@ export const listPage = {
       cy.get('[data-test-rows="resource-row"]').should('have.length.within', min, max);
     },
     clickFirst: () => {
-      cy.get('[data-test-rows="resource-row"]:first-of-type [id="name"] a').click();
+      cy.get('a.co-resource-item__resource-name').eq(0).click();
     },
     clickKebabAction: (resourceName: string, actionName: string) => {
       cy.get('[data-test-rows="resource-row"]')
