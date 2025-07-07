@@ -1,10 +1,9 @@
 import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
-import { defer, omit, uniqueId } from 'lodash';
+import { defer } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
-import { consoleFetch } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -13,117 +12,43 @@ import {
   CodeBlockAction,
   CodeBlockCode,
   ExpandableSection,
-  Form,
   HelperText,
   HelperTextItem,
   Label,
   LabelGroup,
-  Level,
-  LevelItem,
   Spinner,
-  Split,
-  SplitItem,
   Stack,
   StackItem,
-  TextArea,
   Title,
 } from '@patternfly/react-core';
+import { ExternalLinkAltIcon } from '@patternfly/react-icons';
 import {
-  CompressIcon,
-  ExpandIcon,
-  ExternalLinkAltIcon,
-  PaperPlaneIcon,
-  StopIcon,
-  WindowMinimizeIcon,
-} from '@patternfly/react-icons';
+  ChatbotContent,
+  ChatbotFooter,
+  ChatbotFootnote,
+  ChatbotHeader,
+  ChatbotHeaderActions,
+  ChatbotHeaderMain,
+  ChatbotHeaderTitle,
+} from '@patternfly/chatbot';
 
-import { toOLSAttachment } from '../attachments';
-import { getFetchErrorMessage } from '../error';
 import { AuthStatus, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
-import {
-  attachmentDelete,
-  attachmentsClear,
-  chatHistoryClear,
-  chatHistoryPush,
-  chatHistoryUpdateByID,
-  chatHistoryUpdateTool,
-  setConversationID,
-  setQuery,
-} from '../redux-actions';
+import { attachmentsClear, chatHistoryClear, setConversationID } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
-import AttachmentModal from './AttachmentModal';
-import AttachMenu from './AttachMenu';
 import AttachmentLabel from './AttachmentLabel';
 import CopyAction from './CopyAction';
 import ImportAction from './ImportAction';
 import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
+import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
 import ResponseTools from './ResponseTools';
-import ToolModal from './ResponseToolModal';
+import WindowControlButtons from './WindowControlButtons';
 
 import './general-page.css';
-
-const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query';
-
-type QueryResponseStart = {
-  event: 'start';
-  data: {
-    conversation_id: string;
-  };
-};
-
-type QueryResponseToken = {
-  event: 'token';
-  data: {
-    id: number;
-    token: string;
-  };
-};
-
-type QueryResponseError = {
-  event: 'error';
-  data: {
-    response: string;
-    cause: string;
-  };
-};
-
-type QueryResponseEnd = {
-  event: 'end';
-  data: {
-    referenced_documents: Array<ReferencedDoc>;
-    truncated: boolean;
-  };
-};
-
-type QueryResponseToolRequest = {
-  event: 'tool_call';
-  data: {
-    args: { [key: string]: Array<string> };
-    id: string;
-    name: string;
-  };
-};
-
-type QueryResponseToolExecution = {
-  event: 'tool_result';
-  data: {
-    content: string;
-    id: string;
-    status: 'error' | 'success';
-  };
-};
-
-type QueryResponse =
-  | QueryResponseStart
-  | QueryResponseToken
-  | QueryResponseError
-  | QueryResponseEnd
-  | QueryResponseToolRequest
-  | QueryResponseToolExecution;
+import '@patternfly/chatbot/dist/css/main.css';
 
 type ExternalLinkProps = {
   children: React.ReactNode;
@@ -335,24 +260,6 @@ const PrivacyAlert: React.FC = () => {
   );
 };
 
-const Welcome: React.FC = () => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
-
-  return (
-    <>
-      <div className="ols-plugin__welcome-logo"></div>
-      <Title className="pf-v6-u-text-align-center" headingLevel="h1">
-        {t('Red Hat OpenShift Lightspeed')}
-      </Title>
-      <Title className="ols-plugin__welcome-subheading pf-v6-u-text-align-center" headingLevel="h5">
-        {t(
-          'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
-        )}
-      </Title>
-    </>
-  );
-};
-
 type GeneralPageProps = {
   onClose: () => void;
   onCollapse?: () => void;
@@ -364,24 +271,17 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const dispatch = useDispatch();
 
-  const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
   const chatHistory: ImmutableList<ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
 
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
-  const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
-
-  const [validated, setValidated] = React.useState<'default' | 'error'>('default');
-
-  const [streamController, setStreamController] = React.useState(new AbortController());
 
   const [authStatus] = useAuth();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
-  const promptRef = React.useRef(null);
 
   const scrollIntoView = React.useCallback((behavior = 'smooth') => {
     defer(() => {
@@ -401,338 +301,83 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     dispatch(attachmentsClear());
   }, [dispatch]);
 
-  const onChange = React.useCallback(
-    (_e, value) => {
-      if (value.trim().length > 0) {
-        setValidated('default');
-      }
-      dispatch(setQuery(value));
-    },
-    [dispatch],
-  );
-
-  const isStreaming = !!chatHistory.last()?.get('isStreaming');
-
-  const onSubmit = React.useCallback(
-    (e) => {
-      e.preventDefault();
-
-      if (isStreaming) {
-        return;
-      }
-
-      if (!query || query.trim().length === 0) {
-        setValidated('error');
-        return;
-      }
-
-      dispatch(
-        chatHistoryPush({
-          attachments: attachments.map((a) => omit(a, 'originalValue')),
-          text: query,
-          who: 'user',
-        }),
-      );
-      const chatEntryID = uniqueId('ChatEntry_');
-      dispatch(
-        chatHistoryPush({
-          id: chatEntryID,
-          isCancelled: false,
-          isStreaming: true,
-          isTruncated: false,
-          references: [],
-          text: '',
-          tools: ImmutableMap(),
-          who: 'ai',
-        }),
-      );
-      scrollIntoView();
-
-      const requestJSON = {
-        attachments: attachments.valueSeq().map(toOLSAttachment),
-        // eslint-disable-next-line camelcase
-        conversation_id: conversationID,
-        // eslint-disable-next-line camelcase
-        media_type: 'application/json',
-        query,
-      };
-
-      const streamResponse = async () => {
-        const controller = new AbortController();
-        setStreamController(controller);
-        const response = await consoleFetch(QUERY_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestJSON),
-          signal: controller.signal,
-        });
-        if (response.ok === false) {
-          dispatch(
-            chatHistoryUpdateByID(chatEntryID, {
-              error: getFetchErrorMessage({ response }, t),
-              isStreaming: false,
-              isTruncated: false,
-              who: 'ai',
-            }),
-          );
-          return;
-        }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let responseText = '';
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) {
-            break;
-          }
-          const text = decoder.decode(value);
-          text
-            .split('\n')
-            .filter((s) => s.startsWith('data: '))
-            .forEach((s) => {
-              const line = s.slice(5).trim();
-              let json: QueryResponse;
-              try {
-                json = JSON.parse(line);
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error(`Failed to parse JSON string "${line}"`, error);
-              }
-              if (json && json.event && json.data) {
-                if (json.event === 'start') {
-                  dispatch(setConversationID(json.data.conversation_id));
-                } else if (json.event === 'token') {
-                  responseText += json.data.token;
-                  dispatch(chatHistoryUpdateByID(chatEntryID, { text: responseText }));
-                } else if (json.event === 'end') {
-                  dispatch(
-                    chatHistoryUpdateByID(chatEntryID, {
-                      isStreaming: false,
-                      isTruncated: json.data.truncated === true,
-                      references: json.data.referenced_documents,
-                    }),
-                  );
-                } else if (json.event === 'tool_call') {
-                  const { args, id, name } = json.data;
-                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { name, args }));
-                } else if (json.event === 'tool_result') {
-                  const { content, id, status } = json.data;
-                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { content, status }));
-                } else if (json.event === 'error') {
-                  dispatch(
-                    chatHistoryUpdateByID(chatEntryID, {
-                      error: getFetchErrorMessage({ json: { detail: json.data } }, t),
-                      isStreaming: false,
-                    }),
-                  );
-                } else {
-                  // eslint-disable-next-line no-console
-                  console.warn(`Unrecognized event in response stream:`, JSON.stringify(json));
-                }
-              }
-            });
-        }
-      };
-      streamResponse().catch((error) => {
-        if (error.name !== 'AbortError') {
-          dispatch(
-            chatHistoryUpdateByID(chatEntryID, {
-              error: getFetchErrorMessage(error, t),
-              isStreaming: false,
-              isTruncated: false,
-              who: 'ai',
-            }),
-          );
-        }
-        scrollIntoView();
-      });
-
-      // Clear prompt input and return focus to it
-      dispatch(setQuery(''));
-      dispatch(attachmentsClear());
-      promptRef.current?.focus();
-    },
-    [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t],
-  );
-
-  const streamingResponseID: string = isStreaming
-    ? (chatHistory.last()?.get('id') as string)
-    : undefined;
-  const onStreamCancel = React.useCallback(
-    (e) => {
-      e.preventDefault();
-      if (streamingResponseID) {
-        streamController.abort();
-        dispatch(
-          chatHistoryUpdateByID(streamingResponseID, {
-            isCancelled: true,
-            isStreaming: false,
-          }),
-        );
-      }
-    },
-    [dispatch, streamController, streamingResponseID],
-  );
-
-  // We use keypress instead of keydown even though keypress is deprecated to work around a problem
-  // with IME (input method editor) input. A cleaner solution would be to use the isComposing
-  // property, but unfortunately the Safari implementation differs making it unusable for our case.
-  const onKeyPress = React.useCallback(
-    (e) => {
-      // Enter key alone submits the prompt, Shift+Enter inserts a newline
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        onSubmit(e);
-      }
-    },
-    [onSubmit],
-  );
-
   const onConfirmNewChat = React.useCallback(() => {
     clearChat();
     closeNewChatModal();
   }, [clearChat, closeNewChatModal]);
 
-  const isWelcomePage = chatHistory.size === 0;
-
   return (
-    <Stack hasGutter>
-      <StackItem
-        className={`ols-plugin__header${isWelcomePage ? ' ' : ' ols-plugin__header--with-title'}`}
-      >
-        {onExpand && (
-          <Button
-            className="ols-plugin__popover-control"
-            icon={<ExpandIcon />}
-            onClick={onExpand}
-            title={t('Expand')}
-            variant="plain"
-          />
-        )}
-        {onCollapse && (
-          <Button
-            className="ols-plugin__popover-control"
-            icon={<CompressIcon />}
-            onClick={onCollapse}
-            title={t('Collapse')}
-            variant="plain"
-          />
-        )}
-        <Button
-          className="ols-plugin__popover-control"
-          icon={<WindowMinimizeIcon />}
-          onClick={onClose}
-          title={t('Minimize')}
-          variant="plain"
-        />
-        {!isWelcomePage && (
-          <Level>
-            <LevelItem>
-              <Title className="ols-plugin__heading" headingLevel="h1">
-                {t('Red Hat OpenShift Lightspeed')}
-              </Title>
-            </LevelItem>
-            <LevelItem>
-              <Button
-                className="ols-plugin__popover-clear-chat"
-                onClick={openNewChatModal}
-                variant="primary"
-              >
-                {t('Clear chat')}
-              </Button>
-            </LevelItem>
-          </Level>
-        )}
+    <Stack>
+      <StackItem>
+        {/* @ts-expect-error: TS2786 */}
+        <ChatbotHeader className="ols-plugin__header">
+          {/* @ts-expect-error: TS2786 */}
+          <ChatbotHeaderMain>
+            {/* @ts-expect-error: TS2786 */}
+            <ChatbotHeaderTitle className="ols-plugin__header-title">
+              <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
+              {chatHistory.size > 0 && (
+                <Button
+                  className="ols-plugin__popover-clear-chat"
+                  onClick={openNewChatModal}
+                  variant="primary"
+                >
+                  {t('Clear chat')}
+                </Button>
+              )}
+            </ChatbotHeaderTitle>
+          </ChatbotHeaderMain>
+          {/* @ts-expect-error: TS2786 */}
+          <ChatbotHeaderActions>
+            <WindowControlButtons onClose={onClose} onCollapse={onCollapse} onExpand={onExpand} />
+          </ChatbotHeaderActions>
+        </ChatbotHeader>
       </StackItem>
 
-      <StackItem
-        aria-label={t('OpenShift Lightspeed chat history')}
-        className="ols-plugin__chat-history"
-        isFilled
-      >
-        {isWelcomePage && <Welcome />}
-        <AuthAlert authStatus={authStatus} />
-        <PrivacyAlert />
-        {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
-          <ChatHistoryEntry conversationID={conversationID} entry={entry} entryIndex={i} key={i} />
-        ))}
-        <ReadinessAlert />
-        <div ref={chatHistoryEndRef} />
+      <StackItem className="ols-plugin__chat-history" isFilled>
+        {/* @ts-expect-error: TS2786 */}
+        <ChatbotContent aria-label={t('OpenShift Lightspeed chat history')}>
+          <div className="ols-plugin__welcome-logo"></div>
+          <Title className="ols-plugin__welcome-subheading" headingLevel="h5">
+            {t(
+              'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
+            )}
+          </Title>
+          <AuthAlert authStatus={authStatus} />
+          <PrivacyAlert />
+          {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
+            <ChatHistoryEntry
+              conversationID={conversationID}
+              entry={entry}
+              entryIndex={i}
+              key={i}
+            />
+          ))}
+          <ReadinessAlert />
+          <div ref={chatHistoryEndRef} />
+        </ChatbotContent>
       </StackItem>
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-        <StackItem className="ols-plugin__chat-prompt">
-          <Form onSubmit={isStreaming ? onStreamCancel : onSubmit}>
-            <Split hasGutter>
-              <SplitItem>
-                <AttachMenu />
-              </SplitItem>
-              <SplitItem isFilled>
-                <TextArea
-                  aria-label={t('OpenShift Lightspeed prompt')}
-                  autoFocus
-                  className="ols-plugin__chat-prompt-input"
-                  onChange={onChange}
-                  onFocus={(e) => {
-                    // Move cursor to the end of the text when popover is closed then reopened
-                    const len = e.currentTarget?.value?.length;
-                    if (len) {
-                      e.currentTarget.setSelectionRange(len, len);
-                    }
-                  }}
-                  onKeyPress={onKeyPress}
-                  placeholder={t('Send a message...')}
-                  ref={promptRef}
-                  resizeOrientation="vertical"
-                  rows={Math.min(query.split('\n').length, 12)}
-                  validated={validated}
-                  value={query}
-                />
-              </SplitItem>
-              <SplitItem className="ols-plugin__chat-prompt-submit">
-                <Button className="ols-plugin__chat-prompt-button" type="submit" variant="primary">
-                  {isStreaming ? <StopIcon /> : <PaperPlaneIcon />}
-                </Button>
-              </SplitItem>
-            </Split>
-          </Form>
-          <div className="ols-plugin__chat-prompt-attachments">
-            {attachments.keySeq().map((id: string) => {
-              const attachment: Attachment = attachments.get(id);
-              return (
-                <AttachmentLabel
-                  attachment={attachment}
-                  isEditable
-                  key={id}
-                  onClose={() => dispatch(attachmentDelete(id))}
-                />
-              );
-            })}
-          </div>
-
-          <HelperText>
-            <HelperTextItem className="ols-plugin__footer">
-              {t('Always review AI generated content prior to use.')}
-            </HelperTextItem>
-            <HelperTextItem className="ols-plugin__footer">
+        <StackItem>
+          {/* @ts-expect-error: TS2786 */}
+          <ChatbotFooter>
+            <Prompt scrollIntoView={scrollIntoView} />
+            {/* @ts-expect-error: TS2786 */}
+            <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
+            <div className="ols-plugin__footnote">
               {t('Want to contact the OpenShift Lightspeed team?')}{' '}
               <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
                 Click here
               </ExternalLink>{' '}
               to email us.
-            </HelperTextItem>
-          </HelperText>
-
-          <AttachmentModal />
-          <ToolModal />
-          <NewChatModal
-            isOpen={isNewChatModalOpen}
-            onClose={closeNewChatModal}
-            onConfirm={onConfirmNewChat}
-          />
+            </div>
+            <NewChatModal
+              isOpen={isNewChatModalOpen}
+              onClose={closeNewChatModal}
+              onConfirm={onConfirmNewChat}
+            />
+          </ChatbotFooter>
         </StackItem>
       )}
     </Stack>
