@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Tooltip } from '@patternfly/react-core';
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
+import { consoleFetchJSON, useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
 
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -27,6 +27,7 @@ const Popover: React.FC = () => {
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
+  const [theme] = useUserSettings('console.theme', null, true);
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -61,7 +62,10 @@ const Popover: React.FC = () => {
   const title = t('Red Hat OpenShift Lightspeed');
 
   return (
-    <div aria-label={title} className="ols-plugin__popover-container">
+    <div
+      aria-label={title}
+      className={`ols-plugin__popover-container ${theme === 'dark' ? 'ols-plugin__popover-container--dark' : ''}`}
+    >
       {isOpen ? (
         <>
           <div
