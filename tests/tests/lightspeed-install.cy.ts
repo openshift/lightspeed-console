@@ -20,7 +20,7 @@ const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`
 const clearChatButton = `${popover} .ols-plugin__popover-clear-chat`;
 const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
 const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
-const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
+const attachments = `${popover} .ols-plugin__prompt-attachments`;
 const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
 const fileInput = 'input[type="file"]';
