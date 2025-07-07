@@ -174,7 +174,8 @@ Cypress.Commands.add(
         cacheAcrossSpecs: true,
         validate() {
           cy.visit(Cypress.config('baseUrl'));
-          cy.byTestID('user-dropdown').should('exist');
+          cy.byTestID('tour-step-footer-secondary').click();
+          cy.byTestID('username').should('exist');
         },
       },
     );

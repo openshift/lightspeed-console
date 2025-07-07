@@ -47,13 +47,11 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
   );
 
   return (
-    <div className="ols-plugin__references">
-      <LabelGroup numLabels={4}>
-        {tools.keySeq().map((toolID) => (
-          <ToolLabel entryIndex={entryIndex} key={toolID} toolID={toolID} />
-        ))}
-      </LabelGroup>
-    </div>
+    <LabelGroup numLabels={4}>
+      {tools.keySeq().map((toolID) => (
+        <ToolLabel entryIndex={entryIndex} key={toolID} toolID={toolID} />
+      ))}
+    </LabelGroup>
   );
 };
 
