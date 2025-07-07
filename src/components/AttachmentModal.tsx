@@ -170,44 +170,42 @@ const AttachmentModal: React.FC = () => {
         )}
       </p>
       {isEditing ? <Editor onChange={setEditorValue} /> : <Viewer />}
-      <div className="ols-plugin__attachment-modal-actions">
-        <Form>
-          {isEditing ? (
-            <ActionGroup>
-              <Button onClick={onSave} type="submit" variant="primary">
-                {t('Save')}
-              </Button>
-              <Button onClick={setNotEditing} variant="link">
-                {t('Cancel')}
-              </Button>
-            </ActionGroup>
-          ) : (
-            <Split>
-              <SplitItem isFilled>
+      <Form>
+        {isEditing ? (
+          <ActionGroup>
+            <Button onClick={onSave} type="submit" variant="primary">
+              {t('Save')}
+            </Button>
+            <Button onClick={setNotEditing} variant="link">
+              {t('Cancel')}
+            </Button>
+          </ActionGroup>
+        ) : (
+          <Split>
+            <SplitItem isFilled>
+              <ActionGroup>
+                {attachment?.isEditable && (
+                  <Button onClick={setEditing} type="submit" variant="primary">
+                    {t('Edit')}
+                  </Button>
+                )}
+                <Button onClick={onClose} variant="link">
+                  {t('Dismiss')}
+                </Button>
+              </ActionGroup>
+            </SplitItem>
+            {attachment?.originalValue && attachment.originalValue !== attachment.value && (
+              <SplitItem>
                 <ActionGroup>
-                  {attachment?.isEditable && (
-                    <Button onClick={setEditing} type="submit" variant="primary">
-                      {t('Edit')}
-                    </Button>
-                  )}
-                  <Button onClick={onClose} variant="link">
-                    {t('Dismiss')}
+                  <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
+                    {t('Revert to original')}
                   </Button>
                 </ActionGroup>
               </SplitItem>
-              {attachment?.originalValue && attachment.originalValue !== attachment.value && (
-                <SplitItem>
-                  <ActionGroup>
-                    <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
-                      {t('Revert to original')}
-                    </Button>
-                  </ActionGroup>
-                </SplitItem>
-              )}
-            </Split>
-          )}
-        </Form>
-      </div>
+            )}
+          </Split>
+        )}
+      </Form>
     </Modal>
   );
 };
