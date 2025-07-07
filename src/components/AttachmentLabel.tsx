@@ -48,7 +48,11 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, isEditabl
             <PencilAltIcon />
           </span>
         )}
-        {kind !== 'Alert' && <Label className="ols-plugin__inline-icon">{attachmentType}</Label>}
+        {kind !== 'Alert' && (
+          <Label className="ols-plugin__inline-icon" variant="outline">
+            {attachmentType}
+          </Label>
+        )}
       </Label>
     </Tooltip>
   );

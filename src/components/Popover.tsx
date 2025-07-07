@@ -8,6 +8,7 @@ import { getApiUrl } from '../config';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useHideLightspeed } from '../hooks/useHideLightspeed';
+import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
 import { State } from '../redux-reducers';
 import ErrorBoundary from './ErrorBoundary';
@@ -27,6 +28,7 @@ const Popover: React.FC = () => {
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
+  const [isDarkTheme] = useIsDarkTheme();
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -61,7 +63,10 @@ const Popover: React.FC = () => {
   const title = t('Red Hat OpenShift Lightspeed');
 
   return (
-    <div aria-label={title} className="ols-plugin__popover-container">
+    <div
+      aria-label={title}
+      className={`ols-plugin__popover-container ${isDarkTheme ? 'ols-plugin__popover-container--dark' : ''}`}
+    >
       {isOpen ? (
         <>
           <div
