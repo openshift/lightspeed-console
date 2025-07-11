@@ -178,7 +178,7 @@ spec:
     logLevel: INFO`;
     cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
-    cy.get('.pf-v5-c-alert')
+    cy.get('.pf-v5-c-alert', { timeout: 2 * MINUTE })
       .contains('Web console update is available', { timeout: 2 * MINUTE })
       .should('exist');
   });
