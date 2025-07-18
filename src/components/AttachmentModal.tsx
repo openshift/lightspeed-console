@@ -4,10 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { BlueInfoCircleIcon } from '@openshift-console/dynamic-plugin-sdk';
 import { CodeEditor, Language } from '@patternfly/react-code-editor';
 import {
+  ActionGroup,
   Button,
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
+  Form,
   Split,
   SplitItem,
   Text,
@@ -169,36 +171,42 @@ const AttachmentModal: React.FC = () => {
       </p>
       {isEditing ? <Editor onChange={setEditorValue} /> : <Viewer />}
       <div className="ols-plugin__attachment-modal-actions">
-        {isEditing ? (
-          <>
-            <Button onClick={onSave} type="submit" variant="primary">
-              {t('Save')}
-            </Button>
-            <Button onClick={setNotEditing} variant="link">
-              {t('Cancel')}
-            </Button>
-          </>
-        ) : (
-          <Split>
-            <SplitItem isFilled>
-              {attachment?.isEditable && (
-                <Button onClick={setEditing} type="submit" variant="primary">
-                  {t('Edit')}
-                </Button>
-              )}
-              <Button onClick={onClose} variant="link">
-                {t('Dismiss')}
+        <Form>
+          {isEditing ? (
+            <ActionGroup>
+              <Button onClick={onSave} type="submit" variant="primary">
+                {t('Save')}
               </Button>
-            </SplitItem>
-            {attachment?.originalValue && attachment.originalValue !== attachment.value && (
-              <SplitItem>
-                <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
-                  {t('Revert to original')}
-                </Button>
+              <Button onClick={setNotEditing} variant="link">
+                {t('Cancel')}
+              </Button>
+            </ActionGroup>
+          ) : (
+            <Split>
+              <SplitItem isFilled>
+                <ActionGroup>
+                  {attachment?.isEditable && (
+                    <Button onClick={setEditing} type="submit" variant="primary">
+                      {t('Edit')}
+                    </Button>
+                  )}
+                  <Button onClick={onClose} variant="link">
+                    {t('Dismiss')}
+                  </Button>
+                </ActionGroup>
               </SplitItem>
-            )}
-          </Split>
-        )}
+              {attachment?.originalValue && attachment.originalValue !== attachment.value && (
+                <SplitItem>
+                  <ActionGroup>
+                    <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
+                      {t('Revert to original')}
+                    </Button>
+                  </ActionGroup>
+                </SplitItem>
+              )}
+            </Split>
+          )}
+        </Form>
       </div>
     </Modal>
   );
