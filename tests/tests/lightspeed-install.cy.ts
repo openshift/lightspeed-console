@@ -605,7 +605,15 @@ spec:
       .find('button')
       .contains('Dismiss')
       .click();
-    cy.get(promptInput).type('Test{enter}');
+    cy.interceptQuery(
+      'queryStub',
+      PROMPT_SUBMITTED,
+      null,
+      // eslint-disable-next-line camelcase
+      [{ attachment_type: 'log', content_type: 'text/plain' }],
+    );
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.wait('@queryStub');
   });
 
   it('Test file upload', () => {
