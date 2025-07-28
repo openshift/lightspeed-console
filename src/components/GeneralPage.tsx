@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
-import { consoleFetchJSON, useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
+import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -42,6 +42,7 @@ import { copyToClipboard } from '../clipboard';
 import { ErrorType, getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import {
   attachmentsClear,
   chatHistoryClear,
@@ -152,7 +153,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
   );
 
-  const [theme] = useUserSettings('console.theme', null, true);
+  const [isDarkTheme] = useIsDarkTheme();
 
   const onThumbsDown = React.useCallback(() => {
     dispatch(userFeedbackOpen(entryIndex));
@@ -241,7 +242,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         {/* @ts-expect-error: TS2786 */}
         <Message
           actions={actions}
-          avatar={theme === 'dark' ? aiAvatarDark : aiAvatar}
+          avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
           extraContent={{
             afterMainContent: entry.error ? (
               <Alert
