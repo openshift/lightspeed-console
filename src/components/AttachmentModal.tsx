@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { BlueInfoCircleIcon } from '@openshift-console/dynamic-plugin-sdk';
+import { BlueInfoCircleIcon, useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
 import { CodeEditor, Language } from '@patternfly/react-code-editor';
 import {
   ActionGroup,
@@ -54,16 +54,14 @@ const Editor: React.FC<EditorProps> = ({ onChange }) => {
     monaco.editor.onDidChangeMarkers = () => {};
   };
 
-  // In more recent versions of the dynamic plugin SDK, the useUserSettings hook can be used to get
-  // the current theme, but to maintain 4.15 compatibility we are not upgrading the SDK yet
-  const isDarkTheme = document.documentElement.classList.contains('pf-v6-theme-dark');
+  const [theme] = useUserSettings('console.theme', null, true);
 
   return (
     <CodeEditor
       code={attachment?.value}
       customControls={<ResourceHeader />}
       height="calc(24rem - 52px)"
-      isDarkTheme={isDarkTheme}
+      isDarkTheme={theme === 'dark'}
       isLanguageLabelVisible
       isMinimapVisible
       language={
