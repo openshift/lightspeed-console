@@ -567,7 +567,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         onKeyPress={onKeyPress}
         onSendMessage={onSubmit}
         placeholder={t('Send a message...')}
-        sendButtonAriaLabel={isStreaming ? t('Stop generating') : t('Send message')}
         validated={validated}
         value={query}
       />
