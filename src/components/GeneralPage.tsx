@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
+import { consoleFetchJSON, useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -12,11 +13,8 @@ import {
   CodeBlockAction,
   CodeBlockCode,
   ExpandableSection,
-  HelperText,
-  HelperTextItem,
   Label,
   LabelGroup,
-  Spinner,
   Stack,
   StackItem,
   Title,
@@ -30,17 +28,27 @@ import {
   ChatbotHeaderActions,
   ChatbotHeaderMain,
   ChatbotHeaderTitle,
+  Message,
 } from '@patternfly/chatbot';
 
-import { AuthStatus, useAuth } from '../hooks/useAuth';
+import { toOLSAttachment } from '../attachments';
+import { copyToClipboard } from '../clipboard';
+import { ErrorType, getFetchErrorMessage } from '../error';
+import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
-import { attachmentsClear, chatHistoryClear, setConversationID } from '../redux-actions';
+import {
+  attachmentsClear,
+  chatHistoryClear,
+  setConversationID,
+  userFeedbackClose,
+  userFeedbackOpen,
+  userFeedbackSetSentiment,
+} from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import AttachmentLabel from './AttachmentLabel';
 import CopyAction from './CopyAction';
 import ImportAction from './ImportAction';
-import Feedback from './Feedback';
 import NewChatModal from './NewChatModal';
 import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
@@ -49,6 +57,10 @@ import WindowControlButtons from './WindowControlButtons';
 
 import './general-page.css';
 import '@patternfly/chatbot/dist/css/main.css';
+
+import aiAvatar from '../assets/logo.svg';
+import aiAvatarDark from '../assets/logo-dark.svg';
+import userAvatar from '../assets/user.png';
 
 type ExternalLinkProps = {
   children: React.ReactNode;
@@ -88,15 +100,13 @@ const ReferenceDocs: React.FC<ReferenceDocsProps> = ({ references }) => {
   }
 
   return (
-    <div className="ols-plugin__references">
-      <LabelGroup categoryName="Related documentation">
-        {validReferences.map((r, i) => (
-          <Label key={i} textMaxWidth="16rem">
-            <ExternalLink href={r.doc_url}>{r.doc_title}</ExternalLink>
-          </Label>
-        ))}
-      </LabelGroup>
-    </div>
+    <LabelGroup categoryName="Related documentation">
+      {validReferences.map((r, i) => (
+        <Label key={i} textMaxWidth="16rem">
+          <ExternalLink href={r.doc_url}>{r.doc_title}</ExternalLink>
+        </Label>
+      ))}
+    </LabelGroup>
   );
 };
 
@@ -120,6 +130,11 @@ const Code = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
+const REQUEST_TIMEOUT = 5 * 60 * 1000;
+const THUMBS_DOWN = -1;
+const THUMBS_UP = 1;
+
 type ChatHistoryEntryProps = {
   conversationID: string;
   entry: ChatEntry;
@@ -133,88 +148,223 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
 }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
+  const dispatch = useDispatch();
+
+  const [feedbackError, setFeedbackError] = React.useState<ErrorType>();
+  const [feedbackSubmitted, setFeedbackSubmitted] = React.useState(false);
   const [isContextExpanded, toggleContextExpanded] = useBoolean(false);
+
+  const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
+  );
+  const isFeedbackOpen: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'isOpen']),
+  );
+  const query: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
+  );
+  const response: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'text']),
+  );
+
   const isUserFeedbackEnabled = useSelector((s: State) =>
     s.plugins?.ols?.get('isUserFeedbackEnabled'),
   );
+  const sentiment: number = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
+  );
+
+  const [theme] = useUserSettings('console.theme', null, true);
+
+  const onThumbsDown = React.useCallback(() => {
+    dispatch(userFeedbackOpen(entryIndex));
+    dispatch(userFeedbackSetSentiment(entryIndex, THUMBS_DOWN));
+    setFeedbackSubmitted(false);
+  }, [dispatch, entryIndex]);
+
+  const onThumbsUp = React.useCallback(() => {
+    dispatch(userFeedbackOpen(entryIndex));
+    dispatch(userFeedbackSetSentiment(entryIndex, THUMBS_UP));
+    setFeedbackSubmitted(false);
+  }, [dispatch, entryIndex]);
+
+  const onFeedbackClose = React.useCallback(() => {
+    dispatch(userFeedbackClose(entryIndex));
+  }, [dispatch, entryIndex]);
+
+  const onFeedbackSubmit = React.useCallback(
+    (_quickResponse, additionalFeedback) => {
+      const userQuestion = attachments
+        ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
+        : query;
+
+      /* eslint-disable camelcase */
+      const requestJSON = {
+        conversation_id: conversationID,
+        llm_response: response,
+        sentiment,
+        user_feedback: additionalFeedback,
+        user_question: userQuestion,
+      };
+      /* eslint-enable camelcase */
+
+      consoleFetchJSON
+        .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+        .then(() => {
+          setFeedbackSubmitted(true);
+        })
+        .catch((err) => {
+          setFeedbackError(getFetchErrorMessage(err, t));
+          setFeedbackSubmitted(false);
+        });
+    },
+    [conversationID, query, attachments, response, sentiment, t],
+  );
 
   if (entry.who === 'ai') {
+    const thumbsUpTooltip = t('Good response');
+    const thumbsDownTooltip = t('Bad response');
+    const actions = entry.error
+      ? undefined
+      : {
+          copy: { onClick: () => copyToClipboard(entry.text) },
+          ...(isUserFeedbackEnabled && {
+            positive: {
+              clickedTooltipContent: thumbsUpTooltip,
+              onClick: onThumbsUp,
+              tooltipContent: thumbsUpTooltip,
+            },
+            negative: {
+              clickedTooltipContent: thumbsDownTooltip,
+              onClick: onThumbsDown,
+              tooltipContent: thumbsDownTooltip,
+            },
+          }),
+        };
+
     return (
-      <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
-        <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-        {entry.error ? (
-          <Alert
-            isExpandable={!!entry.error.moreInfo}
-            isInline
-            title={
-              entry.error.moreInfo
-                ? entry.error.message
-                : t('Error querying OpenShift Lightspeed service')
-            }
-            variant="danger"
-          >
-            {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
-          </Alert>
-        ) : (
-          <>
-            <Markdown components={{ code: Code }}>{entry.text}</Markdown>
-            {!entry.text && !entry.isCancelled && (
-              <HelperText>
-                <HelperTextItem>
-                  {t('Waiting for LLM provider...')} <Spinner size="lg" />
-                </HelperTextItem>
-              </HelperText>
-            )}
-            {entry.isTruncated && (
-              <Alert isInline title={t('History truncated')} variant="warning">
-                {t('Conversation history has been truncated to fit within context window.')}
-              </Alert>
-            )}
-            {entry.isCancelled && (
+      <>
+        {/* @ts-expect-error: TS2786 */}
+        <Message
+          actions={actions}
+          avatar={theme === 'dark' ? aiAvatarDark : aiAvatar}
+          extraContent={{
+            afterMainContent: entry.error ? (
               <Alert
-                className="ols-plugin__chat-entry-cancelled"
+                isExpandable={!!entry.error.moreInfo}
                 isInline
-                isPlain
-                title={t('Cancelled')}
-                variant="info"
-              />
-            )}
-            {entry.tools && <ResponseTools entryIndex={entryIndex} />}
-            <ReferenceDocs references={entry.references} />
-            {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
-              <Feedback conversationID={conversationID} entryIndex={entryIndex} />
-            )}
-          </>
-        )}
-      </div>
+                title={
+                  entry.error.moreInfo
+                    ? entry.error.message
+                    : t('Error querying OpenShift Lightspeed service')
+                }
+                variant="danger"
+              >
+                {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
+              </Alert>
+            ) : (
+              <>
+                <Markdown components={{ code: Code }}>{entry.text}</Markdown>
+                {entry.isTruncated && (
+                  <Alert isInline title={t('History truncated')} variant="warning">
+                    {t('Conversation history has been truncated to fit within context window.')}
+                  </Alert>
+                )}
+                {entry.isCancelled && (
+                  <Alert
+                    className="ols-plugin__chat-entry-cancelled"
+                    isInline
+                    isPlain
+                    title={t('Cancelled')}
+                    variant="info"
+                  />
+                )}
+                {entry.tools && <ResponseTools entryIndex={entryIndex} />}
+                <ReferenceDocs references={entry.references} />
+              </>
+            ),
+            endContent: feedbackError ? (
+              <Alert
+                className="ols-plugin__alert"
+                isExpandable={!!feedbackError.moreInfo}
+                isInline
+                title={
+                  feedbackError.moreInfo ? feedbackError.message : t('Error submitting feedback')
+                }
+                variant="danger"
+              >
+                {feedbackError.moreInfo ? feedbackError.moreInfo : feedbackError.message}
+              </Alert>
+            ) : undefined,
+          }}
+          hasRoundAvatar={false}
+          isLoading={!entry.text && !entry.isCancelled && !entry.error}
+          name="OpenShift Lightspeed"
+          role="bot"
+          timestamp=" "
+          userFeedbackComplete={
+            isFeedbackOpen && feedbackSubmitted ? { onClose: onFeedbackClose } : undefined
+          }
+          userFeedbackForm={
+            isFeedbackOpen && !feedbackSubmitted && sentiment !== undefined
+              ? {
+                  className: 'ols-plugin__feedback',
+                  hasTextArea: true,
+                  headingLevel: 'h6',
+                  onClose: onFeedbackClose,
+                  onSubmit: onFeedbackSubmit,
+                  submitWord: t('Submit'),
+                  title: t(
+                    "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
+                  ),
+                }
+              : undefined
+          }
+        />
+      </>
     );
   }
+
   if (entry.who === 'user') {
     return (
-      <div className="ols-plugin__chat-entry ols-plugin__chat-entry--user">
-        <div className="ols-plugin__chat-entry-name">You</div>
-        <div className="ols-plugin__chat-entry-text">{entry.text}</div>
-        {entry.attachments && Object.keys(entry.attachments).length > 0 && (
-          <ExpandableSection
-            className="ols-plugin__chat-history-context"
-            displaySize="lg"
-            isExpanded={isContextExpanded}
-            onToggle={toggleContextExpanded}
-            toggleContent={
+      <>
+        {/* @ts-expect-error: TS2786 */}
+        <Message
+          avatar={userAvatar}
+          extraContent={{
+            afterMainContent: (
               <>
-                Context <Badge>{Object.keys(entry.attachments).length}</Badge>
+                <div>{entry.text}</div>
+                {entry.attachments && Object.keys(entry.attachments).length > 0 && (
+                  <ExpandableSection
+                    className="ols-plugin__chat-history-context"
+                    displaySize="lg"
+                    isExpanded={isContextExpanded}
+                    onToggle={toggleContextExpanded}
+                    toggleContent={
+                      <>
+                        Context <Badge>{Object.keys(entry.attachments).length}</Badge>
+                      </>
+                    }
+                  >
+                    {Object.keys(entry.attachments).map((key: string) => {
+                      const attachment: Attachment = entry.attachments[key];
+                      return <AttachmentLabel attachment={attachment} key={key} />;
+                    })}
+                  </ExpandableSection>
+                )}
               </>
-            }
-          >
-            {Object.keys(entry.attachments).map((key: string) => {
-              const attachment: Attachment = entry.attachments[key];
-              return <AttachmentLabel attachment={attachment} key={key} />;
-            })}
-          </ExpandableSection>
-        )}
-      </div>
+            ),
+          }}
+          hasRoundAvatar={false}
+          name="You"
+          role="user"
+          timestamp=" "
+        />
+      </>
     );
   }
+
   return null;
 };
 

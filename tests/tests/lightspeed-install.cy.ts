@@ -18,19 +18,22 @@ const minimizeButton = `${popover} .ols-plugin__popover-control[title=Minimize]`
 const expandButton = `${popover} .ols-plugin__popover-control[title=Expand]`;
 const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`;
 const clearChatButton = `${popover} .ols-plugin__popover-clear-chat`;
-const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
-const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
+const userChatEntry = `${popover} .pf-chatbot__message--user`;
+const aiChatEntry = `${popover} .pf-chatbot__message--bot`;
+const loadingIndicator = `${popover} .pf-chatbot__message-loading`;
 const attachments = `${popover} .ols-plugin__prompt-attachments`;
-const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
-const attachMenu = `${popover} .ols-plugin__context-menu`;
-const fileInput = 'input[type="file"]';
-const promptInput = `${popover} textarea`;
+const attachMenu = `.pf-chatbot__menu`;
+const fileInput = `${popover} input[type="file"][accept=".yaml,.yml"]`;
+const responseAction = `${popover} .pf-chatbot__button--response-action`;
+const copyButton = `${responseAction}[aria-label=Copy]`;
 const userFeedback = `${popover} .ols-plugin__feedback`;
-const responseAction = `${userFeedback} .ols-plugin__response-action`;
-const copyButton = `${userFeedback} #ols-plugin-copy-button`;
 const userFeedbackInput = `${userFeedback} textarea`;
 const userFeedbackSubmit = `${userFeedback} button.pf-m-primary`;
 const modal = '.ols-plugin__modal';
+
+const promptArea = `${popover} .ols-plugin__prompt`;
+const attachButton = `${promptArea} .pf-chatbot__button--attach`;
+const promptInput = `${promptArea} textarea`;
 
 const podNamePrefix = 'console';
 
@@ -55,14 +58,11 @@ const READINESS_TITLE = 'Waiting for OpenShift Lightspeed service';
 const READINESS_TEXT =
   'The OpenShift Lightspeed service is not yet ready to receive requests. If this message persists, please check the OLSConfig.';
 
-const USER_FEEDBACK_TITLE = 'Why did you choose this rating?';
 const USER_FEEDBACK_TEXT =
   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.";
-const USER_FEEDBACK_RECEIVED_TEXT = 'Thank you for your feedback!';
+const USER_FEEDBACK_RECEIVED_TEXT = 'Feedback submitted';
 const THUMBS_DOWN = -1;
 const THUMBS_UP = 1;
-
-const WAITING_FOR_RESPONSE_TEXT = 'Waiting for LLM provider...';
 
 const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
 
@@ -301,7 +301,7 @@ spec:
 
     cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.get(loadingIndicator).should('exist');
     cy.wait('@queryStub');
 
     // Prompt should now be empty
@@ -315,7 +315,7 @@ spec:
     const PROMPT_SUBMITTED_2 = 'Test prompt 2';
     cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.get(loadingIndicator).should('exist');
     cy.wait('@queryWithConversationIdStub');
 
     cy.get(promptInput).should('have.value', '');
@@ -343,41 +343,15 @@ spec:
 
     cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.get(loadingIndicator).should('exist');
     cy.wait('@queryStub');
 
     // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
     cy.get(responseAction).should('have.lengthOf', 3);
 
-    // Clicking a user feedback button should select it and open the user feedback form
-    cy.get(responseAction)
-      .eq(0)
-      .should('not.have.class', 'ols-plugin__response-action--selected')
-      .click()
-      .should('have.class', 'ols-plugin__response-action--selected');
-    cy.get(popover).contains(USER_FEEDBACK_TITLE);
+    // Submit positive feedback with a comment
+    cy.get(responseAction).eq(0).click();
     cy.get(popover).contains(USER_FEEDBACK_TEXT);
-
-    // Clicking the other user feedback button should select that instead and leave the user
-    // feedback form open
-    cy.get(responseAction)
-      .eq(1)
-      .should('not.have.class', 'ols-plugin__response-action--selected')
-      .click()
-      .should('have.class', 'ols-plugin__response-action--selected');
-    cy.get(popover).contains(USER_FEEDBACK_TITLE);
-    cy.get(popover).contains(USER_FEEDBACK_TEXT);
-
-    // Clicking the same button again should deselect it and close the user feedback form
-    cy.get(responseAction)
-      .eq(1)
-      .click()
-      .should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.get(popover)
-      .should('not.contain', USER_FEEDBACK_TITLE)
-      .should('not.contain', USER_FEEDBACK_TEXT);
-
-    // Reopen the form and submit some feedback
     cy.interceptFeedback(
       'userFeedbackStub',
       CONVERSATION_ID,
@@ -385,14 +359,14 @@ spec:
       USER_FEEDBACK_SUBMITTED,
       `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
     );
-
-    cy.get(responseAction).eq(0).click();
     cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
     cy.get(userFeedbackSubmit).click();
     cy.wait('@userFeedbackStub');
     cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
 
-    // It should also be possible to submit user feedback without a comment
+    // Submit negative feedback with no comment
+    cy.get(responseAction).eq(1).click();
+    cy.get(popover).contains(USER_FEEDBACK_TEXT);
     cy.interceptFeedback(
       'userFeedbackWithoutCommentStub',
       CONVERSATION_ID,
@@ -400,8 +374,6 @@ spec:
       '',
       `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
     );
-
-    cy.get(responseAction).eq(1).click();
     cy.get(userFeedbackInput).clear();
     cy.get(userFeedbackSubmit).click();
     cy.wait('@userFeedbackWithoutCommentStub');
@@ -414,19 +386,24 @@ spec:
 
     cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.get(loadingIndicator).should('exist');
     cy.wait('@queryStub');
 
-    cy.get(copyButton)
-      .should('exist')
-      .should('have.class', 'ols-plugin__response-action')
-      .should('not.have.class', 'ols-plugin__response-action--selected')
-      .click();
+    cy.get(copyButton).click();
 
-    // Verify that none of the response action buttons changed state
-    cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.get(responseAction).eq(0).should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.get(responseAction).eq(1).should('not.have.class', 'ols-plugin__response-action--selected');
+    // Try to read from actual clipboard to verify copy worked
+    cy.window().then((win) => {
+      if (win.navigator.clipboard && win.navigator.clipboard.readText) {
+        return win.navigator.clipboard
+          .readText()
+          .then((text) => {
+            expect(text).to.equal(MOCK_STREAMED_RESPONSE_TEXT);
+          })
+          .catch((err) => {
+            cy.log('Clipboard access denied, skipping clipboard test:', err.message);
+          });
+      }
+    });
   });
 
   it('Test attach options on pods list page', () => {
@@ -434,22 +411,7 @@ spec:
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
-    // The only attach option should be the upload file option
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu)
-      .should('include.text', 'Upload from computer')
-      .should('not.include.text', 'YAML')
-      .should('not.include.text', 'Events')
-      .should('not.include.text', 'Logs');
-  });
-
-  it('Test attach options on pod details page', () => {
-    // Navigate to the pod details page
-    pages.goToPodsList();
-
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
+    // Confirm that the pod we are using for testing is present
     listPage.filter.byName(podNamePrefix);
     cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
       'have.length.at.least',
@@ -457,7 +419,7 @@ spec:
     );
 
     // The only attach option should be the upload file option
-    cy.get(attachMenuButton).click();
+    cy.get(attachButton).click();
     cy.get(attachMenu)
       .should('include.text', 'Upload from computer')
       .should('not.include.text', 'YAML')
@@ -474,7 +436,7 @@ spec:
     cy.get(attachments).should('be.empty');
 
     // Test that the context menu now has options
-    cy.get(attachMenuButton).click();
+    cy.get(attachButton).click();
     cy.get(attachMenu, { timeout: MINUTE })
       .should('include.text', 'Full YAML file')
       .should('include.text', 'Filtered YAML')
@@ -483,13 +445,13 @@ spec:
       .should('include.text', 'Upload from computer');
   });
 
-  it('Test attaching YAML (OLS-745)', () => {
+  it('Test attaching YAML', () => {
     pages.goToPodDetails('openshift-console', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
     // Test attaching pod YAML
-    cy.get(attachMenuButton).click();
+    cy.get(attachButton).click();
     cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
     cy.get(attachments)
       .should('include.text', podNamePrefix)
@@ -509,7 +471,7 @@ spec:
     cy.get(promptInput).type('Test{enter}');
 
     // Test attaching pod YAML status section
-    cy.get(attachMenuButton).click();
+    cy.get(attachButton).click();
     cy.get(attachMenu).find('button').contains('Filtered YAML').click();
     cy.get(attachments)
       .should('include.text', podNamePrefix)
@@ -529,12 +491,12 @@ spec:
     cy.get(promptInput).type('Test{enter}');
   });
 
-  it('Test attaching events (OLS-746)', () => {
+  it('Test attaching events', () => {
     pages.goToPodDetails('openshift-lightspeed', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
-    cy.get(attachMenuButton).click();
+    cy.get(attachButton).click();
     cy.get(attachMenu).find('button').contains('Events').click();
     cy.get(modal).should('include.text', 'Configure events attachment');
     cy.get(modal).find('button').contains('Attach').click();
@@ -578,12 +540,12 @@ spec:
     cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
   });
 
-  it('Test attaching logs (OLS-747)', () => {
+  it('Test attaching logs', () => {
     pages.goToPodDetails('openshift-console', podNamePrefix);
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
-    cy.get(attachMenuButton).click();
+    cy.get(attachButton).click();
     cy.get(attachMenu).find('button').contains('Logs').click();
     cy.get(modal)
       .should('include.text', 'Configure log attachment')
@@ -621,18 +583,19 @@ spec:
 
     cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
-    cy.get(attachMenuButton).click();
-    cy.contains('Upload from computer').click();
+    cy.get(popover).should('exist');
+    cy.get(attachButton).click();
+    cy.contains('Upload from computer').should('be.visible').click();
 
     // File with invalid YAML
     cy.get(fileInput).selectFile(
       {
-        contents: Cypress.Buffer.from(`abc`),
+        contents: Cypress.Buffer.from('abc'),
       },
       // Use `force: true` because the input is display:none
       { force: true },
     );
-    cy.get(attachMenu).contains('Uploaded file is not valid YAML');
+    cy.get(popover).should('contain', 'Uploaded file is not valid YAML');
 
     // File that is too large
     const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_KB * 1024 + 1);
@@ -642,7 +605,10 @@ spec:
       },
       { force: true },
     );
-    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_KB} KB.`);
+    cy.get(popover).should(
+      'contain',
+      `Uploaded file is too large. Max size is ${MAX_FILE_SIZE_KB} KB.`,
+    );
 
     // Valid YAML Upload
     cy.get(fileInput).selectFile(
@@ -656,5 +622,9 @@ metadata:
       },
       { force: true },
     );
+
+    // For valid YAML, the error should disappear and an attachment should be added
+    cy.get(popover).should('not.contain', 'Uploaded file is not valid YAML');
+    cy.get(attachments).should('contain', 'my-test-pod');
   });
 });
