@@ -17,41 +17,6 @@
   margin-top: var(--pf-t--global--spacer--lg)
 }
 
-.ols-plugin__chat-entry {
-  --logo-size: 2.5rem;
-
-  background-position: -1px 0;
-  background-repeat: no-repeat;
-  background-size: var(--logo-size);
-  padding-bottom: var(--pf-t--global--spacer--lg);
-  padding-left: calc(var(--logo-size) + var(--pf-t--global--spacer--md));
-}
-
-.ols-plugin__chat-entry-cancelled {
-  margin-top: var(--pf-t--global--spacer--sm);
-}
-
-.ols-plugin__chat-entry--ai {
-  background-image: url('../assets/logo.svg');
-}
-
-/* stylelint-disable-next-line selector-disallowed-list */
-.pf-v6-theme-dark .ols-plugin__chat-entry--ai {
-  background-image: url('../assets/logo-dark.svg');
-}
-
-.ols-plugin__chat-entry--user {
-  background-image: url('../assets/user.png');
-}
-
-.ols-plugin__chat-entry-name {
-  font-weight: bold;
-}
-
-.ols-plugin__chat-entry-text {
-  white-space: pre-line;
-}
-
 .ols-plugin__chat-history {
   overflow-y: auto;
   padding-left: 8%;
@@ -102,42 +67,10 @@
   font-weight: var(--pf-v5-global--FontWeight--bold);
 }
 
-.ols-plugin__feedback {
-  margin-top: var(--pf-t--global--spacer--sm);
-}
-
-.ols-plugin__feedback-comment {
-  border: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
-  margin-top: var(--pf-t--global--spacer--md);
-  padding: var(--pf-t--global--spacer--lg);
-  position: relative;
-}
-
-.ols-plugin__feedback-footer {
-  margin-bottom: var(--pf-t--global--spacer--md);
-}
-
-.ols-plugin__response-action {
-  display: inline-block;
-  margin-right: var(--pf-t--global--spacer--md);
-  padding: var(--pf-t--global--spacer--sm);
-}
-
-.ols-plugin__response-action:hover {
-  background-color: var(--pf-t--global--background--color--primary--clicked);
-}
-
-.ols-plugin__response-action--selected {
-  background-color: var(--pf-t--global--background--color--primary--clicked);
-}
-
-.ols-plugin__feedback-input {
-  margin-bottom: var(--pf-t--global--spacer--md);
-  margin-top: var(--pf-t--global--spacer--lg);
-}
-
-.ols-plugin__feedback-submitted {
-  margin-top: var(--pf-t--global--spacer--md);
+.ols-plugin__feedback h6 {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  font-weight: var(--pf-t--global--font--weight--body--default);
 }
 
 /* stylelint-disable-next-line selector-disallowed-list */
@@ -218,10 +151,6 @@
 
 .ols-plugin__radio {
   align-items: center;
-}
-
-.ols-plugin__references {
-  margin-top: var(--pf-t--global--spacer--md);
 }
 
 .ols-plugin__welcome-logo {
