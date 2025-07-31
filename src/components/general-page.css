@@ -162,10 +162,6 @@
   text-align: left;
 }
 
-.ols-plugin__chat-context-action {
-  margin-top: var(--pf-v5-global--spacer--sm);
-}
-
 .ols-plugin__chat-prompt-attachments {
   max-width: 100%;
   padding-left: 2rem;
