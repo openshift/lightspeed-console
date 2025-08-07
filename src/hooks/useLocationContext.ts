@@ -66,6 +66,38 @@ export const useLocationContext = () => {
             }
           }
         }
+
+        urlMatches = path.match(
+          // This is what ACM cluster URLs look like:
+          // http://something.tld/multicloud/infrastructure/clusters/details/aks-central/aks-central/overview
+          // they are not namespaced and the resource name is repeated
+          new RegExp(
+            `/multicloud/infrastructure/clusters/details/(${resourceName})/${resourceName}/overview`,
+          ),
+        );
+        if (urlMatches) {
+          // The k8s object for the cluster is not in the URL path, so we have to directly check if we are looking
+          // at a cluster object here
+          const key = 'cluster.open-cluster-management.io~v1~ManagedCluster';
+
+          if (models[key]) {
+            setKind(key);
+            setName(urlMatches[1]);
+            setNamespace(undefined);
+            return;
+          }
+
+          const modelKey = Object.keys(models).find((k) => models[k].plural === key);
+          if (modelKey) {
+            const model = models[modelKey];
+            if (model && model.kind !== 'Secret') {
+              setKind(key);
+              setName(urlMatches[1]);
+              setNamespace(undefined);
+              return;
+            }
+          }
+        }
       }
 
       if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
