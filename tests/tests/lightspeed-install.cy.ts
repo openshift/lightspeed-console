@@ -657,4 +657,181 @@ metadata:
       { force: true },
     );
   });
+
+  it('Test attach cluster info for ManagedCluster', () => {
+    // Mock ManagedCluster details page
+    cy.visit(
+      '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
+    );
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
+    // Test that the attach menu shows "Attach cluster info" option for ManagedCluster
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu)
+      .should('include.text', 'Attach cluster info')
+      .should('include.text', 'Upload from computer')
+      .should('not.include.text', 'Full YAML file')
+      .should('not.include.text', 'Filtered YAML')
+      .should('not.include.text', 'Events')
+      .should('not.include.text', 'Logs');
+
+    // Mock the API calls for ManagedCluster and ManagedClusterInfo
+    cy.intercept(
+      'GET',
+      '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/test-cluster',
+      {
+        statusCode: 200,
+        body: {
+          kind: 'ManagedCluster',
+          apiVersion: 'cluster.open-cluster-management.io/v1',
+          metadata: {
+            name: 'test-cluster',
+            namespace: 'test-cluster',
+          },
+          spec: {
+            hubAcceptsClient: true,
+          },
+          status: {
+            conditions: [
+              {
+                type: 'ManagedClusterConditionAvailable',
+                status: 'True',
+              },
+            ],
+          },
+        },
+      },
+    ).as('getManagedCluster');
+
+    cy.intercept(
+      'GET',
+      '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
+      {
+        statusCode: 200,
+        body: {
+          kind: 'ManagedClusterInfo',
+          apiVersion: 'internal.open-cluster-management.io/v1beta1',
+          metadata: {
+            name: 'test-cluster',
+            namespace: 'test-cluster',
+          },
+          status: {
+            distributionInfo: {
+              type: 'OCP',
+              ocp: {
+                version: '4.14.0',
+              },
+            },
+            nodeList: [
+              {
+                name: 'master-0',
+                conditions: [
+                  {
+                    type: 'Ready',
+                    status: 'True',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ).as('getManagedClusterInfo');
+
+    // Click "Attach cluster info" button
+    cy.get(attachMenu).find('button').contains('Attach cluster info').click();
+
+    // Wait for both API calls
+    cy.wait('@getManagedCluster');
+    cy.wait('@getManagedClusterInfo');
+
+    // Verify that both ManagedCluster and ManagedClusterInfo attachments are added
+    cy.get(attachments)
+      .should('include.text', 'test-cluster')
+      .should('include.text', 'YAML')
+      .find('button')
+      .should('have.length', 2); // Should have both ManagedCluster and ManagedClusterInfo attachments
+
+    // Test the ManagedCluster attachment preview
+    cy.get(attachments).find('button').contains('test-cluster').first().click();
+    cy.get(modal)
+      .should('include.text', 'Preview attachment')
+      .should('include.text', 'test-cluster')
+      .should('include.text', 'kind: ManagedCluster')
+      .should('include.text', 'apiVersion: cluster.open-cluster-management.io/v1')
+      .find('button')
+      .contains('Dismiss')
+      .click();
+
+    // Test the ManagedClusterInfo attachment preview
+    cy.get(attachments).find('button').contains('test-cluster').last().click();
+    cy.get(modal)
+      .should('include.text', 'Preview attachment')
+      .should('include.text', 'test-cluster')
+      .should('include.text', 'kind: ManagedClusterInfo')
+      .should('include.text', 'apiVersion: internal.open-cluster-management.io/v1beta1')
+      .should('include.text', 'distributionInfo')
+      .find('button')
+      .contains('Dismiss')
+      .click();
+
+    // Test submitting a prompt with cluster attachments
+    cy.interceptQuery('queryStub', PROMPT_SUBMITTED, null, [
+      { attachmentType: 'yaml', contentType: 'application/yaml' },
+      { attachmentType: 'yaml', contentType: 'application/yaml' },
+    ]);
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.wait('@queryStub');
+  });
+
+  it('Test ManagedCluster attachment error handling', () => {
+    // Mock ManagedCluster details page
+    cy.visit(
+      '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
+    );
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
+    // Mock successful ManagedCluster API call but failed ManagedClusterInfo call
+    cy.intercept(
+      'GET',
+      '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/test-cluster',
+      {
+        statusCode: 200,
+        body: {
+          kind: 'ManagedCluster',
+          apiVersion: 'cluster.open-cluster-management.io/v1',
+          metadata: {
+            name: 'test-cluster',
+            namespace: 'test-cluster',
+          },
+        },
+      },
+    ).as('getManagedCluster');
+
+    cy.intercept(
+      'GET',
+      '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
+      {
+        statusCode: 404,
+        body: {
+          kind: 'Status',
+          message:
+            'managedclusterinfos.internal.open-cluster-management.io "test-cluster" not found',
+        },
+      },
+    ).as('getManagedClusterInfoError');
+
+    // Click "Attach cluster info" button
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu).find('button').contains('Attach cluster info').click();
+
+    // Wait for API calls
+    cy.wait('@getManagedCluster');
+    cy.wait('@getManagedClusterInfoError');
+
+    // Verify error is displayed
+    cy.get(attachMenu).should('include.text', 'Error fetching cluster info');
+  });
 });
