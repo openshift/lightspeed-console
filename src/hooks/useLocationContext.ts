@@ -86,17 +86,6 @@ export const useLocationContext = () => {
             setNamespace(undefined);
             return;
           }
-
-          const modelKey = Object.keys(models).find((k) => models[k].plural === key);
-          if (modelKey) {
-            const model = models[modelKey];
-            if (model && model.kind !== 'Secret') {
-              setKind(key);
-              setName(urlMatches[1]);
-              setNamespace(undefined);
-              return;
-            }
-          }
         }
       }
 

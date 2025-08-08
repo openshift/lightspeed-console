@@ -395,6 +395,7 @@ const AttachMenu: React.FC = () => {
             ) : kind === 'cluster.open-cluster-management.io~v1~ManagedCluster' ? (
               <SelectOption value={AttachmentTypes.YAML}>
                 <TaskIcon /> {t('Attach cluster info')}
+                {isLoading && <Spinner size="md" />}
               </SelectOption>
             ) : (
               <>
