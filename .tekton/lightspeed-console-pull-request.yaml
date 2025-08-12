@@ -538,6 +538,11 @@ spec:
       optional: true
     - name: netrc
       optional: true
+  taskRunSpecs:
+  - computeResources:
+      limits:
+        memory: 8Gi
+    pipelineTaskName: build-images
   taskRunTemplate:
     serviceAccountName: build-pipeline-lightspeed-console
   workspaces:
