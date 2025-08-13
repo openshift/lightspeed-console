@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Tooltip } from '@patternfly/react-core';
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
+import { consoleFetchJSON, useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
 
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -13,9 +13,6 @@ import ErrorBoundary from './ErrorBoundary';
 import GeneralPage from './GeneralPage';
 
 import './popover.css';
-
-// TODO: Include this for now to work around bug where CSS is not pulled in by console plugin SDK
-import './pf-styles.css';
 
 const FEEDBACK_STATUS_ENDPOINT =
   '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback/status';
@@ -30,6 +27,7 @@ const Popover: React.FC = () => {
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
+  const [theme] = useUserSettings('console.theme', null, true);
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -64,7 +62,10 @@ const Popover: React.FC = () => {
   const title = t('Red Hat OpenShift Lightspeed');
 
   return (
-    <div aria-label={title} className="ols-plugin__popover-container">
+    <div
+      aria-label={title}
+      className={`ols-plugin__popover-container ${theme === 'dark' ? 'ols-plugin__popover-container--dark' : ''}`}
+    >
       {isOpen ? (
         <>
           <div
