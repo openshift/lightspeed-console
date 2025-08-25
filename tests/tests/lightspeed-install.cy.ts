@@ -871,4 +871,27 @@ metadata:
     // Verify error is displayed
     cy.get(attachMenu).should('include.text', 'Error fetching cluster info');
   });
+
+  it('Hide icon when not authorized and relevant OLSConfig flag is set', () => {
+    cy.intercept('POST', '/api/proxy/plugin/lightspeed-console-plugin/ols/authorized', {
+      statusCode: 403,
+      body: { ignored: 'ignored' },
+    }).as('authorized403');
+
+    // OLS button should be hidden if hideIconIfNotAuthorized is "true"
+    cy.exec(
+      `oc patch ${OLS.config.kind} ${OLS.config.name} --type='merge' -p='{"spec":{"ols":{"hideIconIfNotAuthorized":true}}}' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+    );
+    cy.visit('/');
+    cy.wait('@authorized403');
+    cy.get(mainButton, { timeout: 120000 }).should('not.exist');
+
+    // OLS button should be shown if hideIconIfNotAuthorized is "false"
+    cy.exec(
+      `oc patch ${OLS.config.kind} ${OLS.config.name} --type='merge' -p='{"spec":{"ols":{"hideIconIfNotAuthorized":false}}}' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+    );
+    cy.reload();
+    cy.wait('@authorized403');
+    cy.get(mainButton, { timeout: 120000 }).should('exist');
+  });
 });
