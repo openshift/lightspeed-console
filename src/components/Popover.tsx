@@ -5,9 +5,10 @@ import { Button, Tooltip } from '@patternfly/react-core';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
 import { getApiUrl } from '../config';
-import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
+import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useHideLightspeed } from '../hooks/useHideLightspeed';
+import { useWatchOLSConfig } from '../hooks/useWatchOLSConfig';
 import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
 import { State } from '../redux-reducers';
 import ErrorBoundary from './ErrorBoundary';
@@ -30,6 +31,10 @@ const Popover: React.FC = () => {
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
+
+  const [authStatus] = useAuth();
+
+  const [config, isConfigLoaded, configError] = useWatchOLSConfig();
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -58,6 +63,16 @@ const Popover: React.FC = () => {
   }, [dispatch]);
 
   if (isHidden) {
+    return null;
+  }
+
+  // Hide UI if not authorized and relevant OLSConfig flag is set
+  // Hiding while isConfigLoaded === false avoids potential UI flicker while loading the config
+  if (
+    (authStatus === AuthStatus.NotAuthorized || authStatus === AuthStatus.AuthorizedLoading) &&
+    !configError &&
+    (!isConfigLoaded || (isConfigLoaded && config?.spec?.ols?.hideIconIfNotAuthorized === true))
+  ) {
     return null;
   }
 
