@@ -10,5 +10,5 @@
     "noUnusedLocals": true,
     "sourceMap": false
   },
-  "include": ["src"]
+  "include": ["src", "types.d.ts"]
 }
