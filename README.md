@@ -34,7 +34,7 @@ In another terminal window, run:
 
 This will run the OpenShift console in a container connected to the cluster
 you've logged into. The plugin HTTP server runs on port 9001 with CORS enabled.
-Navigate to <http://localhost:9000/example> to see the running plugin.
+Navigate to <http://localhost:9000> to see the running plugin.
 
 #### Using a localhost backend
 
@@ -92,7 +92,7 @@ OC_PASS=<password>
 
 2. `(Ctrl+Shift+P) => Remote Containers: Open Folder in Container...`
 3. `npm run start`
-4. Navigate to <http://localhost:9000/example>
+4. Navigate to <http://localhost:9000>
 
 ## Docker image
 
