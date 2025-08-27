@@ -34,7 +34,29 @@ In another terminal window, run:
 
 This will run the OpenShift console in a container connected to the cluster
 you've logged into. The plugin HTTP server runs on port 9001 with CORS enabled.
-Navigate to <http://localhost:9000/example> to see the running plugin.
+Navigate to <http://localhost:9000> to see the running plugin.
+
+#### Using a localhost backend
+
+If your Lightspeed service is running on your local machine, you can test locally by updating the UI to call localhost and running Chrome with CORS disabled.
+
+1. Change the query endpoint in `src/components/GeneralPage.tsx`:
+
+   ```ts
+   const QUERY_ENDPOINT = 'http://127.0.0.1:8080/v1/streaming_query';
+   ```
+
+2. Start Chrome with web security disabled so localhost requests don't fail due to CORS. ⚠️ WARNING: This disables Chrome security, so only use these flags for local development!
+
+   - macOS:
+     ```bash
+     open -na "Google Chrome" --args --disable-web-security --user-data-dir="$HOME/chrome-dev-data-dir/"
+     ```
+   - Linux:
+     ```bash
+     google-chrome --disable-web-security --user-data-dir="$HOME/chrome-dev-data-dir/"
+     ```
+
 
 #### Running start-console with Apple silicon and podman
 
@@ -70,7 +92,7 @@ OC_PASS=<password>
 
 2. `(Ctrl+Shift+P) => Remote Containers: Open Folder in Container...`
 3. `npm run start`
-4. Navigate to <http://localhost:9000/example>
+4. Navigate to <http://localhost:9000>
 
 ## Docker image
 
