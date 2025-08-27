@@ -58,7 +58,7 @@
     "@types/react": "17.0.x",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.32.0",
-    "cypress": "^13.17.0",
+    "cypress": "^15.0.0",
     "cypress-multi-reporters": "^2.0.5",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
