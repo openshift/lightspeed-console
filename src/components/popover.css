@@ -11,7 +11,7 @@
    These rules should be removed if we move the button location. */
 /* stylelint-disable-next-line selector-disallowed-list */
 .co-dashboard-body, .co-m-list .co-m-pane__body:last-of-type, .co-m-page__body .co-m-pane__body:last-of-type {
-  padding-bottom: calc(var(--popover-button-size) + 2 * var(--popover-margin));
+  padding-bottom: var(--popover-button-size);
 }
 
 .ols-plugin__popover, .ols-plugin__popover-button {
