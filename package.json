@@ -60,6 +60,7 @@
     "@typescript-eslint/parser": "^8.32.0",
     "cypress": "^14.5.4",
     "cypress-multi-reporters": "^2.0.5",
+    "cypress-real-events": "^1.14.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
