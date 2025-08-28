@@ -82,7 +82,6 @@
     "@babel/runtime": "^7.26.10",
     "cross-spawn": "^7.0.5",
     "express": ">=4.21.2",
-    "nanoid": "^3.3.8",
     "undici": "^6.21.1",
     "webpack": "5.94.0"
   },
