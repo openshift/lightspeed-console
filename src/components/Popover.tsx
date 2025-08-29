@@ -4,9 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button, Tooltip } from '@patternfly/react-core';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
-import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
+import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useHideLightspeed } from '../hooks/useHideLightspeed';
+import { useWatchOLSConfig } from '../hooks/useWatchOLSConfig';
 import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
 import { State } from '../redux-reducers';
 import ErrorBoundary from './ErrorBoundary';
@@ -30,6 +31,10 @@ const Popover: React.FC = () => {
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
+
+  const [authStatus] = useAuth();
+
+  const [config, isConfigLoaded] = useWatchOLSConfig();
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -57,7 +62,13 @@ const Popover: React.FC = () => {
     dispatch(closeOLS());
   }, [dispatch]);
 
-  if (isHidden) {
+  const isNotAuthorized =
+    authStatus === AuthStatus.NotAuthorized || authStatus === AuthStatus.AuthorizedLoading;
+  if (
+    isHidden ||
+    isConfigLoaded === false ||
+    (isConfigLoaded === true && config?.spec?.ols?.hideIfNotAuthorized === true && isNotAuthorized)
+  ) {
     return null;
   }
 
