@@ -721,11 +721,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               {t('Always review AI generated content prior to use.')}
             </HelperTextItem>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-              {t('Want to contact the OpenShift Lightspeed team?')}{' '}
+              {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
               <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-                Click here
-              </ExternalLink>{' '}
-              to email us.
+                email the Red Hat team
+              </ExternalLink>
             </HelperTextItem>
           </HelperText>
 
