@@ -38,6 +38,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
+import { getApiUrl } from '../config';
 import { getFetchErrorMessage } from '../error';
 import { AuthStatus, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -66,7 +67,7 @@ import ToolModal from './ResponseToolModal';
 
 import './general-page.css';
 
-const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query';
+const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
 
 type QueryResponseStart = {
   event: 'start';

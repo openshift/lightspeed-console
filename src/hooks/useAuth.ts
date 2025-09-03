@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
+import { getApiUrl } from '../config';
+
 export enum AuthStatus {
   Authorized = 'Authorized',
   AuthorizedError = 'AuthorizedError',
@@ -9,7 +11,7 @@ export enum AuthStatus {
   NotAuthorized = 'NotAuthorized',
 }
 
-const AUTHORIZATION_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/authorized';
+const AUTHORIZATION_ENDPOINT = getApiUrl('/authorized');
 
 type AuthorizationResponse = {
   user_id: string;

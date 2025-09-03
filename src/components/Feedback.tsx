@@ -22,6 +22,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
+import { getApiUrl } from '../config';
 import { ErrorType, getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import {
@@ -36,7 +37,7 @@ import CloseButton from './CloseButton';
 import CopyAction from './CopyAction';
 import ErrorBoundary from './ErrorBoundary';
 
-const USER_FEEDBACK_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback';
+const USER_FEEDBACK_ENDPOINT = getApiUrl('/v1/feedback');
 
 const REQUEST_TIMEOUT = 5 * 60 * 1000;
 
