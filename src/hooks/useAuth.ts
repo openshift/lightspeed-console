@@ -20,7 +20,7 @@ type AuthorizationResponse = {
 
 export const getRequestInitWithAuthHeader = (): RequestInit => {
   const init: RequestInit = {};
-  const bearerToken = process.env.REACT_BEARER_TOKEN;
+  const bearerToken = process.env.OLS_API_BEARER_TOKEN;
   if (bearerToken) {
     init.headers = { Authorization: `Bearer ${bearerToken}` };
   }
