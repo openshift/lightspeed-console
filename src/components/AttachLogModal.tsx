@@ -30,7 +30,6 @@ import {
 
 import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
-import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { attachmentSet } from '../redux-actions';
 import CopyAction from './CopyAction';
 import Modal from './Modal';
@@ -293,7 +292,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     debounce((url: string) => {
       setIsPreviewLoading(true);
       setPreviewError(undefined);
-      consoleFetchText(url, getRequestInitWithAuthHeader())
+      consoleFetchText(url)
         .then((response) => {
           if (isEmpty(response) || typeof response !== 'string') {
             setPreviewError(t('No logs found'));
@@ -327,7 +326,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${lines}`;
       setIsLoading(true);
       setError(undefined);
-      consoleFetchText(url, getRequestInitWithAuthHeader())
+      consoleFetchText(url)
         .then((response: string) => {
           setIsLoading(false);
           if (isEmpty(response) || typeof response !== 'string') {

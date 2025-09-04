@@ -40,7 +40,7 @@ import {
 import { toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
 import { getFetchErrorMessage } from '../error';
-import { AuthStatus, useAuth } from '../hooks/useAuth';
+import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import {
   attachmentDelete,
@@ -463,9 +463,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         setStreamController(controller);
         const response = await consoleFetch(QUERY_ENDPOINT, {
           method: 'POST',
-          headers: {
+          headers: Object.assign({}, getRequestInitWithAuthHeader().headers, {
             'Content-Type': 'application/json',
-          },
+          }),
           body: JSON.stringify(requestJSON),
           signal: controller.signal,
         });
