@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import { Alert, Spinner } from '@patternfly/react-core';
 
+import { getApiUrl } from '../config';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 
-const READINESS_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/readiness';
+const READINESS_ENDPOINT = getApiUrl('/readiness');
 const REQUEST_TIMEOUT = 5 * 60 * 1000;
 
 const ReadinessAlert: React.FC = () => {

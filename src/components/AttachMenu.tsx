@@ -30,7 +30,6 @@ import {
 } from '@patternfly/react-icons';
 
 import { AttachmentTypes } from '../attachments';
-import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import { attachmentSet } from '../redux-actions';
@@ -161,7 +160,7 @@ const AttachMenu: React.FC = () => {
       } else if (kind === 'Alert') {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
-        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader())
+        consoleFetchJSON(ALERTS_ENDPOINT)
           .then((response) => {
             let alert;
             each(response?.data?.groups, (group) => {

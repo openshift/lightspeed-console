@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 
+import { getApiUrl } from '../config';
+
 export enum AuthStatus {
   Authorized = 'Authorized',
   AuthorizedError = 'AuthorizedError',
@@ -9,7 +11,7 @@ export enum AuthStatus {
   NotAuthorized = 'NotAuthorized',
 }
 
-const AUTHORIZATION_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/authorized';
+const AUTHORIZATION_ENDPOINT = getApiUrl('/authorized');
 
 type AuthorizationResponse = {
   user_id: string;
@@ -18,7 +20,7 @@ type AuthorizationResponse = {
 
 export const getRequestInitWithAuthHeader = (): RequestInit => {
   const init: RequestInit = {};
-  const bearerToken = process.env.REACT_BEARER_TOKEN;
+  const bearerToken = process.env.OLS_API_BEARER_TOKEN;
   if (bearerToken) {
     init.headers = { Authorization: `Bearer ${bearerToken}` };
   }
