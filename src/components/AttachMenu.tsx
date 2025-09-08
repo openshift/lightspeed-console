@@ -272,6 +272,7 @@ const AttachMenu: React.FC = () => {
   const showLogs =
     !!context &&
     [
+      'CronJob',
       'DaemonSet',
       'Deployment',
       'DeploymentConfig',
