@@ -30,6 +30,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { AttachmentTypes } from '../attachments';
+import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import { attachmentSet } from '../redux-actions';
@@ -39,6 +40,13 @@ import AttachLogModal from './AttachLogModal';
 import ResourceIcon from './ResourceIcon';
 
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
+
+// Managed clusters have an additional info object that lives in a namespace whose name matches the cluster name
+const fetchManagedClusterInfo = async (clusterName: string): Promise<K8sResourceKind> => {
+  const endpoint = `/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/${clusterName}/managedclusterinfos/${clusterName}`;
+  const response = await consoleFetchJSON(endpoint, 'get', getRequestInitWithAuthHeader());
+  return response;
+};
 
 // Sanity check on the YAML file size
 const MAX_FILE_SIZE_KB = 500;
@@ -194,6 +202,56 @@ const AttachMenu: React.FC = () => {
             setLoaded();
           });
       } else if (
+        // Only show this attachment option when the object in play is a ManagedCluster
+        kind === 'cluster.open-cluster-management.io~v1~ManagedCluster' &&
+        attachmentType === AttachmentTypes.YAML
+      ) {
+        setLoading();
+
+        // First attach the ManagedCluster object
+        if (context) {
+          const clusterData = cloneDeep(context);
+          delete clusterData.metadata.managedFields;
+          try {
+            const clusterYaml = dumpYAML(clusterData, { lineWidth: -1 }).trim();
+            dispatch(
+              attachmentSet(AttachmentTypes.YAML, kind, name, undefined, namespace, clusterYaml),
+            );
+          } catch (e) {
+            setError(t('Error converting ManagedCluster to YAML: {{e}}', { e }));
+            setLoaded();
+            return;
+          }
+        }
+
+        // Then fetch and attach the ManagedClusterInfo object
+        fetchManagedClusterInfo(name)
+          .then((clusterInfo) => {
+            const data = cloneDeep(clusterInfo);
+            delete data.metadata.managedFields;
+            try {
+              const yaml = dumpYAML(data, { lineWidth: -1 }).trim();
+              dispatch(
+                attachmentSet(
+                  AttachmentTypes.YAML,
+                  'ManagedClusterInfo',
+                  name,
+                  undefined,
+                  name,
+                  yaml,
+                ),
+              );
+              close();
+            } catch (e) {
+              setError(t('Error converting ManagedClusterInfo to YAML: {{e}}', { e }));
+            }
+            setLoaded();
+          })
+          .catch((err) => {
+            setError(t('Error fetching cluster info: {{err}}', { err }));
+            setLoaded();
+          });
+      } else if (
         context &&
         (attachmentType === AttachmentTypes.YAML || attachmentType === AttachmentTypes.YAMLFiltered)
       ) {
@@ -334,6 +392,11 @@ const AttachMenu: React.FC = () => {
             {kind === 'Alert' ? (
               <SelectOption value={AttachmentTypes.YAML}>
                 <FileCodeIcon /> {t('Alert')} {isLoading && <Spinner size="md" />}
+              </SelectOption>
+            ) : kind === 'cluster.open-cluster-management.io~v1~ManagedCluster' ? (
+              <SelectOption value={AttachmentTypes.YAML}>
+                <TaskIcon /> {t('Attach cluster info')}
+                {isLoading && <Spinner size="md" />}
               </SelectOption>
             ) : (
               <>
