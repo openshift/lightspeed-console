@@ -30,6 +30,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { AttachmentTypes } from '../attachments';
+import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import { attachmentSet } from '../redux-actions';
