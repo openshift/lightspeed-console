@@ -263,7 +263,12 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       selector = { matchExpressions: [{ key: 'job-name', operator: 'In', values: ownedJobNames }] };
     } else if (jobsLoaded) {
       // No owned jobs found, so keep selector empty to yield zero pods
-      selector = { matchLabels: { 'job-name': '__none__' } };
+      selector = {
+        matchExpressions: [
+          { key: 'job-name', operator: 'Exists' },
+          { key: 'job-name', operator: 'DoesNotExist' },
+        ],
+      };
     } else {
       selector = undefined;
     }
