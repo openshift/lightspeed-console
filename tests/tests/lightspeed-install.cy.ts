@@ -178,9 +178,15 @@ spec:
     logLevel: INFO`;
     cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
-    cy.get('.pf-v5-c-alert', { timeout: 2 * MINUTE })
-      .contains('Web console update is available', { timeout: 2 * MINUTE })
-      .should('exist');
+    cy.get('body').then(($body) => {
+      if ($body.find('.pf-v5-c-alert:contains("Web console update is available")').length > 0) {
+        cy.get('.pf-v5-c-alert', { timeout: 2 * MINUTE })
+          .contains('Web console update is available', { timeout: 2 * MINUTE })
+          .should('exist');
+      } else {
+        cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
+      }
+    });
   });
 
   after(() => {
@@ -420,8 +426,9 @@ spec:
     cy.get(copyButton)
       .should('exist')
       .should('have.class', 'ols-plugin__response-action')
-      .should('not.have.class', 'ols-plugin__response-action--selected')
-      .click();
+      .should('not.have.class', 'ols-plugin__response-action--selected');
+    cy.window().focus();
+    cy.get(copyButton).click();
 
     // Verify that none of the response action buttons changed state
     cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');

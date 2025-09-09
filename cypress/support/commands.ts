@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as _ from 'lodash';
 
+import { getApiUrl } from '../../src/config';
+
 import Loggable = Cypress.Loggable;
 import Timeoutable = Cypress.Timeoutable;
 import Withinable = Cypress.Withinable;
@@ -225,23 +227,19 @@ Cypress.Commands.add(
     conversationId: string | null = null,
     attachments: Array<Attachment> = [],
   ) => {
-    cy.intercept(
-      'POST',
-      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query',
-      (request) => {
-        expect(request.body.media_type).to.equal('application/json');
-        expect(request.body.conversation_id).to.equal(conversationId);
-        expect(request.body.query).to.equal(query);
+    cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
+      expect(request.body.media_type).to.equal('application/json');
+      expect(request.body.conversation_id).to.equal(conversationId);
+      expect(request.body.query).to.equal(query);
 
-        expect(request.body.attachments).to.have.lengthOf(attachments.length);
-        attachments.forEach((a, i) => {
-          expect(request.body.attachments[i].attachment_type).to.equal(a.attachment_type);
-          expect(request.body.attachments[i].content_type).to.equal(a.content_type);
-        });
+      expect(request.body.attachments).to.have.lengthOf(attachments.length);
+      attachments.forEach((a, i) => {
+        expect(request.body.attachments[i].attachment_type).to.equal(a.attachment_type);
+        expect(request.body.attachments[i].content_type).to.equal(a.content_type);
+      });
 
-        request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
-      },
-    ).as(alias);
+      request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
+    }).as(alias);
   },
 );
 
@@ -256,22 +254,18 @@ Cypress.Commands.add(
     userFeedback: string,
     userQuestionStartsWith: string,
   ) => {
-    cy.intercept(
-      'POST',
-      '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/feedback',
-      (request) => {
-        expect(_.omit(request.body, 'user_question')).to.deep.equal({
-          /* eslint-disable camelcase */
-          conversation_id: conversationId,
-          sentiment,
-          user_feedback: userFeedback,
-          llm_response: 'Mock OLS response',
-          /* eslint-enable camelcase */
-        });
-        expect(request.body.user_question.startsWith(userQuestionStartsWith)).to.equal(true);
+    cy.intercept('POST', getApiUrl('/v1/feedback'), (request) => {
+      expect(_.omit(request.body, 'user_question')).to.deep.equal({
+        /* eslint-disable camelcase */
+        conversation_id: conversationId,
+        sentiment,
+        user_feedback: userFeedback,
+        llm_response: 'Mock OLS response',
+        /* eslint-enable camelcase */
+      });
+      expect(request.body.user_question.startsWith(userQuestionStartsWith)).to.equal(true);
 
-        request.reply(USER_FEEDBACK_MOCK_RESPONSE);
-      },
-    ).as(alias);
+      request.reply(USER_FEEDBACK_MOCK_RESPONSE);
+    }).as(alias);
   },
 );

@@ -30,7 +30,6 @@ import {
 
 import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
-import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { attachmentSet } from '../redux-actions';
 import CopyAction from './CopyAction';
 import Modal from './Modal';
@@ -221,6 +220,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
 
   const dispatch = useDispatch();
 
+  const isCronJob = resource.kind === 'CronJob';
   const isHPA = resource.kind === 'HorizontalPodAutoscaler';
   const kind = isHPA ? resource.spec?.scaleTargetRef?.kind : resource.kind;
   const name = isHPA ? resource.spec?.scaleTargetRef?.name : resource.metadata?.name;
@@ -244,9 +244,34 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     isHPA ? { isList: false, kind, name, namespace } : null,
   );
 
+  // For CronJobs, find jobs owned by the CronJob then select pods with a matching "job-name" label
+  const [jobs, jobsLoaded, jobsError] = useK8sWatchResource<K8sResourceKind[]>(
+    isCronJob ? { isList: true, kind: 'Job', namespace } : null,
+  );
+
   let selector;
   if (kind === 'Job') {
     selector = { 'job-name': name };
+  } else if (isCronJob) {
+    const ownedJobNames = (jobs || [])
+      .filter((job) =>
+        job.metadata?.ownerReferences?.find((owner) => owner.uid === resource?.metadata?.uid),
+      )
+      .map((job) => job.metadata?.name)
+      .filter(Boolean);
+    if (jobsLoaded && ownedJobNames.length > 0) {
+      selector = { matchExpressions: [{ key: 'job-name', operator: 'In', values: ownedJobNames }] };
+    } else if (jobsLoaded) {
+      // No owned jobs found, so keep selector empty to yield zero pods
+      selector = {
+        matchExpressions: [
+          { key: 'job-name', operator: 'Exists' },
+          { key: 'job-name', operator: 'DoesNotExist' },
+        ],
+      };
+    } else {
+      selector = undefined;
+    }
   } else if (kind === 'VirtualMachine' || kind === 'VirtualMachineInstance') {
     selector = { 'vm.kubevirt.io/name': name };
   } else if (scaleTarget && scaleTargetLoaded && !scaleTargetError) {
@@ -256,7 +281,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   }
 
   const [pods, podsLoaded, podsError] = useK8sWatchResource<K8sResourceKind[]>(
-    showPodInput ? { isList: true, kind: 'Pod', namespace, selector } : null,
+    showPodInput && selector !== undefined
+      ? { isList: true, kind: 'Pod', namespace, selector }
+      : null,
   );
 
   const changePod = (newPod: K8sResourceKind) => {
@@ -293,7 +320,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     debounce((url: string) => {
       setIsPreviewLoading(true);
       setPreviewError(undefined);
-      consoleFetchText(url, getRequestInitWithAuthHeader())
+      consoleFetchText(url)
         .then((response) => {
           if (isEmpty(response) || typeof response !== 'string') {
             setPreviewError(t('No logs found'));
@@ -327,7 +354,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       const url = `/api/kubernetes/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${lines}`;
       setIsLoading(true);
       setError(undefined);
-      consoleFetchText(url, getRequestInitWithAuthHeader())
+      consoleFetchText(url)
         .then((response: string) => {
           setIsLoading(false);
           if (isEmpty(response) || typeof response !== 'string') {
@@ -370,7 +397,10 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
             {showPodInput && (
               <FormGroup label="Pod">
                 {podsError && <Error title={t('Failed to load pods')}>{podsError.message}</Error>}
-                {podsLoaded ? (
+                {jobsError && isCronJob && (
+                  <Error title={t('Failed to load jobs')}>{jobsError.message}</Error>
+                )}
+                {podsLoaded && pods ? (
                   pods.length === 0 ? (
                     <Alert
                       className="ols-plugin__alert"
@@ -388,7 +418,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
                 )}
               </FormGroup>
             )}
-            {(!showPodInput || (podsLoaded && pods.length > 0)) && (
+            {(!showPodInput || (podsLoaded && pods && pods.length > 0)) && (
               <>
                 <FormGroup label="Container">
                   <ContainerInput

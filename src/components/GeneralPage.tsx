@@ -38,8 +38,9 @@ import {
 } from '@patternfly/react-icons';
 
 import { toOLSAttachment } from '../attachments';
+import { getApiUrl } from '../config';
 import { getFetchErrorMessage } from '../error';
-import { AuthStatus, useAuth } from '../hooks/useAuth';
+import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import {
   attachmentDelete,
@@ -66,7 +67,7 @@ import ToolModal from './ResponseToolModal';
 
 import './general-page.css';
 
-const QUERY_ENDPOINT = '/api/proxy/plugin/lightspeed-console-plugin/ols/v1/streaming_query';
+const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
 
 type QueryResponseStart = {
   event: 'start';
@@ -462,9 +463,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         setStreamController(controller);
         const response = await consoleFetch(QUERY_ENDPOINT, {
           method: 'POST',
-          headers: {
+          headers: Object.assign({}, getRequestInitWithAuthHeader().headers, {
             'Content-Type': 'application/json',
-          },
+          }),
           body: JSON.stringify(requestJSON),
           signal: controller.signal,
         });
@@ -721,11 +722,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
               {t('Always review AI generated content prior to use.')}
             </HelperTextItem>
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
-              {t('Want to contact the OpenShift Lightspeed team?')}{' '}
+              {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
               <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-                Click here
-              </ExternalLink>{' '}
-              to email us.
+                email the Red Hat team
+              </ExternalLink>
             </HelperTextItem>
           </HelperText>
 
