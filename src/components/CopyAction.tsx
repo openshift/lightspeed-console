@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardCopyButton } from '@patternfly/react-core';
 
+import { copyToClipboard } from '../clipboard';
 import { useBoolean } from '../hooks/useBoolean';
 
 type Props = {
@@ -21,13 +22,8 @@ const CopyAction: React.FC<Props> = ({ className, value }) => {
       exitDelay={isCopied ? 1500 : 600}
       id="ols-plugin-copy-button"
       onClick={() => {
-        try {
-          navigator.clipboard.writeText(value);
-          setCopied();
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error('Failed to copy to clipboard: ', err);
-        }
+        copyToClipboard(value);
+        setCopied();
       }}
       onTooltipHidden={setNotCopied}
       textId="code-content"

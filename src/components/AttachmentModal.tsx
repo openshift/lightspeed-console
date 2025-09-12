@@ -9,16 +9,17 @@ import {
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
+  Content,
+  ContentVariants,
   Form,
   Split,
   SplitItem,
-  Text,
-  TextVariants,
 } from '@patternfly/react-core';
 import { PencilAltIcon, UndoIcon } from '@patternfly/react-icons';
 
 import { AttachmentTypes, isAttachmentChanged } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
+import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import { attachmentSet, openAttachmentClear, openAttachmentSet } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment } from '../types';
@@ -30,14 +31,14 @@ const ResourceHeader: React.FC = () => {
   const attachment: Attachment = useSelector((s: State) => s.plugins?.ols?.get('openAttachment'));
 
   return (
-    <Text className="ols-plugin__code-block__title" component={TextVariants.h5}>
+    <Content className="ols-plugin__code-block__title" component={ContentVariants.h5}>
       <ResourceIcon kind={attachment?.kind} /> {attachment?.name}
       {isAttachmentChanged(attachment) && (
         <span className="ols-plugin__inline-icon">
           <PencilAltIcon />
         </span>
       )}
-    </Text>
+    </Content>
   );
 };
 
@@ -54,9 +55,7 @@ const Editor: React.FC<EditorProps> = ({ onChange }) => {
     monaco.editor.onDidChangeMarkers = () => {};
   };
 
-  // In more recent versions of the dynamic plugin SDK, the useUserSettings hook can be used to get
-  // the current theme, but to maintain 4.15 compatibility we are not upgrading the SDK yet
-  const isDarkTheme = document.documentElement.classList.contains('pf-v5-theme-dark');
+  const [isDarkTheme] = useIsDarkTheme();
 
   return (
     <CodeEditor
@@ -170,44 +169,42 @@ const AttachmentModal: React.FC = () => {
         )}
       </p>
       {isEditing ? <Editor onChange={setEditorValue} /> : <Viewer />}
-      <div className="ols-plugin__attachment-modal-actions">
-        <Form>
-          {isEditing ? (
-            <ActionGroup>
-              <Button onClick={onSave} type="submit" variant="primary">
-                {t('Save')}
-              </Button>
-              <Button onClick={setNotEditing} variant="link">
-                {t('Cancel')}
-              </Button>
-            </ActionGroup>
-          ) : (
-            <Split>
-              <SplitItem isFilled>
+      <Form>
+        {isEditing ? (
+          <ActionGroup>
+            <Button onClick={onSave} type="submit" variant="primary">
+              {t('Save')}
+            </Button>
+            <Button onClick={setNotEditing} variant="link">
+              {t('Cancel')}
+            </Button>
+          </ActionGroup>
+        ) : (
+          <Split>
+            <SplitItem isFilled>
+              <ActionGroup>
+                {attachment?.isEditable && (
+                  <Button onClick={setEditing} type="submit" variant="primary">
+                    {t('Edit')}
+                  </Button>
+                )}
+                <Button onClick={onClose} variant="link">
+                  {t('Dismiss')}
+                </Button>
+              </ActionGroup>
+            </SplitItem>
+            {attachment?.originalValue && attachment.originalValue !== attachment.value && (
+              <SplitItem>
                 <ActionGroup>
-                  {attachment?.isEditable && (
-                    <Button onClick={setEditing} type="submit" variant="primary">
-                      {t('Edit')}
-                    </Button>
-                  )}
-                  <Button onClick={onClose} variant="link">
-                    {t('Dismiss')}
+                  <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
+                    {t('Revert to original')}
                   </Button>
                 </ActionGroup>
               </SplitItem>
-              {attachment?.originalValue && attachment.originalValue !== attachment.value && (
-                <SplitItem>
-                  <ActionGroup>
-                    <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
-                      {t('Revert to original')}
-                    </Button>
-                  </ActionGroup>
-                </SplitItem>
-              )}
-            </Split>
-          )}
-        </Form>
-      </div>
+            )}
+          </Split>
+        )}
+      </Form>
     </Modal>
   );
 };

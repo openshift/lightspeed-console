@@ -3,7 +3,7 @@ USER root
 
 ADD . /usr/src/app
 WORKDIR /usr/src/app
-RUN NODE_OPTIONS=--max-old-space-size=2048 npm ci --omit dev --loglevel verbose
+RUN NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=dev --omit=optional --loglevel verbose --ignore-scripts --no-fund
 RUN npm run build --loglevel verbose
 
 FROM registry.access.redhat.com/ubi9/nginx-124:latest
