@@ -193,20 +193,16 @@ spec:
                 value: "$(steps.get-kubeconfig.results.consoleURL)"
             image: cypress/browsers:24.0.0
             script: |
-              echo "---------------------------------------------"
-              echo "${CYPRESS_BASE_URL}"
-              echo "---------------------------------------------"
-              echo "${COMMIT_SHA}"
-              echo "---------------------------------------------"
-              echo "${CYPRESS_CONSOLE_IMAGE}"
-              echo "---------------------------------------------"
-              echo "$(cat ${CYPRESS_KUBECONFIG_PATH})"
-              echo "---------------------------------------------"
+              echo "COMMIT_SHA: ${COMMIT_SHA}"
+              echo "CYPRESS_BASE_URL: ${CYPRESS_BASE_URL}"
+              echo "CYPRESS_CONSOLE_IMAGE: ${CYPRESS_CONSOLE_IMAGE}"
               export CYPRESS_LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
-              echo "${CYPRESS_LOGIN_PASSWORD}"
+              echo "CYPRESS_LOGIN_PASSWORD: ${CYPRESS_LOGIN_PASSWORD}"
+              echo "CYPRESS_KUBECONFIG_PATH: ${CYPRESS_KUBECONFIG_PATH}"
               echo "---------------------------------------------"
+              cat "${CYPRESS_KUBECONFIG_PATH}"
               echo "---------------------------------------------"
-              wget -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
+              wget --no-verbose -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
                   && tar -xvzf oc.tar.gz \
                   && chmod +x kubectl oc \
                   && mv oc kubectl /usr/local/bin/
@@ -214,10 +210,10 @@ spec:
               export OPERATOR_SDK_VERSION=1.36.1
               export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
               export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}
-              wget -O /usr/local/bin/operator-sdk ${OPERATOR_SDK_DL_URL}/operator-sdk_linux_${ARCH}
+              wget --no-verbose -O /usr/local/bin/operator-sdk ${OPERATOR_SDK_DL_URL}/operator-sdk_linux_${ARCH}
               chmod +x /usr/local/bin/operator-sdk
-              operator-sdk version
               echo "---------------------------------------------"
+              operator-sdk version
               echo "---------------------------------------------"
               mkdir -pv ~/.cache/xdgr
               export XDG_RUNTIME_DIR=$PATH:~/.cache/xdgr
@@ -230,9 +226,10 @@ spec:
               git config --global user.name olsci
               git fetch origin ${COMMIT_SHA}
               git checkout ${COMMIT_SHA}
-              npm install
-              npm -v
               echo "---------------------------------------------"
+              echo "npm version: $(npm -v)"
+              echo "---------------------------------------------"
+              npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
               set +e
               NO_COLOR=1 npx cypress run; err_status=$?
