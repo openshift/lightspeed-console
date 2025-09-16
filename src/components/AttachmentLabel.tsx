@@ -28,11 +28,18 @@ const AttachmentLabel: React.FC<AttachmentLabelProps> = ({ attachment, isEditabl
     return null;
   }
 
-  const { attachmentType, kind, name } = attachment;
+  const { attachmentType, kind, name, value } = attachment;
   const isChanged = isAttachmentChanged(attachment);
 
   return (
-    <Tooltip content={isChanged ? t('Preview attachment - modified') : t('Preview attachment')}>
+    <Tooltip
+      content={
+        <>
+          {isChanged ? t('Preview attachment - modified') : t('Preview attachment')}{' '}
+          {t('({{num}} characters)', { num: value?.length?.toLocaleString() ?? '0' })}
+        </>
+      }
+    >
       <Label className="ols-plugin__context-label" onClick={onClick} onClose={onClose}>
         <ResourceIcon kind={kind} />
         <span className="ols-plugin__context-label-text">{name}</span>
