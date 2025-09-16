@@ -10,15 +10,31 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      patternfly:
+      i18n:
         patterns:
-          - "@patternfly/*"
+          - "i18next-parser"
+          - "pluralize"
+          - "react-i18next"
       lint:
         patterns:
           - "@typescript-eslint/*"
           - "eslint"
-          - "eslint-config-prettier"
-          - "eslint-plugin-*"
+          - "eslint-*"
           - "prettier"
           - "stylelint"
-          - "stylelint-config-standard"
+          - "stylelint-*"
+      patternfly:
+        patterns:
+          - "@patternfly/*"
+      test:
+        patterns:
+          - "@cypress/*"
+          - "cypress"
+          - "cypress-*"
+          - "junit-report-merger"
+          - "mocha-junit-reporter"
+          - "mochawesome"
+          - "mochawesome-*"
+      types:
+        patterns:
+          - "@types/*"
