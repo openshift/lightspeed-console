@@ -48,8 +48,8 @@ const fetchManagedClusterInfo = async (clusterName: string): Promise<K8sResource
   return response;
 };
 
-// Sanity check on the YAML file size
-const MAX_FILE_SIZE_KB = 500;
+// Sanity check on the upload file size
+const MAX_FILE_SIZE_MB = 1;
 
 type FileUploadSelectOptionProps = {
   setError: (error: string) => void;
@@ -72,9 +72,9 @@ const FileUploadSelectOption: React.FC<FileUploadSelectOptionProps> = ({ setErro
       if (!file) {
         return;
       }
-      if (file.size > MAX_FILE_SIZE_KB * 1024) {
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
         setError(
-          t('Uploaded file is too large. Max size is {{max}} KB.', { max: MAX_FILE_SIZE_KB }),
+          t('Uploaded file is too large. Max size is {{max}} MB.', { max: MAX_FILE_SIZE_MB }),
         );
         return;
       }
