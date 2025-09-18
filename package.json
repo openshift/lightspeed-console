@@ -55,7 +55,7 @@
     "@cypress/webpack-preprocessor": "^7.0.1",
     "@types/node": "^24.5.0",
     "@types/react": "^17.0.88",
-    "@typescript-eslint/eslint-plugin": "^8.43.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.32.0",
     "cypress": "^15.2.0",
     "cypress-multi-reporters": "^2.0.5",
