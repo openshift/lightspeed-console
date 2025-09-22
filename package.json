@@ -51,7 +51,7 @@
     "webpack-cli": "^6.0.1"
   },
   "devDependencies": {
-    "@cypress/grep": "^4.1.1",
+    "@cypress/grep": "^5.0.0",
     "@cypress/webpack-preprocessor": "^7.0.1",
     "@types/node": "^24.5.2",
     "@types/react": "^17.0.88",
@@ -66,9 +66,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "i18next-parser": "^9.3.0",
-    "junit-report-merger": "^7.0.1",
+    "junit-report-merger": "^8.0.0",
     "mocha-junit-reporter": "^2.2.1",
-    "mochawesome": "^7.1.3",
+    "mochawesome": "^7.1.4",
     "mochawesome-merge": "^4.4.1",
     "mochawesome-report-generator": "^6.2.0",
     "pluralize": "^8.0.0",
