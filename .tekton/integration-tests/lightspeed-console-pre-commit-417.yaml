@@ -227,11 +227,12 @@ spec:
               echo "---------------------------------------------"
               echo "npm version: $(npm -v)"
               echo "---------------------------------------------"
-              npm ci --omit=optional --no-fund
+              NODE_OPTIONS=--max-old-space-size=2048 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
               export CYPRESS_LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
               set +e
               NO_COLOR=1 npx cypress run; err_status=$?
+              echo "---------------------------------------------"
               ls ./gui_test_screenshots
               mv ./gui_test_screenshots /workspace/artifacts/
               set -e
@@ -239,6 +240,7 @@ spec:
                 echo "Test case failed with error: ${err_status}"
                 exit $err_status
               fi
+              echo "---------------------------------------------"
           - name: gather-cluster-resources
             onError: continue
             ref:
