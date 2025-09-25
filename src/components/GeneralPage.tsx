@@ -57,6 +57,7 @@ import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import AttachmentModal from './AttachmentModal';
 import AttachMenu from './AttachMenu';
 import AttachmentLabel from './AttachmentLabel';
+import AttachmentsSizeAlert from './AttachmentsSizeAlert';
 import CopyAction from './CopyAction';
 import ImportAction from './ImportAction';
 import Feedback from './Feedback';
@@ -663,6 +664,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
           <ChatHistoryEntry conversationID={conversationID} entry={entry} entryIndex={i} key={i} />
         ))}
+        <AttachmentsSizeAlert />
         <ReadinessAlert />
         <div ref={chatHistoryEndRef} />
       </PageSection>
