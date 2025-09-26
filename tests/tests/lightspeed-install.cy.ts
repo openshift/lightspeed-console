@@ -56,6 +56,8 @@ const READINESS_TITLE = 'Waiting for OpenShift Lightspeed service';
 const READINESS_TEXT =
   'The OpenShift Lightspeed service is not yet ready to receive requests. If this message persists, please check the OLSConfig.';
 
+const ACM_ATTACH_CLUSTER_TEXT = 'Attach cluster info';
+
 const USER_FEEDBACK_TITLE = 'Why did you choose this rating?';
 const USER_FEEDBACK_TEXT =
   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.";
@@ -703,10 +705,10 @@ metadata:
     cy.get(mainButton).click();
     cy.get(popover).should('exist');
 
-    // Test that the attach menu shows "Attach cluster info" option for ManagedCluster
+    // Test that the attach menu shows the option for ManagedCluster
     cy.get(attachMenuButton).click();
     cy.get(attachMenu)
-      .should('include.text', 'Attach cluster info')
+      .should('include.text', ACM_ATTACH_CLUSTER_TEXT)
       .should('include.text', 'Upload from computer')
       .should('not.include.text', 'Full YAML file')
       .should('not.include.text', 'Filtered YAML')
@@ -776,8 +778,7 @@ metadata:
       },
     ).as('getManagedClusterInfo');
 
-    // Click "Attach cluster info" button
-    cy.get(attachMenu).find('button').contains('Attach cluster info').click();
+    cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
 
     // Wait for both API calls
     cy.wait('@getManagedCluster');
@@ -815,8 +816,10 @@ metadata:
 
     // Test submitting a prompt with cluster attachments
     cy.interceptQuery('queryStub', PROMPT_SUBMITTED, null, [
-      { attachmentType: 'yaml', contentType: 'application/yaml' },
-      { attachmentType: 'yaml', contentType: 'application/yaml' },
+      // eslint-disable-next-line camelcase
+      { attachment_type: 'yaml', content_type: 'application/yaml' },
+      // eslint-disable-next-line camelcase
+      { attachment_type: 'yaml', content_type: 'application/yaml' },
     ]);
     cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
     cy.wait('@queryStub');
@@ -860,9 +863,8 @@ metadata:
       },
     ).as('getManagedClusterInfoError');
 
-    // Click "Attach cluster info" button
     cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('button').contains('Attach cluster info').click();
+    cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
 
     // Wait for API calls
     cy.wait('@getManagedCluster');
@@ -870,5 +872,22 @@ metadata:
 
     // Verify error is displayed
     cy.get(attachMenu).should('include.text', 'Error fetching cluster info');
+  });
+
+  it('Test ACM search resources page context for Pod', () => {
+    // ACM search resources page
+    cy.visit('/multicloud/search/resources?kind=Pod&name=test-pod&namespace=test-namespace');
+
+    cy.get(mainButton).click();
+    cy.get(popover).should('exist');
+
+    cy.get(attachMenuButton).click();
+    cy.get(attachMenu)
+      .should('include.text', 'Upload from computer')
+      .should('include.text', 'Full YAML file')
+      .should('include.text', 'Filtered YAML')
+      .should('include.text', 'Events')
+      .should('include.text', 'Logs')
+      .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
   });
 });
