@@ -67,7 +67,7 @@ spec:
         description: Skip checks against built image
         name: skip-checks
         type: string
-      - default: "true"
+      - default: "false"
         description: Execute the build with network isolation
         name: hermetic
         type: string
@@ -80,7 +80,7 @@ spec:
           1h, 2d, 3w for hours, days, and weeks, respectively.
         name: image-expires-after
         type: string
-      - default: "true"
+      - default: "false"
         description: Build a source image.
         name: build-source-image
         type: string
