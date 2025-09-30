@@ -30,8 +30,11 @@ spec:
   - name: build-platforms
     value:
     - linux/x86_64
+    - linux-mxlarge/arm64
   - name: dockerfile
     value: Dockerfile
+  - name: prefetch-input
+    value: '{"type": "npm", "path": "."}'    
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -67,7 +70,7 @@ spec:
       description: Skip checks against built image
       name: skip-checks
       type: string
-    - default: "false"
+    - default: "true"
       description: Execute the build with network isolation
       name: hermetic
       type: string
@@ -80,7 +83,7 @@ spec:
         1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
       type: string
-    - default: "false"
+    - default: "true"
       description: Build a source image.
       name: build-source-image
       type: string
@@ -139,7 +142,7 @@ spec:
         - name: name
           value: init
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:afc8d0af71c24285599120946b29eea2ab56663c5f49c6ca80ba12bf56ef2371
+          value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:abf231cfc5a68b56f68a8ac9bb26dca3c3e434c88dd9627c72bdec0b8c335c67
         - name: kind
           value: task
         resolver: bundles
