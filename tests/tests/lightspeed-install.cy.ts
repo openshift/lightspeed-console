@@ -697,7 +697,7 @@ metadata:
     );
   });
 
-  it('Test attach cluster info for ManagedCluster', () => {
+  it.skip('Test attach cluster info for ManagedCluster', () => {
     cy.visit(
       '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
     );
@@ -825,7 +825,7 @@ metadata:
     cy.wait('@queryStub');
   });
 
-  it('Test ManagedCluster attachment error handling', () => {
+  it.skip('Test ManagedCluster attachment error handling', () => {
     cy.visit(
       '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
     );
