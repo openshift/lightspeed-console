@@ -111,7 +111,7 @@ describe('Lightspeed related features', () => {
       );
     } else if (Cypress.env('BUNDLE_IMAGE')) {
       cy.exec(
-        `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
       cy.exec(
         `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
@@ -122,7 +122,7 @@ describe('Lightspeed related features', () => {
       );
     } else {
       cy.exec(
-        `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
       cy.exec(
         `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
