@@ -656,12 +656,12 @@ spec:
   });
 
   it('Test file upload', () => {
-    const MAX_FILE_SIZE_KB = 500;
+    const MAX_FILE_SIZE_MB = 1;
 
     cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
     cy.get(attachMenuButton).click();
-    cy.contains('Upload from computer').click();
+    cy.get(attachMenu).find('button').contains('Upload from computer').click();
 
     // File with invalid YAML
     cy.get(fileInput).selectFile(
@@ -674,14 +674,14 @@ spec:
     cy.get(attachMenu).contains('Uploaded file is not valid YAML');
 
     // File that is too large
-    const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_KB * 1024 + 1);
+    const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_MB * 1024 * 1024 + 1);
     cy.get(fileInput).selectFile(
       {
         contents: Cypress.Buffer.from(largeFileContent),
       },
       { force: true },
     );
-    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_KB} KB.`);
+    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_MB} MB.`);
 
     // Valid YAML Upload
     cy.get(fileInput).selectFile(
@@ -789,7 +789,7 @@ metadata:
       .should('include.text', 'test-cluster')
       .should('include.text', 'YAML')
       .find('button')
-      .should('have.length', 2); // Should have both ManagedCluster and ManagedClusterInfo attachments
+      .should('have.length', 2);
 
     // Test the ManagedCluster attachment preview
     cy.get(attachments).find('button').contains('test-cluster').first().click();
