@@ -75,7 +75,7 @@ spec:
               - name: version
                 value: "$(steps.pick-version.results.version)"
               - name: instanceType
-                value: "m5.large"
+                value: "m5.xlarge"
               - name: imageContentSources
                 value: |
                   - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-rhel9-operator
