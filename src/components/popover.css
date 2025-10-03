@@ -80,10 +80,6 @@
   background-image: url('../assets/logo-dark.svg');
 }
 
-.ols-plugin__popover-clear-chat {
-  margin-left: var(--pf-t--global--spacer--md);
-}
-
 .ols-plugin__popover-close, .ols-plugin__popover-control {
   font-size: 1rem;
 }
@@ -95,6 +91,5 @@
 }
 
 .ols-plugin__popover-control {
-  float: right;
   min-width: 2rem;
 }

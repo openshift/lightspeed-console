@@ -16,11 +16,15 @@ import {
   Stack,
   StackItem,
   Title,
+  Tooltip,
 } from '@patternfly/react-core';
 import {
+  CheckIcon,
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
+  OutlinedCopyIcon,
+  TimesIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 import {
@@ -427,6 +431,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [authStatus] = useAuth();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
+  const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
 
@@ -453,6 +458,33 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     closeNewChatModal();
   }, [clearChat, closeNewChatModal]);
 
+  const copyConversation = React.useCallback(async () => {
+    try {
+      const chatEntries = chatHistory.toJS();
+      let conversationText = '';
+
+      chatEntries.forEach((entry: ChatEntry) => {
+        if (entry.who === 'user') {
+          conversationText += `You: ${entry.text}\n\n`;
+        } else if (entry.who === 'ai' && entry.text && !entry.isStreaming) {
+          conversationText += `OpenShift Lightspeed: ${entry.text}\n\n`;
+        }
+      });
+
+      const trimmed = conversationText.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      await navigator.clipboard.writeText(trimmed);
+      setCopied();
+      setTimeout(setNotCopied, 2000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to copy conversation to clipboard: ', err);
+    }
+  }, [chatHistory, setCopied, setNotCopied]);
+
   return (
     <Stack>
       <StackItem>
@@ -463,19 +495,35 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             {/* @ts-expect-error: TS2786 */}
             <ChatbotHeaderTitle className="ols-plugin__header-title">
               <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
-              {chatHistory.size > 0 && (
-                <Button
-                  className="ols-plugin__popover-clear-chat"
-                  onClick={openNewChatModal}
-                  variant="primary"
-                >
-                  {t('Clear chat')}
-                </Button>
-              )}
             </ChatbotHeaderTitle>
           </ChatbotHeaderMain>
           {/* @ts-expect-error: TS2786 */}
-          <ChatbotHeaderActions>
+          <ChatbotHeaderActions className="ols-plugin__header-actions">
+            {chatHistory.size > 0 && (
+              <>
+                <Tooltip content={t('Clear chat')}>
+                  <Button
+                    className="ols-plugin__popover-control"
+                    data-test="ols-plugin__clear-chat-button"
+                    icon={<TimesIcon />}
+                    onClick={openNewChatModal}
+                    variant="plain"
+                  />
+                </Tooltip>
+                <Tooltip
+                  content={isCopied ? t('Copied') : t('Copy conversation')}
+                  data-test="ols-plugin__copy-conversation-tooltip"
+                >
+                  <Button
+                    className="ols-plugin__popover-control"
+                    data-test="ols-plugin__copy-conversation-button"
+                    icon={isCopied ? <CheckIcon /> : <OutlinedCopyIcon />}
+                    onClick={copyConversation}
+                    variant="plain"
+                  />
+                </Tooltip>
+              </>
+            )}
             {onExpand && (
               <Button
                 className="ols-plugin__popover-control"
