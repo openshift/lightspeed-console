@@ -100,7 +100,7 @@ describe('Lightspeed related features', () => {
         String(oauthorigin),
       );
     });
-    // If UI_install exists, install via UI
+    // If UI_INSTALL exists, install via UI
     // If running in nudges or pre-release, install with BUNDLE_IMAGE
     // Otherwise install the latest operator
     if (Cypress.env('UI_INSTALL')) {
