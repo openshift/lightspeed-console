@@ -18,6 +18,7 @@ const minimizeButton = `${popover} .ols-plugin__popover-control[title=Minimize]`
 const expandButton = `${popover} .ols-plugin__popover-control[title=Expand]`;
 const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`;
 const clearChatButton = `${popover} .ols-plugin__popover-clear-chat`;
+const copyConversationButton = `${popover} .ols-plugin__popover-copy-conversation`;
 const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
 const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
@@ -437,6 +438,47 @@ spec:
     cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');
     cy.get(responseAction).eq(0).should('not.have.class', 'ols-plugin__response-action--selected');
     cy.get(responseAction).eq(1).should('not.have.class', 'ols-plugin__response-action--selected');
+  });
+
+  it('Test copy conversation functionality', () => {
+    cy.visit('/search/all-namespaces');
+    cy.get(mainButton).click();
+
+    // Submit first prompt and wait for response
+    cy.interceptQuery('queryStub1', PROMPT_SUBMITTED);
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.wait('@queryStub1');
+
+    // Submit second prompt to create a conversation
+    const PROMPT_SUBMITTED_2 = 'Second test prompt';
+    cy.interceptQuery('queryStub2', PROMPT_SUBMITTED_2, CONVERSATION_ID);
+    cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
+    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+    cy.wait('@queryStub2');
+
+    // Verify both messages are in the chat history
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+    cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2).should('exist');
+    cy.get(aiChatEntry).should('have.length', 2);
+
+    // Copy conversation button should exist next to clear chat button
+    cy.get(copyConversationButton).should('exist').should('contain.text', 'Copy conversation');
+
+    // Click the copy conversation button
+    cy.window().focus();
+    cy.get(copyConversationButton).click();
+
+    // Button should show "Copied!" feedback temporarily
+    cy.get(copyConversationButton).should('contain.text', 'Copied!');
+
+    // Button text should revert back after feedback timeout
+    cy.get(copyConversationButton, { timeout: 3000 }).should('contain.text', 'Copy conversation');
+
+    // Copy conversation button should not exist on welcome page (when no chat history)
+    cy.get(clearChatButton).click();
+    cy.get(modal).find('button').contains('Erase and start new chat').click();
+    cy.get(copyConversationButton).should('not.exist');
   });
 
   it('Test attach options on pods list page', () => {

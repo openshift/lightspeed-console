@@ -381,6 +381,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [authStatus] = useAuth();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
+  const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
   const promptRef = React.useRef(null);
@@ -598,6 +599,30 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
     closeNewChatModal();
   }, [clearChat, closeNewChatModal]);
 
+  const copyConversation = React.useCallback(() => {
+    try {
+      const chatEntries = chatHistory.toJS();
+      let conversationText = '';
+
+      chatEntries.forEach((entry: ChatEntry) => {
+        if (entry.who === 'user') {
+          conversationText += `You: ${entry.text}\n\n`;
+        } else if (entry.who === 'ai' && entry.text && !entry.isStreaming) {
+          conversationText += `OpenShift Lightspeed: ${entry.text}\n\n`;
+        }
+      });
+
+      if (conversationText.trim()) {
+        navigator.clipboard.writeText(conversationText.trim());
+        setCopied();
+        setTimeout(setNotCopied, 2000);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to copy conversation to clipboard: ', err);
+    }
+  }, [chatHistory, setCopied, setNotCopied]);
+
   const isWelcomePage = chatHistory.size === 0;
 
   return (
@@ -645,6 +670,13 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 variant="primary"
               >
                 {t('Clear chat')}
+              </Button>
+              <Button
+                className="ols-plugin__popover-copy-conversation"
+                onClick={copyConversation}
+                variant="secondary"
+              >
+                {isCopied ? t('Copied!') : t('Copy conversation')}
               </Button>
             </LevelItem>
           </Level>
