@@ -230,6 +230,10 @@
   padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
 }
 
+.ols-plugin__header-actions {
+  float: right;
+}
+
 /* stylelint-disable-next-line selector-disallowed-list */
 .pf-v5-theme-dark .ols-plugin__header {
   background-image: url('../assets/logo-dark.svg');
