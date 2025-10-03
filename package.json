@@ -53,7 +53,7 @@
   "devDependencies": {
     "@cypress/grep": "^5.0.0",
     "@cypress/webpack-preprocessor": "^7.0.1",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.6.2",
     "@types/react": "^17.0.88",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.32.0",
