@@ -184,6 +184,9 @@ spec:
                 value: "/credentials/$(steps.get-kubeconfig.results.passwordPath)"
               - name: CYPRESS_BASE_URL
                 value: "$(steps.get-kubeconfig.results.consoleURL)"
+            resources:
+              limits:
+                memory: 8Gi
             image: cypress/browsers:24.0.0
             script: |
               echo "COMMIT_SHA: ${COMMIT_SHA}"
