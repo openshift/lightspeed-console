@@ -51,7 +51,7 @@
     "webpack-cli": "^6.0.1"
   },
   "devDependencies": {
-    "@cypress/grep": "^5.0.0",
+    "@cypress/grep": "^4.1.1",
     "@cypress/webpack-preprocessor": "^7.0.1",
     "@types/node": "^24.6.2",
     "@types/react": "^17.0.88",
