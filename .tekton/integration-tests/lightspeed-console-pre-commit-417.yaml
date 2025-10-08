@@ -93,7 +93,7 @@ spec:
     - name: extract-snapshot-metadata
       description: Extract console image and commit from SNAPSHOT input
       runAfter:
-        - provision-cluster
+        - eaas-provision-space
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
@@ -126,6 +126,7 @@ spec:
       description: Task to run tests from service repository
       runAfter:
         - extract-snapshot-metadata
+        - provision-cluster
       params:
         - name: console-image
           value: $(tasks.extract-snapshot-metadata.results.console-image)
