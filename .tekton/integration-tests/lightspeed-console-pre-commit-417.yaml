@@ -13,7 +13,6 @@ spec:
     - name: SNAPSHOT
       description: 'The JSON string representing the snapshot of the application under test.'
       default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
-      type: string
     - name: test-name
       description: 'The name of the test corresponding to a defined Konflux integration test.'
       default: 'ols-console-pre-commits'
@@ -262,8 +261,7 @@ spec:
             workingDir: "/workspace/"
             script: |
               #!/bin/bash
-              ls -la /workspace/
-              ls -la /workspace/artifacts/
+              echo "ls -la /workspace/artifacts/gui_test_screenshots:"
               ls -la /workspace/artifacts/gui_test_screenshots
           - name: push-artifacts
             onError: continue
@@ -299,7 +297,7 @@ spec:
                 echo "Cypress failed with exit code: $code"
                 exit "$code"
               fi
-              echo "Cypress tests passed."
+              echo "Cypress tests passed"
           - name: fail-if-any-step-failed
             ref:
               resolver: git
