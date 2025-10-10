@@ -69,7 +69,7 @@ const WAITING_FOR_RESPONSE_TEXT = 'Waiting for LLM provider...';
 
 const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
 
-describe('Lightspeed related features', () => {
+describe('OLS UI', () => {
   before(() => {
     cy.adminCLI(
       `oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
@@ -206,700 +206,712 @@ spec:
     );
   });
 
-  it('OpenShift Lightspeed popover UI is loaded and basic functionality is working', () => {
-    cy.visit('/');
+  describe('Core functionality', { tags: ['@core'] }, () => {
+    it('OpenShift Lightspeed popover UI is loaded and basic functionality is working', () => {
+      cy.visit('/');
 
-    cy.get(mainButton, { timeout: 5 * MINUTE })
-      .should('exist')
-      .click();
+      cy.get(mainButton, { timeout: 5 * MINUTE })
+        .should('exist')
+        .click();
 
-    // Test that popover UI was opened
-    cy.get(popover)
-      .should('exist')
-      .should('include.text', FOOTER_TEXT)
-      .should('include.text', PRIVACY_TEXT)
-      .should('include.text', READINESS_TITLE)
-      .should('include.text', READINESS_TEXT)
-      .find('h1')
-      .should('include.text', POPOVER_TITLE);
+      // Test that popover UI was opened
+      cy.get(popover)
+        .should('exist')
+        .should('include.text', FOOTER_TEXT)
+        .should('include.text', PRIVACY_TEXT)
+        .should('include.text', READINESS_TITLE)
+        .should('include.text', READINESS_TEXT)
+        .find('h1')
+        .should('include.text', POPOVER_TITLE);
 
-    // Test that we can submit a prompt
-    cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-    cy.get(aiChatEntry).should('exist');
+      // Test that we can submit a prompt
+      cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(aiChatEntry).should('exist');
 
-    // Populate the prompt input, but don't submit it
-    cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
+      // Populate the prompt input, but don't submit it
+      cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
 
-    // Minimize the popover UI
-    cy.get(minimizeButton).click();
-    cy.get(popover).should('not.exist');
+      // Minimize the popover UI
+      cy.get(minimizeButton).click();
+      cy.get(popover).should('not.exist');
 
-    // Open the popover UI again
-    // Previous messages and text in the prompt input should have been preserved
-    cy.get(mainButton).click();
-    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-    cy.get(aiChatEntry).should('exist');
-    cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+      // Open the popover UI again
+      // Previous messages and text in the prompt input should have been preserved
+      cy.get(mainButton).click();
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(aiChatEntry).should('exist');
+      cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
 
-    // When expanded, the popover width should fill most of the viewport
-    const isExpanded = (popoverElement) =>
-      Cypress.config('viewportWidth') - popoverElement.getBoundingClientRect().width < 200;
+      // When expanded, the popover width should fill most of the viewport
+      const isExpanded = (popoverElement) =>
+        Cypress.config('viewportWidth') - popoverElement.getBoundingClientRect().width < 200;
 
-    // When collapsed, the popover width should be less than half the viewport width
-    const isCollapsed = (popoverElement) =>
-      popoverElement.getBoundingClientRect().width < Cypress.config('viewportWidth') / 2;
+      // When collapsed, the popover width should be less than half the viewport width
+      const isCollapsed = (popoverElement) =>
+        popoverElement.getBoundingClientRect().width < Cypress.config('viewportWidth') / 2;
 
-    // Expand UI button
-    cy.get(expandButton).click();
-    cy.get(popover)
-      .should('exist')
-      .should((els) => {
-        expect(isExpanded(els[0])).to.be.true;
-      })
-      .should('include.text', FOOTER_TEXT)
-      .should('include.text', PRIVACY_TEXT)
-      .should('include.text', READINESS_TITLE)
-      .should('include.text', READINESS_TEXT);
+      // Expand UI button
+      cy.get(expandButton).click();
+      cy.get(popover)
+        .should('exist')
+        .should((els) => {
+          expect(isExpanded(els[0])).to.be.true;
+        })
+        .should('include.text', FOOTER_TEXT)
+        .should('include.text', PRIVACY_TEXT)
+        .should('include.text', READINESS_TITLE)
+        .should('include.text', READINESS_TEXT);
 
-    // Minimize the popover UI
-    cy.get(minimizeButton).click();
-    cy.get(popover).should('not.exist');
+      // Minimize the popover UI
+      cy.get(minimizeButton).click();
+      cy.get(popover).should('not.exist');
 
-    // Reopen the UI by clicking the main OLS button
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
+      // Reopen the UI by clicking the main OLS button
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    // Main OLS button should toggle between closed and open states and preserve the expanded state
-    cy.get(mainButton).click();
-    cy.get(popover).should('not.exist');
-    cy.get(mainButton).click();
-    cy.get(popover)
-      .should('exist')
-      .should((els) => {
-        expect(isExpanded(els[0])).to.be.true;
-      });
+      // Main OLS button should toggle between closed and open states and preserve the expanded state
+      cy.get(mainButton).click();
+      cy.get(popover).should('not.exist');
+      cy.get(mainButton).click();
+      cy.get(popover)
+        .should('exist')
+        .should((els) => {
+          expect(isExpanded(els[0])).to.be.true;
+        });
 
-    // Collapse UI button
-    cy.get(collapseButton).click();
-    cy.get(popover)
-      .should('exist')
-      .should((els) => {
-        expect(isCollapsed(els[0])).to.be.true;
-      });
+      // Collapse UI button
+      cy.get(collapseButton).click();
+      cy.get(popover)
+        .should('exist')
+        .should((els) => {
+          expect(isCollapsed(els[0])).to.be.true;
+        });
 
-    // Main OLS button should toggle between closed and open states and preserve the collapsed state
-    cy.get(mainButton).click();
-    cy.get(popover).should('not.exist');
-    cy.get(mainButton).click();
-    cy.get(popover)
-      .should('exist')
-      .should((els) => {
-        expect(isCollapsed(els[0])).to.be.true;
-      });
+      // Main OLS button should toggle between closed and open states and preserve the collapsed state
+      cy.get(mainButton).click();
+      cy.get(popover).should('not.exist');
+      cy.get(mainButton).click();
+      cy.get(popover)
+        .should('exist')
+        .should((els) => {
+          expect(isCollapsed(els[0])).to.be.true;
+        });
 
-    // Previous messages and text in the prompt input should have been preserved
-    cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-    cy.get(aiChatEntry).should('exist');
-    cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+      // Previous messages and text in the prompt input should have been preserved
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(aiChatEntry).should('exist');
+      cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+    });
+
+    it('Test submitting a prompt and fetching the streamed response', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+
+      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+      cy.wait('@queryStub');
+
+      // Prompt should now be empty
+      cy.get(promptInput).should('have.value', '');
+
+      // Our prompt should now be shown in the chat history along with a response from OLS
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
+      cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+
+      // Sending a second prompt should now send the conversation_id along with the prompt
+      const PROMPT_SUBMITTED_2 = 'Test prompt 2';
+      cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
+      cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+      cy.wait('@queryWithConversationIdStub');
+
+      cy.get(promptInput).should('have.value', '');
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
+      cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+
+      // The clear chat action should clear the current conversation, but leave any text in the prompt
+      cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
+      cy.get(clearChatButton).should('exist').contains('Clear chat').click();
+      cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
+      cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
+      cy.get(userChatEntry).should('not.exist');
+      cy.get(aiChatEntry).should('not.exist');
+      cy.get(popover)
+        .should('include.text', FOOTER_TEXT)
+        .should('include.text', PRIVACY_TEXT)
+        .find('h1')
+        .should('include.text', POPOVER_TITLE);
+      cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
+    });
+
+    it('Test user feedback form', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+
+      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+      cy.wait('@queryStub');
+
+      // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
+      cy.get(responseAction).should('have.lengthOf', 3);
+
+      // Clicking a user feedback button should select it and open the user feedback form
+      cy.get(responseAction)
+        .eq(0)
+        .should('not.have.class', 'ols-plugin__response-action--selected')
+        .click()
+        .should('have.class', 'ols-plugin__response-action--selected');
+      cy.get(popover).contains(USER_FEEDBACK_TITLE);
+      cy.get(popover).contains(USER_FEEDBACK_TEXT);
+
+      // Clicking the other user feedback button should select that instead and leave the user
+      // feedback form open
+      cy.get(responseAction)
+        .eq(1)
+        .should('not.have.class', 'ols-plugin__response-action--selected')
+        .click()
+        .should('have.class', 'ols-plugin__response-action--selected');
+      cy.get(popover).contains(USER_FEEDBACK_TITLE);
+      cy.get(popover).contains(USER_FEEDBACK_TEXT);
+
+      // Clicking the same button again should deselect it and close the user feedback form
+      cy.get(responseAction)
+        .eq(1)
+        .click()
+        .should('not.have.class', 'ols-plugin__response-action--selected');
+      cy.get(popover)
+        .should('not.contain', USER_FEEDBACK_TITLE)
+        .should('not.contain', USER_FEEDBACK_TEXT);
+
+      // Reopen the form and submit some feedback
+      cy.interceptFeedback(
+        'userFeedbackStub',
+        CONVERSATION_ID,
+        THUMBS_UP,
+        USER_FEEDBACK_SUBMITTED,
+        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+      );
+
+      cy.get(responseAction).eq(0).click();
+      cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
+      cy.get(userFeedbackSubmit).click();
+      cy.wait('@userFeedbackStub');
+      cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+
+      // It should also be possible to submit user feedback without a comment
+      cy.interceptFeedback(
+        'userFeedbackWithoutCommentStub',
+        CONVERSATION_ID,
+        THUMBS_DOWN,
+        '',
+        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+      );
+
+      cy.get(responseAction).eq(1).click();
+      cy.get(userFeedbackInput).clear();
+      cy.get(userFeedbackSubmit).click();
+      cy.wait('@userFeedbackWithoutCommentStub');
+      cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+    });
+
+    it('Test copy response functionality', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+
+      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+      cy.wait('@queryStub');
+
+      cy.get(copyButton)
+        .should('exist')
+        .should('have.class', 'ols-plugin__response-action')
+        .should('not.have.class', 'ols-plugin__response-action--selected');
+      cy.window().focus();
+      cy.get(copyButton).click();
+
+      // Verify that none of the response action buttons changed state
+      cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');
+      cy.get(responseAction)
+        .eq(0)
+        .should('not.have.class', 'ols-plugin__response-action--selected');
+      cy.get(responseAction)
+        .eq(1)
+        .should('not.have.class', 'ols-plugin__response-action--selected');
+    });
   });
 
-  it('Test submitting a prompt and fetching the streamed response', () => {
-    cy.visit('/search/all-namespaces');
-    cy.get(mainButton).click();
+  describe('Attach menu', { tags: ['@attach'] }, () => {
+    it('Test attach options on pods list page', () => {
+      pages.goToPodsList('openshift-console');
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@queryStub');
+      // The only attach option should be the upload file option
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu)
+        .should('include.text', 'Upload from computer')
+        .should('not.include.text', 'YAML')
+        .should('not.include.text', 'Events')
+        .should('not.include.text', 'Logs');
+    });
 
-    // Prompt should now be empty
-    cy.get(promptInput).should('have.value', '');
+    it('Test attach options on pod details page', () => {
+      // Navigate to the pod details page
+      pages.goToPodsList();
 
-    // Our prompt should now be shown in the chat history along with a response from OLS
-    cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
-    cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    // Sending a second prompt should now send the conversation_id along with the prompt
-    const PROMPT_SUBMITTED_2 = 'Test prompt 2';
-    cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@queryWithConversationIdStub');
+      listPage.filter.byName(podNamePrefix);
+      cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
+        'have.length.at.least',
+        1,
+      );
 
-    cy.get(promptInput).should('have.value', '');
-    cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
-    cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+      // The only attach option should be the upload file option
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu)
+        .should('include.text', 'Upload from computer')
+        .should('not.include.text', 'YAML')
+        .should('not.include.text', 'Events')
+        .should('not.include.text', 'Logs');
+    });
 
-    // The clear chat action should clear the current conversation, but leave any text in the prompt
-    cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
-    cy.get(clearChatButton).should('exist').contains('Clear chat').click();
-    cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
-    cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
-    cy.get(userChatEntry).should('not.exist');
-    cy.get(aiChatEntry).should('not.exist');
-    cy.get(popover)
-      .should('include.text', FOOTER_TEXT)
-      .should('include.text', PRIVACY_TEXT)
-      .find('h1')
-      .should('include.text', POPOVER_TITLE);
-    cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
-  });
+    it('Test attach options on pod details page', () => {
+      pages.goToPodDetails('openshift-console', podNamePrefix);
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-  it('Test user feedback form', () => {
-    cy.visit('/search/all-namespaces');
-    cy.get(mainButton).click();
+      // There should be not prompt attachments initially
+      cy.get(attachments).should('be.empty');
 
-    cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@queryStub');
+      // Test that the context menu now has options
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu, { timeout: MINUTE })
+        .should('include.text', 'Full YAML file')
+        .should('include.text', 'Filtered YAML')
+        .should('include.text', 'Events')
+        .should('include.text', 'Logs')
+        .should('include.text', 'Upload from computer');
+    });
 
-    // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
-    cy.get(responseAction).should('have.lengthOf', 3);
+    it('Test attaching YAML (OLS-745)', () => {
+      pages.goToPodDetails('openshift-console', podNamePrefix);
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    // Clicking a user feedback button should select it and open the user feedback form
-    cy.get(responseAction)
-      .eq(0)
-      .should('not.have.class', 'ols-plugin__response-action--selected')
-      .click()
-      .should('have.class', 'ols-plugin__response-action--selected');
-    cy.get(popover).contains(USER_FEEDBACK_TITLE);
-    cy.get(popover).contains(USER_FEEDBACK_TEXT);
+      // Test attaching pod YAML
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
+      cy.get(attachments)
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'YAML')
+        .find('button')
+        .contains(podNamePrefix)
+        .should('have.lengthOf', 1)
+        .click();
+      cy.get(modal)
+        .should('include.text', 'Preview attachment')
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'kind: Pod')
+        .should('include.text', 'apiVersion: v1')
+        .find('button')
+        .contains('Dismiss')
+        .click();
+      cy.get(promptInput).type('Test{enter}');
 
-    // Clicking the other user feedback button should select that instead and leave the user
-    // feedback form open
-    cy.get(responseAction)
-      .eq(1)
-      .should('not.have.class', 'ols-plugin__response-action--selected')
-      .click()
-      .should('have.class', 'ols-plugin__response-action--selected');
-    cy.get(popover).contains(USER_FEEDBACK_TITLE);
-    cy.get(popover).contains(USER_FEEDBACK_TEXT);
+      // Test attaching pod YAML status section
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('button').contains('Filtered YAML').click();
+      cy.get(attachments)
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'YAML')
+        .find('button')
+        .contains(podNamePrefix)
+        .should('have.lengthOf', 1)
+        .click();
+      cy.get(modal)
+        .should('include.text', 'Preview attachment')
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'kind: Pod')
+        .should('not.contain', 'apiVersion: v1')
+        .find('button')
+        .contains('Dismiss')
+        .click();
+      cy.get(promptInput).type('Test{enter}');
+    });
 
-    // Clicking the same button again should deselect it and close the user feedback form
-    cy.get(responseAction)
-      .eq(1)
-      .click()
-      .should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.get(popover)
-      .should('not.contain', USER_FEEDBACK_TITLE)
-      .should('not.contain', USER_FEEDBACK_TEXT);
+    it('Test modifying attached YAML (OLS-1541)', () => {
+      pages.goToPodDetails('openshift-console', podNamePrefix);
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    // Reopen the form and submit some feedback
-    cy.interceptFeedback(
-      'userFeedbackStub',
-      CONVERSATION_ID,
-      THUMBS_UP,
-      USER_FEEDBACK_SUBMITTED,
-      `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
-    );
+      // Test attaching pod YAML
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
+      cy.get(promptAttachment).click();
+      cy.get(modal).find('button').contains('Dismiss').click();
+      cy.get(promptAttachment).click();
+      cy.get(modal).find('button').contains('Edit').click();
+      cy.get(modal).find('button').contains('Cancel').click();
+      cy.get(modal).find('button').contains('Edit').click();
+      cy.get(modal)
+        .find('.ols-plugin__code-block__title')
+        .should('be.visible')
+        .and('contain.text', podNamePrefix);
+      cy.get(modal)
+        .find('.pf-v5-c-code-editor__code textarea')
+        .type('Test modifying YAML', { force: true });
+      cy.get(modal).find('button').contains('Save').click();
+      cy.get(promptAttachment).click();
+      cy.get(modal)
+        .find('.ols-plugin__code-block-code')
+        .should('be.visible')
+        .and('contain.text', 'Test modifying YAML');
+    });
 
-    cy.get(responseAction).eq(0).click();
-    cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
-    cy.get(userFeedbackSubmit).click();
-    cy.wait('@userFeedbackStub');
-    cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+    it('Test attaching events (OLS-746)', () => {
+      pages.goToPodDetails('openshift-lightspeed', podNamePrefix);
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    // It should also be possible to submit user feedback without a comment
-    cy.interceptFeedback(
-      'userFeedbackWithoutCommentStub',
-      CONVERSATION_ID,
-      THUMBS_DOWN,
-      '',
-      `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
-    );
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('button').contains('Events').click();
+      cy.get(modal).should('include.text', 'Configure events attachment');
+      cy.get(modal).find('button').contains('Attach').click();
+      cy.get(attachments)
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'Events')
+        .find('button')
+        .contains(podNamePrefix)
+        .should('have.lengthOf', 1)
+        .click();
+      cy.get(modal)
+        .should('include.text', 'Preview attachment')
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'kind: Event')
+        .find('button')
+        .contains('Dismiss')
+        .click();
+      cy.interceptQuery(
+        'queryStub',
+        PROMPT_SUBMITTED,
+        null,
+        // eslint-disable-next-line camelcase
+        [{ attachment_type: 'event', content_type: 'application/yaml' }],
+      );
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryStub');
 
-    cy.get(responseAction).eq(1).click();
-    cy.get(userFeedbackInput).clear();
-    cy.get(userFeedbackSubmit).click();
-    cy.wait('@userFeedbackWithoutCommentStub');
-    cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
-  });
+      // Submitting user feedback should now include the attachment information
+      cy.interceptFeedback(
+        'userFeedbackWithAttachmentStub',
+        CONVERSATION_ID,
+        THUMBS_UP,
+        USER_FEEDBACK_SUBMITTED,
+        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[\n  {\n    "attachment_type": "event",\n    "content": "- kind: Event`,
+      );
 
-  it('Test copy response functionality', () => {
-    cy.visit('/search/all-namespaces');
-    cy.get(mainButton).click();
+      cy.get(responseAction).eq(0).click();
+      cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
+      cy.get(userFeedbackSubmit).click();
+      cy.wait('@userFeedbackWithAttachmentStub');
+      cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+    });
 
-    cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
-    cy.wait('@queryStub');
+    it('Test attaching logs (OLS-747)', () => {
+      pages.goToPodDetails('openshift-console', podNamePrefix);
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    cy.get(copyButton)
-      .should('exist')
-      .should('have.class', 'ols-plugin__response-action')
-      .should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.window().focus();
-    cy.get(copyButton).click();
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('button').contains('Logs').click();
+      cy.get(modal)
+        .should('include.text', 'Configure log attachment')
+        .should('include.text', 'Most recent 25 lines')
+        .find('button')
+        .contains('Attach')
+        .click();
+      cy.get(attachments)
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'Log')
+        .find('button')
+        .contains(podNamePrefix)
+        .should('have.lengthOf', 1)
+        .click();
+      cy.get(modal)
+        .should('include.text', 'Preview attachment')
+        .should('include.text', podNamePrefix)
+        .should('include.text', 'Most recent lines from the log for')
+        .find('button')
+        .contains('Dismiss')
+        .click();
+      cy.interceptQuery(
+        'queryStub',
+        PROMPT_SUBMITTED,
+        null,
+        // eslint-disable-next-line camelcase
+        [{ attachment_type: 'log', content_type: 'text/plain' }],
+      );
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryStub');
+    });
 
-    // Verify that none of the response action buttons changed state
-    cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.get(responseAction).eq(0).should('not.have.class', 'ols-plugin__response-action--selected');
-    cy.get(responseAction).eq(1).should('not.have.class', 'ols-plugin__response-action--selected');
-  });
+    it('Test file upload', () => {
+      const MAX_FILE_SIZE_MB = 1;
 
-  it('Test attach options on pods list page', () => {
-    pages.goToPodsList('openshift-console');
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('button').contains('Upload from computer').click();
 
-    // The only attach option should be the upload file option
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu)
-      .should('include.text', 'Upload from computer')
-      .should('not.include.text', 'YAML')
-      .should('not.include.text', 'Events')
-      .should('not.include.text', 'Logs');
-  });
+      // File with invalid YAML
+      cy.get(fileInput).selectFile(
+        {
+          contents: Cypress.Buffer.from(`abc`),
+        },
+        // Use `force: true` because the input is display:none
+        { force: true },
+      );
+      cy.get(attachMenu).contains('Uploaded file is not valid YAML');
 
-  it('Test attach options on pod details page', () => {
-    // Navigate to the pod details page
-    pages.goToPodsList();
+      // File that is too large
+      const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_MB * 1024 * 1024 + 1);
+      cy.get(fileInput).selectFile(
+        {
+          contents: Cypress.Buffer.from(largeFileContent),
+        },
+        { force: true },
+      );
+      cy.get(attachMenu).contains(
+        `Uploaded file is too large. Max size is ${MAX_FILE_SIZE_MB} MB.`,
+      );
 
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    listPage.filter.byName(podNamePrefix);
-    cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
-      'have.length.at.least',
-      1,
-    );
-
-    // The only attach option should be the upload file option
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu)
-      .should('include.text', 'Upload from computer')
-      .should('not.include.text', 'YAML')
-      .should('not.include.text', 'Events')
-      .should('not.include.text', 'Logs');
-  });
-
-  it('Test attach options on pod details page', () => {
-    pages.goToPodDetails('openshift-console', podNamePrefix);
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    // There should be not prompt attachments initially
-    cy.get(attachments).should('be.empty');
-
-    // Test that the context menu now has options
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu, { timeout: MINUTE })
-      .should('include.text', 'Full YAML file')
-      .should('include.text', 'Filtered YAML')
-      .should('include.text', 'Events')
-      .should('include.text', 'Logs')
-      .should('include.text', 'Upload from computer');
-  });
-
-  it('Test attaching YAML (OLS-745)', () => {
-    pages.goToPodDetails('openshift-console', podNamePrefix);
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    // Test attaching pod YAML
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
-    cy.get(attachments)
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'YAML')
-      .find('button')
-      .contains(podNamePrefix)
-      .should('have.lengthOf', 1)
-      .click();
-    cy.get(modal)
-      .should('include.text', 'Preview attachment')
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'kind: Pod')
-      .should('include.text', 'apiVersion: v1')
-      .find('button')
-      .contains('Dismiss')
-      .click();
-    cy.get(promptInput).type('Test{enter}');
-
-    // Test attaching pod YAML status section
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('button').contains('Filtered YAML').click();
-    cy.get(attachments)
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'YAML')
-      .find('button')
-      .contains(podNamePrefix)
-      .should('have.lengthOf', 1)
-      .click();
-    cy.get(modal)
-      .should('include.text', 'Preview attachment')
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'kind: Pod')
-      .should('not.contain', 'apiVersion: v1')
-      .find('button')
-      .contains('Dismiss')
-      .click();
-    cy.get(promptInput).type('Test{enter}');
-  });
-
-  it('Test modifying attached YAML (OLS-1541)', () => {
-    pages.goToPodDetails('openshift-console', podNamePrefix);
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    // Test attaching pod YAML
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
-    cy.get(promptAttachment).click();
-    cy.get(modal).find('button').contains('Dismiss').click();
-    cy.get(promptAttachment).click();
-    cy.get(modal).find('button').contains('Edit').click();
-    cy.get(modal).find('button').contains('Cancel').click();
-    cy.get(modal).find('button').contains('Edit').click();
-    cy.get(modal)
-      .find('.ols-plugin__code-block__title')
-      .should('be.visible')
-      .and('contain.text', podNamePrefix);
-    cy.get(modal)
-      .find('.pf-v5-c-code-editor__code textarea')
-      .type('Test modifying YAML', { force: true });
-    cy.get(modal).find('button').contains('Save').click();
-    cy.get(promptAttachment).click();
-    cy.get(modal)
-      .find('.ols-plugin__code-block-code')
-      .should('be.visible')
-      .and('contain.text', 'Test modifying YAML');
-  });
-
-  it('Test attaching events (OLS-746)', () => {
-    pages.goToPodDetails('openshift-lightspeed', podNamePrefix);
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('button').contains('Events').click();
-    cy.get(modal).should('include.text', 'Configure events attachment');
-    cy.get(modal).find('button').contains('Attach').click();
-    cy.get(attachments)
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'Events')
-      .find('button')
-      .contains(podNamePrefix)
-      .should('have.lengthOf', 1)
-      .click();
-    cy.get(modal)
-      .should('include.text', 'Preview attachment')
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'kind: Event')
-      .find('button')
-      .contains('Dismiss')
-      .click();
-    cy.interceptQuery(
-      'queryStub',
-      PROMPT_SUBMITTED,
-      null,
-      // eslint-disable-next-line camelcase
-      [{ attachment_type: 'event', content_type: 'application/yaml' }],
-    );
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.wait('@queryStub');
-
-    // Submitting user feedback should now include the attachment information
-    cy.interceptFeedback(
-      'userFeedbackWithAttachmentStub',
-      CONVERSATION_ID,
-      THUMBS_UP,
-      USER_FEEDBACK_SUBMITTED,
-      `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[\n  {\n    "attachment_type": "event",\n    "content": "- kind: Event`,
-    );
-
-    cy.get(responseAction).eq(0).click();
-    cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
-    cy.get(userFeedbackSubmit).click();
-    cy.wait('@userFeedbackWithAttachmentStub');
-    cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
-  });
-
-  it('Test attaching logs (OLS-747)', () => {
-    pages.goToPodDetails('openshift-console', podNamePrefix);
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('button').contains('Logs').click();
-    cy.get(modal)
-      .should('include.text', 'Configure log attachment')
-      .should('include.text', 'Most recent 25 lines')
-      .find('button')
-      .contains('Attach')
-      .click();
-    cy.get(attachments)
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'Log')
-      .find('button')
-      .contains(podNamePrefix)
-      .should('have.lengthOf', 1)
-      .click();
-    cy.get(modal)
-      .should('include.text', 'Preview attachment')
-      .should('include.text', podNamePrefix)
-      .should('include.text', 'Most recent lines from the log for')
-      .find('button')
-      .contains('Dismiss')
-      .click();
-    cy.interceptQuery(
-      'queryStub',
-      PROMPT_SUBMITTED,
-      null,
-      // eslint-disable-next-line camelcase
-      [{ attachment_type: 'log', content_type: 'text/plain' }],
-    );
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.wait('@queryStub');
-  });
-
-  it('Test file upload', () => {
-    const MAX_FILE_SIZE_MB = 1;
-
-    cy.visit('/search/all-namespaces');
-    cy.get(mainButton).click();
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('button').contains('Upload from computer').click();
-
-    // File with invalid YAML
-    cy.get(fileInput).selectFile(
-      {
-        contents: Cypress.Buffer.from(`abc`),
-      },
-      // Use `force: true` because the input is display:none
-      { force: true },
-    );
-    cy.get(attachMenu).contains('Uploaded file is not valid YAML');
-
-    // File that is too large
-    const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_MB * 1024 * 1024 + 1);
-    cy.get(fileInput).selectFile(
-      {
-        contents: Cypress.Buffer.from(largeFileContent),
-      },
-      { force: true },
-    );
-    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_MB} MB.`);
-
-    // Valid YAML Upload
-    cy.get(fileInput).selectFile(
-      {
-        contents: Cypress.Buffer.from(`
+      // Valid YAML Upload
+      cy.get(fileInput).selectFile(
+        {
+          contents: Cypress.Buffer.from(`
 kind: Pod
 metadata:
   name: my-test-pod
   namespace: test-namespace
 `),
-      },
-      { force: true },
-    );
+        },
+        { force: true },
+      );
+    });
   });
 
-  it.skip('Test attach cluster info for ManagedCluster', () => {
-    cy.visit(
-      '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
-    );
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
+  describe('ACM', { tags: ['@acm'] }, () => {
+    it.skip('Test attach cluster info for ManagedCluster', () => {
+      cy.visit(
+        '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
+      );
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    // Test that the attach menu shows the option for ManagedCluster
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu)
-      .should('include.text', ACM_ATTACH_CLUSTER_TEXT)
-      .should('include.text', 'Upload from computer')
-      .should('not.include.text', 'Full YAML file')
-      .should('not.include.text', 'Filtered YAML')
-      .should('not.include.text', 'Events')
-      .should('not.include.text', 'Logs');
+      // Test that the attach menu shows the option for ManagedCluster
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu)
+        .should('include.text', ACM_ATTACH_CLUSTER_TEXT)
+        .should('include.text', 'Upload from computer')
+        .should('not.include.text', 'Full YAML file')
+        .should('not.include.text', 'Filtered YAML')
+        .should('not.include.text', 'Events')
+        .should('not.include.text', 'Logs');
 
-    // Mock the API call for ManagedCluster
-    cy.intercept(
-      'GET',
-      '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/test-cluster',
-      {
-        statusCode: 200,
-        body: {
-          kind: 'ManagedCluster',
-          apiVersion: 'cluster.open-cluster-management.io/v1',
-          metadata: {
-            name: 'test-cluster',
-            namespace: 'test-cluster',
-          },
-          spec: {
-            hubAcceptsClient: true,
-          },
-          status: {
-            conditions: [
-              {
-                type: 'ManagedClusterConditionAvailable',
-                status: 'True',
-              },
-            ],
-          },
-        },
-      },
-    ).as('getManagedCluster');
-
-    // Mock the API call ManagedClusterInfo
-    cy.intercept(
-      'GET',
-      '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
-      {
-        statusCode: 200,
-        body: {
-          kind: 'ManagedClusterInfo',
-          apiVersion: 'internal.open-cluster-management.io/v1beta1',
-          metadata: {
-            name: 'test-cluster',
-            namespace: 'test-cluster',
-          },
-          status: {
-            distributionInfo: {
-              type: 'OCP',
-              ocp: {
-                version: '4.14.0',
-              },
+      // Mock the API call for ManagedCluster
+      cy.intercept(
+        'GET',
+        '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/test-cluster',
+        {
+          statusCode: 200,
+          body: {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: {
+              name: 'test-cluster',
+              namespace: 'test-cluster',
             },
-            nodeList: [
-              {
-                name: 'master-0',
-                conditions: [
-                  {
-                    type: 'Ready',
-                    status: 'True',
-                  },
-                ],
-              },
-            ],
+            spec: {
+              hubAcceptsClient: true,
+            },
+            status: {
+              conditions: [
+                {
+                  type: 'ManagedClusterConditionAvailable',
+                  status: 'True',
+                },
+              ],
+            },
           },
         },
-      },
-    ).as('getManagedClusterInfo');
+      ).as('getManagedCluster');
 
-    cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
+      // Mock the API call ManagedClusterInfo
+      cy.intercept(
+        'GET',
+        '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
+        {
+          statusCode: 200,
+          body: {
+            kind: 'ManagedClusterInfo',
+            apiVersion: 'internal.open-cluster-management.io/v1beta1',
+            metadata: {
+              name: 'test-cluster',
+              namespace: 'test-cluster',
+            },
+            status: {
+              distributionInfo: {
+                type: 'OCP',
+                ocp: {
+                  version: '4.14.0',
+                },
+              },
+              nodeList: [
+                {
+                  name: 'master-0',
+                  conditions: [
+                    {
+                      type: 'Ready',
+                      status: 'True',
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      ).as('getManagedClusterInfo');
 
-    // Wait for both API calls
-    cy.wait('@getManagedCluster');
-    cy.wait('@getManagedClusterInfo');
+      cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
 
-    // Verify that both ManagedCluster and ManagedClusterInfo attachments are added
-    cy.get(attachments)
-      .should('include.text', 'test-cluster')
-      .should('include.text', 'YAML')
-      .find('button')
-      .should('have.length', 2);
+      // Wait for both API calls
+      cy.wait('@getManagedCluster');
+      cy.wait('@getManagedClusterInfo');
 
-    // Test the ManagedCluster attachment preview
-    cy.get(attachments).find('button').contains('test-cluster').first().click();
-    cy.get(modal)
-      .should('include.text', 'Preview attachment')
-      .should('include.text', 'test-cluster')
-      .should('include.text', 'kind: ManagedCluster')
-      .should('include.text', 'apiVersion: cluster.open-cluster-management.io/v1')
-      .find('button')
-      .contains('Dismiss')
-      .click();
+      // Verify that both ManagedCluster and ManagedClusterInfo attachments are added
+      cy.get(attachments)
+        .should('include.text', 'test-cluster')
+        .should('include.text', 'YAML')
+        .find('button')
+        .should('have.length', 2);
 
-    // Test the ManagedClusterInfo attachment preview
-    cy.get(attachments).find('button').contains('test-cluster').last().click();
-    cy.get(modal)
-      .should('include.text', 'Preview attachment')
-      .should('include.text', 'test-cluster')
-      .should('include.text', 'kind: ManagedClusterInfo')
-      .should('include.text', 'apiVersion: internal.open-cluster-management.io/v1beta1')
-      .should('include.text', 'distributionInfo')
-      .find('button')
-      .contains('Dismiss')
-      .click();
+      // Test the ManagedCluster attachment preview
+      cy.get(attachments).find('button').contains('test-cluster').first().click();
+      cy.get(modal)
+        .should('include.text', 'Preview attachment')
+        .should('include.text', 'test-cluster')
+        .should('include.text', 'kind: ManagedCluster')
+        .should('include.text', 'apiVersion: cluster.open-cluster-management.io/v1')
+        .find('button')
+        .contains('Dismiss')
+        .click();
 
-    // Test submitting a prompt with cluster attachments
-    cy.interceptQuery('queryStub', PROMPT_SUBMITTED, null, [
-      // eslint-disable-next-line camelcase
-      { attachment_type: 'yaml', content_type: 'application/yaml' },
-      // eslint-disable-next-line camelcase
-      { attachment_type: 'yaml', content_type: 'application/yaml' },
-    ]);
-    cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-    cy.wait('@queryStub');
-  });
+      // Test the ManagedClusterInfo attachment preview
+      cy.get(attachments).find('button').contains('test-cluster').last().click();
+      cy.get(modal)
+        .should('include.text', 'Preview attachment')
+        .should('include.text', 'test-cluster')
+        .should('include.text', 'kind: ManagedClusterInfo')
+        .should('include.text', 'apiVersion: internal.open-cluster-management.io/v1beta1')
+        .should('include.text', 'distributionInfo')
+        .find('button')
+        .contains('Dismiss')
+        .click();
 
-  it.skip('Test ManagedCluster attachment error handling', () => {
-    cy.visit(
-      '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
-    );
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
+      // Test submitting a prompt with cluster attachments
+      cy.interceptQuery('queryStub', PROMPT_SUBMITTED, null, [
+        // eslint-disable-next-line camelcase
+        { attachment_type: 'yaml', content_type: 'application/yaml' },
+        // eslint-disable-next-line camelcase
+        { attachment_type: 'yaml', content_type: 'application/yaml' },
+      ]);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryStub');
+    });
 
-    // Mock successful ManagedCluster API call
-    cy.intercept(
-      'GET',
-      '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/test-cluster',
-      {
+    it.skip('Test ManagedCluster attachment error handling', () => {
+      cy.visit(
+        '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
+      );
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
+
+      // Mock successful ManagedCluster API call
+      cy.intercept(
+        'GET',
+        '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/test-cluster',
+        {
+          statusCode: 200,
+          body: {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: {
+              name: 'test-cluster',
+              namespace: 'test-cluster',
+            },
+          },
+        },
+      ).as('getManagedCluster');
+
+      // Mock failed ManagedClusterInfo API call
+      cy.intercept(
+        'GET',
+        '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
+        {
+          statusCode: 404,
+          body: {
+            kind: 'Status',
+            message:
+              'managedclusterinfos.internal.open-cluster-management.io "test-cluster" not found',
+          },
+        },
+      ).as('getManagedClusterInfoError');
+
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
+
+      // Wait for API calls
+      cy.wait('@getManagedCluster');
+      cy.wait('@getManagedClusterInfoError');
+
+      // Verify error is displayed
+      cy.get(attachMenu).should('include.text', 'Error fetching cluster info');
+    });
+
+    it('Test ACM search resources page context for Pod', () => {
+      // ACM search resources page
+      cy.visit('/multicloud/search/resources?kind=Pod&name=test-pod&namespace=test-namespace');
+
+      // Mock successful pod API call
+      cy.intercept('GET', '/api/kubernetes/api/v1/namespaces/test-namespace/pods/test-pod', {
         statusCode: 200,
         body: {
-          kind: 'ManagedCluster',
-          apiVersion: 'cluster.open-cluster-management.io/v1',
+          kind: 'Pod',
           metadata: {
-            name: 'test-cluster',
-            namespace: 'test-cluster',
+            name: 'test-pod',
+            namespace: 'test-namespace',
           },
         },
-      },
-    ).as('getManagedCluster');
+      }).as('getManagedCluster');
 
-    // Mock failed ManagedClusterInfo API call
-    cy.intercept(
-      'GET',
-      '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
-      {
-        statusCode: 404,
-        body: {
-          kind: 'Status',
-          message:
-            'managedclusterinfos.internal.open-cluster-management.io "test-cluster" not found',
-        },
-      },
-    ).as('getManagedClusterInfoError');
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
 
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
-
-    // Wait for API calls
-    cy.wait('@getManagedCluster');
-    cy.wait('@getManagedClusterInfoError');
-
-    // Verify error is displayed
-    cy.get(attachMenu).should('include.text', 'Error fetching cluster info');
-  });
-
-  it('Test ACM search resources page context for Pod', () => {
-    // ACM search resources page
-    cy.visit('/multicloud/search/resources?kind=Pod&name=test-pod&namespace=test-namespace');
-
-    // Mock successful pod API call
-    cy.intercept('GET', '/api/kubernetes/api/v1/namespaces/test-namespace/pods/test-pod', {
-      statusCode: 200,
-      body: {
-        kind: 'Pod',
-        metadata: {
-          name: 'test-pod',
-          namespace: 'test-namespace',
-        },
-      },
-    }).as('getManagedCluster');
-
-    cy.get(mainButton).click();
-    cy.get(popover).should('exist');
-
-    cy.get(attachMenuButton).click();
-    cy.get(attachMenu)
-      .should('include.text', 'Upload from computer')
-      .should('include.text', 'Full YAML file')
-      .should('include.text', 'Filtered YAML')
-      .should('include.text', 'Events')
-      .should('include.text', 'Logs')
-      .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
+      cy.get(attachMenuButton).click();
+      cy.get(attachMenu)
+        .should('include.text', 'Upload from computer')
+        .should('include.text', 'Full YAML file')
+        .should('include.text', 'Filtered YAML')
+        .should('include.text', 'Events')
+        .should('include.text', 'Logs')
+        .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
+    });
   });
 });
