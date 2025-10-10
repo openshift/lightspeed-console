@@ -27,11 +27,12 @@
     "merge-reports": "jrm combined.xml \"gui_test_screenshots/junit_cypress-*.xml\""
   },
   "dependencies": {
-    "@openshift-console/dynamic-plugin-sdk": "1.0.0",
-    "@openshift-console/dynamic-plugin-sdk-webpack": "1.0.2",
-    "@patternfly/react-code-editor": "5.4.18",
-    "@patternfly/react-core": "5.4.14",
-    "@patternfly/react-icons": "5.4.2",
+    "@openshift-console/dynamic-plugin-sdk": "4.19.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "4.19.0",
+    "@patternfly/chatbot": "6.3.2",
+    "@patternfly/react-code-editor": "6.3.1",
+    "@patternfly/react-core": "6.3.1",
+    "@patternfly/react-icons": "6.3.1",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
     "js-yaml": "^4.1.0",
@@ -41,7 +42,7 @@
     "react-i18next": "11.18.6",
     "react-markdown": "^8.0.7",
     "react-modal": "^3.16.3",
-    "react-redux": "7.2.2",
+    "react-redux": "7.2.9",
     "react-router-dom-v5-compat": "^6.30.0",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.4",
@@ -81,6 +82,8 @@
     "@babel/runtime": "^7.26.10",
     "cross-spawn": "^7.0.5",
     "express": ">=4.21.2",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "webpack": "5.94.0"
   },
   "consolePlugin": {
