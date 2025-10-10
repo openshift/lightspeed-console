@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
-    "types": ["cypress", "node"]
+    "types": [
+      "cypress",
+      "node",
+      "@cypress/grep"
+    ]
   },
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts"
+  ]
 }
