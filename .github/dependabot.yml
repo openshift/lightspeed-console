@@ -5,10 +5,45 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
+  - package-ecosystem: "npm"
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    target-branch: "main"
+    groups:
+      i18n:
+        patterns:
+          - "i18next-parser"
+          - "pluralize"
+          - "react-i18next"
+      lint:
+        patterns:
+          - "@typescript-eslint/*"
+          - "eslint"
+          - "eslint-*"
+          - "prettier"
+          - "stylelint"
+          - "stylelint-*"
+      patternfly:
+        patterns:
+          - "@patternfly/*"
+      test:
+        patterns:
+          - "@cypress/*"
+          - "cypress"
+          - "cypress-*"
+          - "junit-report-merger"
+          - "mocha-junit-reporter"
+          - "mochawesome"
+          - "mochawesome-*"
+      types:
+        patterns:
+          - "@types/*"
+  - package-ecosystem: "npm"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+    target-branch: "pattern-fly-5"
     groups:
       i18n:
         patterns:
