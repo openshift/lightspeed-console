@@ -8,15 +8,13 @@ import { getApiUrl } from '../config';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useHideLightspeed } from '../hooks/useHideLightspeed';
+import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
 import { State } from '../redux-reducers';
 import ErrorBoundary from './ErrorBoundary';
 import GeneralPage from './GeneralPage';
 
 import './popover.css';
-
-// TODO: Include this for now to work around bug where CSS is not pulled in by console plugin SDK
-import './pf-styles.css';
 
 const FEEDBACK_STATUS_ENDPOINT = getApiUrl('/v1/feedback/status');
 const REQUEST_TIMEOUT = 5 * 60 * 1000;
@@ -30,6 +28,7 @@ const Popover: React.FC = () => {
 
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
+  const [isDarkTheme] = useIsDarkTheme();
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -64,7 +63,10 @@ const Popover: React.FC = () => {
   const title = t('Red Hat OpenShift Lightspeed');
 
   return (
-    <div aria-label={title} className="ols-plugin__popover-container">
+    <div
+      aria-label={title}
+      className={`ols-plugin__popover-container ${isDarkTheme ? 'ols-plugin__popover-container--dark' : ''}`}
+    >
       {isOpen ? (
         <>
           <div

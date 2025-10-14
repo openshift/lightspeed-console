@@ -1,9 +1,9 @@
 :root {
   --popover-border-radius: 12px;
-  --popover-button-size: var(--pf-v5-global--spacer--2xl);
-  --popover-margin: var(--pf-v5-global--spacer--lg);
+  --popover-button-size: var(--pf-t--global--spacer--2xl);
+  --popover-margin: var(--pf-t--global--spacer--lg);
   --popover-bottom: calc(
-    var(--popover-button-size) + var(--popover-margin) + var(--pf-v5-global--spacer--sm)
+    var(--popover-button-size) + var(--popover-margin) + var(--pf-t--global--spacer--sm)
   );
 }
 
@@ -11,19 +11,22 @@
    These rules should be removed if we move the button location. */
 /* stylelint-disable-next-line selector-disallowed-list */
 .co-dashboard-body, .co-m-list .co-m-pane__body:last-of-type, .co-m-page__body .co-m-pane__body:last-of-type {
-  padding-bottom: calc(var(--popover-button-size) + 2 * var(--popover-margin));
+  padding-bottom: var(--popover-button-size);
 }
 
 .ols-plugin__popover, .ols-plugin__popover-button {
-  box-shadow: var(--pf-v5-global--BoxShadow--lg);
+  border-radius: var(--popover-border-radius);
+  box-shadow: var(--pf-t--global--box-shadow--lg);
   position: absolute;
   right: var(--popover-margin);
   z-index: 199;
 }
 
 .ols-plugin__popover {
-  border-radius: var(--popover-border-radius);
-  border: var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100);
+  --pf-t--chatbot--background: none;
+
+  background-color: var(--pf-t--global--background--color--primary--default);
+  border: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
   bottom: var(--popover-bottom);
   overflow: hidden;
 }
@@ -33,21 +36,21 @@
   width: calc(100% - 2*var(--popover-margin));
 }
 
-/* --pf-v5-global--breakpoint--md */
+/* --pf-t--global--breakpoint--md */
 @media (min-width: 768px) {
   .ols-plugin__popover--collapsed {
     width: 50%;
   }
 }
 
-/* --pf-v5-global--breakpoint--xl */
+/* --pf-t--global--breakpoint--xl */
 @media (min-width: 1200px) {
   .ols-plugin__popover--collapsed {
     width: 40%;
   }
 }
 
-/* --pf-v5-global--breakpoint--2xl */
+/* --pf-t--global--breakpoint--2xl */
 @media (min-width: 1450px) {
   .ols-plugin__popover--collapsed {
     width: 35%;
@@ -64,38 +67,34 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: calc(var(--popover-button-size) + 3px);
-  border-radius: var(--popover-border-radius);
   bottom: var(--popover-margin);
-  box-shadow: var(--pf-v5-global--BoxShadow--lg);
+  box-shadow: var(--pf-t--global--box-shadow--lg);
   height: var(--popover-button-size);
   padding: 0;
   position: absolute !important;
   width: var(--popover-button-size);
 }
 
-/* stylelint-disable-next-line selector-disallowed-list */
-.pf-v5-theme-dark .ols-plugin__popover-button {
-  background-color: var(--pf-v5-global--BackgroundColor--100);
+.ols-plugin__popover-container--dark .ols-plugin__popover-button {
+  background-color: var(--pf-t--global--dark--background--color--100);
   background-image: url('../assets/logo-dark.svg');
 }
 
 .ols-plugin__popover-clear-chat {
-  margin-right: var(--pf-v5-global--spacer--md);
+  margin-left: var(--pf-t--global--spacer--md);
+}
+
+.ols-plugin__popover-close, .ols-plugin__popover-control {
+  font-size: 1rem;
 }
 
 .ols-plugin__popover-close {
-  float: right;
-  height: var(--pf-v5-global--spacer--md);
-  margin-left: var(--pf-v5-global--spacer--md);
-  right: var(--pf-v5-global--spacer--sm);
-  top: var(--pf-v5-global--spacer--sm);
-  width: var(--pf-v5-global--spacer--md);
+  position: absolute;
+  right: var(--pf-t--global--spacer--sm);
+  top: var(--pf-t--global--spacer--sm);
 }
 
 .ols-plugin__popover-control {
   float: right;
-  font-size: 1rem !important;
-  height: var(--pf-v5-global--spacer--md) !important;
-  right: var(--pf-v5-global--spacer--sm);
-  width: var(--pf-v5-global--spacer--md);
+  min-width: 2rem;
 }
