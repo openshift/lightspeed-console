@@ -121,17 +121,19 @@ const AttachmentModal: React.FC = () => {
   const onSave = React.useCallback(() => {
     const originalValue =
       attachment.originalValue === undefined ? attachment.value : attachment.originalValue;
-    dispatch(
-      attachmentSet(
-        attachment.attachmentType,
-        attachment.kind,
-        attachment.name,
-        attachment.ownerName,
-        attachment.namespace,
-        editorValue,
-        originalValue,
-      ),
-    );
+    if (editorValue) {
+      dispatch(
+        attachmentSet(
+          attachment.attachmentType,
+          attachment.kind,
+          attachment.name,
+          attachment.ownerName,
+          attachment.namespace,
+          editorValue,
+          originalValue,
+        ),
+      );
+    }
     dispatch(openAttachmentClear());
     setNotEditing();
   }, [attachment, dispatch, editorValue, setNotEditing]);
