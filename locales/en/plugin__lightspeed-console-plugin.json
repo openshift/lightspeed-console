@@ -38,6 +38,7 @@
   "Failed to fetch logs": "Failed to fetch logs",
   "Failed to find definition YAML for alert": "Failed to find definition YAML for alert",
   "Failed to load events": "Failed to load events",
+  "Failed to load jobs": "Failed to load jobs",
   "Failed to load logs": "Failed to load logs",
   "Failed to load pods": "Failed to load pods",
   "Failed to load scale target": "Failed to load scale target",
