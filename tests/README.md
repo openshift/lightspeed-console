@@ -1,46 +1,63 @@
-# Openshift Lightspeed Console Tests
-These console tests install the Openshift Lightspeed Operator in the specified cluster and then run a serious of tests against the UI.
+# OpenShift Lightspeed Console Tests
 
-## Prerequisite
-1. [node.js](https://nodejs.org/) >= 18
+These console tests install the OpenShift Lightspeed Operator in the specified
+cluster and then run a series of Cypress e2e tests against the UI.
 
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 18
 
 ## Install dependencies
-all required dependencies are defined in `package.json` in order to run Cypress tests, run `npm install` so that dependencies will be installed in `node_modules` folder
-```bash
-$ npm install
-$ ls -ltr
-node_modules/     -> dependencies will be installed at runtime here
-```
 
-## Directory structure
-after dependencies are installed successfully and before we run actual tests, please confirm if we have correct structure as below, two new folders will be created after above
-```bash
-$ ls tests
-drwxr-xr-x  node_modules
-````
+All required dependencies are defined in `package.json`. Run `npm install` to
+install the dependencies in the `node_modules` folder.
 
+## Export necessary variables
 
-### Export necessary variables
-in order to run Cypress tests, we need to export some environment variables that Cypress can read then pass down to our tests, currently we have following environment variables defined and used.
-```bash
-export CYPRESS_BASE_URL=https://<console_route_spec_host>
-export CYPRESS_LOGIN_IDP=kube:admin
-**[Note] Use `flexy-htpasswd-provider` above when running tests on flexy installed clusters and using any user other than kubeadmin. Use `kube:admin` when running tests as kubeadmin
-export CYPRESS_LOGIN_PASSWORD=<kubeadmin password>
-export CYPRESS_KUBECONFIG_PATH=/path/to/kubeconfig
-```
-if you're running an **hypershift cluster**, please also run
-```bash
-export CYPRESS_BUNDLE_IMAGE=<konflux bundle image>
-```
-The bundle image can be taken from [konflux's bundle image](https://console.redhat.com/application-pipeline/workspaces/crt-nshift-lightspeed/applications/ols-bundle/components/test-bundle)
+Test behavior can be customized by setting environment variables.
 
-### Start Cypress
-we can either open Cypress GUI(open) or run Cypress in headless mode(run)
-```bash
-npx cypress open
-npx cypress run 
+If you are running the OpenShift Lightspeed UI locally (with login disabled),
+you normally just need to set `CYPRESS_BASE_URL`. For example, run
+`CYPRESS_BASE_URL='http://localhost:9000' npx cypress open` to run all the tests
+in the Cypress GUI.
 
-```
+If you are not running the OpenShift Lightspeed UI locally or otherwise need to
+customize how the tests run, you can use the following environment variables.
 
+- `CYPRESS_BASE_URL=<UI base URL>`
+  - Normally `http://localhost:9000` when running locally
+- `CYPRESS_grepTags`
+  - Limits which tests are run
+  - For example, set `CYPRESS_grepTags='@core @acm'` to run only the core
+    functionality and ACM tests
+- `KUBECONFIG_PATH=/path/to/kubeconfig`
+- `LOGIN_IDP=kube:admin`
+  - Use `flexy-htpasswd-provider` when running tests on flexy installed clusters
+    and using any user other than kubeadmin. Use `kube:admin` when running tests
+    as kubeadmin.
+- `LOGIN_USERNAME`
+  - e.g. `LOGIN_USERNAME=kubeadmin`
+- `LOGIN_PASSWORD=<password>`
+- `UI_INSTALL=true`
+  - If set, the tests will start by installing the OpenShift Lightspeed operator
+    through the UI
+- `BUNDLE_IMAGE=<Konflux bundle image>`
+  - If set, the tests will start by installing the OpenShift Lightspeed operator
+    using the given Konflux bundle image
+  - Use this if you are running the tests on a HyperShift cluster
+  - The bundle image can be taken from
+    [Konflux's bundle image](https://console.redhat.com/application-pipeline/workspaces/crt-nshift-lightspeed/applications/ols-bundle/components/test-bundle)
+- `CONSOLE_IMAGE=<Konflux OpenShift Lightspeed console plugin image>`
+  - If set, the OpenShift Lightspeed UI image installed by the operator will be
+    replaced with this image before the tests are run
+
+## Run tests
+
+We can either open the Cypress GUI (`npx cypress open`) or run Cypress in
+headless mode (`npx cypress run`).
+
+For example,
+`CYPRESS_grepTags='@acm' CYPRESS_BASE_URL=http://localhost:9000 npx cypress run`
+runs just the ACM tests in headless mode.
+
+Artifacts (screenshots/videos) are saved in `gui_test_screenshots/cypress/`.
