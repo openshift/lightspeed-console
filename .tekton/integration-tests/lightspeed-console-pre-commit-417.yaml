@@ -75,7 +75,7 @@ spec:
               - name: version
                 value: "$(steps.pick-version.results.version)"
               - name: instanceType
-                value: "m5.large"
+                value: "m5.xlarge"
               - name: imageContentSources
                 value: |
                   - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-rhel9-operator
@@ -90,15 +90,13 @@ spec:
                   - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-console-plugin-rhel9
                     mirrors:
                       - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-console
-    - name: ols-install
-      description: Task to install bundle onto ephemeral namespace
+    - name: extract-snapshot-metadata
+      description: Extract console image and commit from SNAPSHOT input
       runAfter:
         - provision-cluster
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
-        - name: namespace
-          value: "$(params.namespace)"
       taskSpec:
         results:
           - name: console-image
@@ -107,11 +105,6 @@ spec:
             value: "$(steps.get-snapshot-images.results.commit)"
         params:
           - name: SNAPSHOT
-          - name: namespace
-            type: string
-        volumes:
-          - name: credentials
-            emptyDir: {}
         steps:
           - name: get-snapshot-images
             image: registry.redhat.io/openshift4/ose-cli:latest
@@ -132,12 +125,12 @@ spec:
     - name: ols-e2e-tests
       description: Task to run tests from service repository
       runAfter:
-        - ols-install
+        - extract-snapshot-metadata
       params:
         - name: console-image
-          value: $(tasks.ols-install.results.console-image)
+          value: $(tasks.extract-snapshot-metadata.results.console-image)
         - name: commit
-          value: $(tasks.ols-install.results.commit)
+          value: $(tasks.extract-snapshot-metadata.results.commit)
       taskSpec:
         volumes:
           - name: openai-token
@@ -231,15 +224,14 @@ spec:
               echo "---------------------------------------------"
               export CYPRESS_LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
               set +e
-              NO_COLOR=1 npx cypress run; err_status=$?
+              NO_COLOR=1 npx cypress run
+              err_status=$?
+              echo -n "${err_status}" > /workspace/cypress-exit-code
               echo "---------------------------------------------"
               ls ./gui_test_screenshots
               mv ./gui_test_screenshots /workspace/artifacts/
               set -e
-              if (( $err_status != 0 )); then
-                echo "Test case failed with error: ${err_status}"
-                exit $err_status
-              fi
+              echo "Cypress exit code: ${err_status}"
               echo "---------------------------------------------"
           - name: gather-cluster-resources
             onError: continue
@@ -287,6 +279,23 @@ spec:
                 value: "quay.io/openshift-lightspeed/ols-console-artifacts:$(params.commit)"
               - name: credentials-volume-name
                 value: ols-konflux-artifacts-bot-creds
+          - name: assert-cypress-succeeded
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+            workingDir: "/workspace/"
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              code_file="/workspace/cypress-exit-code"
+              if [ ! -f "$code_file" ]; then
+                echo "Cypress exit code file missing at $code_file"
+                exit 99
+              fi
+              code=$(cat "$code_file")
+              if [ "$code" != "0" ]; then
+                echo "Cypress failed with exit code: $code"
+                exit "$code"
+              fi
+              echo "Cypress tests passed."
           - name: fail-if-any-step-failed
             ref:
               resolver: git

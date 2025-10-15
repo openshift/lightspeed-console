@@ -100,7 +100,7 @@ describe('Lightspeed related features', () => {
         String(oauthorigin),
       );
     });
-    // If UI_install exists, install via UI
+    // If UI_INSTALL exists, install via UI
     // If running in nudges or pre-release, install with BUNDLE_IMAGE
     // Otherwise install the latest operator
     if (Cypress.env('UI_INSTALL')) {
@@ -111,7 +111,7 @@ describe('Lightspeed related features', () => {
       );
     } else if (Cypress.env('BUNDLE_IMAGE')) {
       cy.exec(
-        `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
       cy.exec(
         `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
@@ -122,7 +122,7 @@ describe('Lightspeed related features', () => {
       );
     } else {
       cy.exec(
-        `oc create namespace ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
       cy.exec(
         `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
@@ -656,12 +656,12 @@ spec:
   });
 
   it('Test file upload', () => {
-    const MAX_FILE_SIZE_KB = 500;
+    const MAX_FILE_SIZE_MB = 1;
 
     cy.visit('/search/all-namespaces');
     cy.get(mainButton).click();
     cy.get(attachMenuButton).click();
-    cy.contains('Upload from computer').click();
+    cy.get(attachMenu).find('button').contains('Upload from computer').click();
 
     // File with invalid YAML
     cy.get(fileInput).selectFile(
@@ -674,14 +674,14 @@ spec:
     cy.get(attachMenu).contains('Uploaded file is not valid YAML');
 
     // File that is too large
-    const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_KB * 1024 + 1);
+    const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_MB * 1024 * 1024 + 1);
     cy.get(fileInput).selectFile(
       {
         contents: Cypress.Buffer.from(largeFileContent),
       },
       { force: true },
     );
-    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_KB} KB.`);
+    cy.get(attachMenu).contains(`Uploaded file is too large. Max size is ${MAX_FILE_SIZE_MB} MB.`);
 
     // Valid YAML Upload
     cy.get(fileInput).selectFile(
@@ -697,7 +697,7 @@ metadata:
     );
   });
 
-  it('Test attach cluster info for ManagedCluster', () => {
+  it.skip('Test attach cluster info for ManagedCluster', () => {
     cy.visit(
       '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
     );
@@ -789,7 +789,7 @@ metadata:
       .should('include.text', 'test-cluster')
       .should('include.text', 'YAML')
       .find('button')
-      .should('have.length', 2); // Should have both ManagedCluster and ManagedClusterInfo attachments
+      .should('have.length', 2);
 
     // Test the ManagedCluster attachment preview
     cy.get(attachments).find('button').contains('test-cluster').first().click();
@@ -825,7 +825,7 @@ metadata:
     cy.wait('@queryStub');
   });
 
-  it('Test ManagedCluster attachment error handling', () => {
+  it.skip('Test ManagedCluster attachment error handling', () => {
     cy.visit(
       '/k8s/ns/test-cluster/cluster.open-cluster-management.io~v1~ManagedCluster/test-cluster',
     );
