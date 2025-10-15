@@ -3,7 +3,6 @@
 import { DefinePlugin, Configuration as WebpackConfiguration } from 'webpack';
 import * as path from 'path';
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack';
-import * as dotenv from 'dotenv';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -12,8 +11,6 @@ interface Configuration extends WebpackConfiguration {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   devServer?: any;
 }
-
-dotenv.config();
 
 const config: Configuration = {
   mode: 'development',
@@ -78,7 +75,8 @@ const config: Configuration = {
   },
   plugins: [
     new DefinePlugin({
-      'process.env': JSON.stringify(process.env),
+      'process.env.OLS_API_BASE_URL': JSON.stringify(process.env.OLS_API_BASE_URL),
+      'process.env.OLS_API_BEARER_TOKEN': JSON.stringify(process.env.OLS_API_BEARER_TOKEN),
     }),
     new ConsoleRemotePlugin(),
     new CopyWebpackPlugin({
