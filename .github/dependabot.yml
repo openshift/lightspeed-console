@@ -15,7 +15,6 @@ updates:
         patterns:
           - "i18next-parser"
           - "pluralize"
-          - "react-i18next"
       lint:
         patterns:
           - "@typescript-eslint/*"
@@ -39,6 +38,12 @@ updates:
       types:
         patterns:
           - "@types/*"
+    ignore:
+      - dependency-name: "react-i18next"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
   - package-ecosystem: "npm"
     directory: "/" # Location of package manifests
     schedule:
@@ -49,7 +54,6 @@ updates:
         patterns:
           - "i18next-parser"
           - "pluralize"
-          - "react-i18next"
       lint:
         patterns:
           - "@typescript-eslint/*"
@@ -73,3 +77,9 @@ updates:
       types:
         patterns:
           - "@types/*"
+    ignore:
+      - dependency-name: "react-i18next"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
