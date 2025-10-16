@@ -92,5 +92,12 @@
   "You can preview and optionally edit the code displayed in the modal before attaching it to your prompt.": "You can preview and optionally edit the code displayed in the modal before attaching it to your prompt.",
   "You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.": "You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.",
   "You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.": "You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.",
-  "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.": "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information."
+  "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.": "You do not have sufficient permissions to access OpenShift Lightspeed. Contact your system administrator for more information.",
+  "Welcome to OpenShift Lightspeed": "Welcome to OpenShift Lightspeed",
+  "You now have access to the OpenShift Lightspeed virtual assistant. Click the icon in the bottom-right of your screen to try it.": "You now have access to the OpenShift Lightspeed virtual assistant. Click the icon in the bottom-right of your screen to try it.",
+  "OpenShift Lightspeed can help you with cluster management, troubleshooting, and learning about OpenShift features.": "OpenShift Lightspeed can help you with cluster management, troubleshooting, and learning about OpenShift features.",
+  "Try it now": "Try it now",
+  "OpenShift Lightspeed": "OpenShift Lightspeed",
+  "Show first-time experience": "Show first-time experience",
+  "Display visual indicators (notification dot and animation) to help discover Lightspeed features. Automatically disabled after first interaction.": "Display visual indicators (notification dot and animation) to help discover Lightspeed features. Automatically disabled after first interaction."
 }
