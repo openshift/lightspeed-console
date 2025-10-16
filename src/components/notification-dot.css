@@ -1,0 +1,18 @@
+/* Notification dot for first-time experience indicator */
+.ols-plugin__notification-dot {
+  position: absolute;
+  bottom: 60px; /* Button is at bottom: 24px, so 24px + 48px (button height) - 12px (half dot height) */
+  right: 20px; /* Button is at right: 24px, so 24px - 4px (to place on edge of button) */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--pf-t--global--color--status--danger--default);
+  border: 2px solid var(--pf-t--global--background--color--primary--default);
+  z-index: 200; /* Ensure it appears above the icon */
+  box-sizing: border-box;
+}
+
+/* Dark theme support */
+.ols-plugin__popover-container--dark .ols-plugin__notification-dot {
+  border-color: var(--pf-t--global--dark--background--color--100);
+}

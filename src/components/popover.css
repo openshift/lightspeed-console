@@ -70,6 +70,7 @@
   bottom: var(--popover-margin);
   box-shadow: var(--pf-t--global--box-shadow--lg);
   height: var(--popover-button-size);
+  overflow: visible;
   padding: 0;
   position: absolute !important;
   width: var(--popover-button-size);
@@ -97,4 +98,28 @@
 .ols-plugin__popover-control {
   float: right;
   min-width: 2rem;
+}
+
+/* First-time experience animation */
+@keyframes ols-plugin-flash-icon {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.ols-plugin__popover-button--first-time {
+  animation: ols-plugin-flash-icon 2s ease-in-out infinite;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .ols-plugin__popover-button--first-time {
+    animation: none;
+  }
 }

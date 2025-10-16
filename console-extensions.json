@@ -19,5 +19,26 @@
       "scope": "ols",
       "reducer": { "$codeRef": "OLSReducer" }
     }
+  },
+  {
+    "type": "console.user-preference/group",
+    "properties": {
+      "id": "lightspeed-preferences",
+      "label": "%plugin__lightspeed-console-plugin~OpenShift Lightspeed%"
+    }
+  },
+  {
+    "type": "console.user-preference/item",
+    "properties": {
+      "id": "lightspeed-first-time-experience",
+      "label": "%plugin__lightspeed-console-plugin~Show first-time experience%",
+      "description": "%plugin__lightspeed-console-plugin~Display visual indicators (notification dot and animation) to help discover Lightspeed features. Automatically disabled after first interaction.%",
+      "groupId": "lightspeed-preferences",
+      "field": {
+        "type": "checkbox",
+        "userSettingsKey": "lightspeed.showFirstTimeExperience",
+        "defaultValue": true
+      }
+    }
   }
 ]
