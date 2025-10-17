@@ -17,7 +17,8 @@ LABEL name="openshift-lightspeed/lightspeed-console" \
       summary="OpenShift Lightspeed Console provides OCP console plugin for OpenShift Lightspeed Service" \
       description="OpenShift Lightspeed Console provides OCP console plugin for OpenShift Lightspeed Service" \
       io.k8s.description="OpenShift Lightspeed Console is a component of OpenShift Lightspeed" \
-      io.openshift.tags="openshift-lightspeed,ols"
+      io.openshift.tags="openshift-lightspeed,ols" \
+      patternfly.version="5"
 USER 1001
 
 ENTRYPOINT ["nginx", "-g", "daemon off;", "-e", "stderr"]
