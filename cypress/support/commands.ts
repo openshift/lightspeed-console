@@ -35,8 +35,6 @@ declare global {
       ): Chainable<JQuery<HTMLElement>>;
       byTestSectionHeading(selector: string): Chainable<JQuery<HTMLElement>>;
       byTestOperandLink(selector: string): Chainable<JQuery<HTMLElement>>;
-      cliLogin(username?, password?, hostapi?);
-      cliLogout();
       adminCLI(command: string, options?);
       login(
         provider?: string,
@@ -181,26 +179,6 @@ Cypress.Commands.add(
     );
   },
 );
-
-Cypress.Commands.add('cliLogin', (username?, password?, hostapi?) => {
-  const loginUsername = username || Cypress.env('LOGIN_USERNAME');
-  const loginPassword = password || Cypress.env('LOGIN_PASSWORD');
-  const hostapiurl = hostapi || Cypress.env('HOST_API');
-  cy.exec(
-    `oc login -u ${loginUsername} -p ${loginPassword} ${hostapiurl} --insecure-skip-tls-verify=true`,
-    { failOnNonZeroExit: false },
-  ).then((result) => {
-    cy.log(result.stderr);
-    cy.log(result.stdout);
-  });
-});
-
-Cypress.Commands.add('cliLogout', () => {
-  cy.exec(`oc logout`, { failOnNonZeroExit: false }).then((result) => {
-    cy.log(result.stderr);
-    cy.log(result.stdout);
-  });
-});
 
 Cypress.Commands.add('adminCLI', (command: string) => {
   cy.log(`Run admin command: ${command}`);
