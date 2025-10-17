@@ -11,7 +11,9 @@ at runtime, adding custom pages and other extensions. They are based on
 Plugins are registered with console using the `ConsolePlugin` custom resource
 and enabled in the console operator config by a cluster administrator.
 
-Requires OpenShift 4.15 or higher.
+Requires OpenShift 4.16 or higher.
+- `main` branch supports OpenShift 4.19+
+- `pattern-fly-5` branch supports OpenShift 4.16 – 4.18
 
 [Node.js](https://nodejs.org/en/) and [npm](https://www.npmjs.com) are required
 to build and run the example. To run OpenShift console in a container, either
