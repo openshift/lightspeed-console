@@ -3,7 +3,7 @@
 This project is a console plugin for the [OpenShift Lightspeed AI assistant](https://github.com/openshift/lightspeed-service)
 project.
 
-[Dynamic plugins](https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk)
+[Dynamic plugins](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk)
 allow you to extend the
 [OpenShift UI](https://github.com/openshift/console)
 at runtime, adding custom pages and other extensions. They are based on
@@ -67,7 +67,7 @@ local development!
 #### Running start-console with Apple silicon and podman
 
 If you are using podman on a Mac with Apple silicon, `npm run start-console`
-might fail since it runs an amd64 image. You can workaround the problem with
+might fail since it runs an amd64 image. You can work around the problem with
 [qemu-user-static](https://github.com/multiarch/qemu-user-static) by running
 these commands:
 
@@ -134,7 +134,7 @@ namespace is used for all translations. You can use the `useTranslation` hook
 with this namespace as follows:
 
 ```tsx
-conster Header: React.FC = () => {
+const Header: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
   return <h1>{t('Hello, World!')}</h1>;
 };
@@ -178,6 +178,6 @@ break console styles!
 
 ## References
 
-- [Console Plugin SDK README](https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk)
+- [Console Plugin SDK README](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk)
 - [Customization Plugin Example](https://github.com/spadgett/console-customization-plugin)
 - [Dynamic Plugin Enhancement Proposal](https://github.com/openshift/enhancements/blob/master/enhancements/console/dynamic-plugins.md)
