@@ -180,9 +180,9 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add('adminCLI', (command: string) => {
+Cypress.Commands.add('adminCLI', (command: string, options?) => {
   cy.log(`Run admin command: ${command}`);
-  cy.exec(`${command} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
+  cy.exec(`${command} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`, options);
 });
 
 const MOCK_STREAMED_RESPONSE_BODY = `data: {"event": "start", "data": {"conversation_id": "5f424596-a4f9-4a3a-932b-46a768de3e7c"}}
