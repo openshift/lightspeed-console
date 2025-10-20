@@ -7,6 +7,7 @@ import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import { getApiUrl } from '../config';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useFirstTimeUser } from '../hooks/useFirstTimeUser';
 import { useHideLightspeed } from '../hooks/useHideLightspeed';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import { closeOLS, openOLS, userFeedbackDisable } from '../redux-actions';
@@ -29,6 +30,7 @@ const Popover: React.FC = () => {
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
   const [isDarkTheme] = useIsDarkTheme();
+  const [isFirstTimeUser, markAsExperienced, firstTimeLoaded] = useFirstTimeUser();
 
   React.useEffect(() => {
     consoleFetchJSON(
@@ -48,13 +50,28 @@ const Popover: React.FC = () => {
       });
   }, [dispatch]);
 
+  // Auto-open chat for first-time users
+  React.useEffect(() => {
+    if (firstTimeLoaded && isFirstTimeUser && !isOpen && !isHidden) {
+      // Small delay to allow the page to load before opening
+      const timer = setTimeout(() => {
+        dispatch(openOLS());
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [firstTimeLoaded, isFirstTimeUser, isOpen, isHidden, dispatch]);
+
   const open = React.useCallback(() => {
     dispatch(openOLS());
   }, [dispatch]);
 
   const close = React.useCallback(() => {
+    // Mark user as experienced when they close chat for the first time
+    if (isFirstTimeUser) {
+      markAsExperienced();
+    }
     dispatch(closeOLS());
-  }, [dispatch]);
+  }, [dispatch, isFirstTimeUser, markAsExperienced]);
 
   if (isHidden) {
     return null;
