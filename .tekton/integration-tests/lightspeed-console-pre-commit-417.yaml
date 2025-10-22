@@ -77,18 +77,27 @@ spec:
                 value: "m5.xlarge"
               - name: imageContentSources
                 value: |
-                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-rhel9-operator
+                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-rhel9-operator
                     mirrors:
                       - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-operator
-                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-operator-bundle
+                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-operator-bundle
                     mirrors:
                       - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/bundle
-                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-service-api-rhel9
+                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-service-api-rhel9
                     mirrors:
                       - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-service
-                  - source: registry.redhat.io/openshift-lightspeed-tech-preview/lightspeed-console-plugin-rhel9
+                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-console-plugin-rhel9
                     mirrors:
                       - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-console
+                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-console-plugin-pf5-rhel9
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-console-pf5
+                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-to-dataverse-exporter-rhel9
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-to-dataverse-exporter
+                  - source: registry.redhat.io/openshift-lightspeed/openshift-mcp-server-rhel9
+                    mirrors:
+                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server
     - name: extract-snapshot-metadata
       description: Extract console image and commit from SNAPSHOT input
       runAfter:
