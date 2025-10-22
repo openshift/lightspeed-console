@@ -44,7 +44,7 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "webpack": "5.94.0",
+    "webpack": "5.102.1",
     "webpack-cli": "^6.0.1"
   },
   "devDependencies": {
@@ -78,7 +78,7 @@
     "@babel/runtime": "^7.26.10",
     "cross-spawn": "^7.0.5",
     "express": ">=4.21.2",
-    "webpack": "5.94.0"
+    "webpack": "5.102.1"
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
