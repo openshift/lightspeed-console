@@ -853,7 +853,6 @@ metadata:
     });
 
     it('Test ACM search resources page context for Pod', () => {
-      // ACM search resources page
       cy.visit('/multicloud/search/resources?kind=Pod&name=test-pod&namespace=test-namespace');
 
       // Mock successful pod API call
@@ -867,6 +866,41 @@ metadata:
           },
         },
       }).as('getManagedCluster');
+
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
+
+      cy.get(attachButton).click();
+      cy.get(attachMenu)
+        .should('include.text', 'Upload from computer')
+        .should('include.text', 'Full YAML file')
+        .should('include.text', 'Filtered YAML')
+        .should('include.text', 'Events')
+        .should('include.text', 'Logs')
+        .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
+    });
+
+    it('Test ACM search resources page context for VirtualMachine', () => {
+      cy.visit(
+        '/multicloud/search/resources?kind=VirtualMachine&name=test-vm&namespace=test-namespace',
+      );
+
+      // Mock successful VirtualMachine API call
+      cy.intercept(
+        'GET',
+        '/api/kubernetes/apis/kubevirt.io/v1/namespaces/test-namespace/virtualmachines/test-vm',
+        {
+          statusCode: 200,
+          body: {
+            kind: 'VirtualMachine',
+            apiVersion: 'kubevirt.io/v1',
+            metadata: {
+              name: 'test-vm',
+              namespace: 'test-namespace',
+            },
+          },
+        },
+      ).as('getVirtualMachine');
 
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
