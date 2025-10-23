@@ -11,7 +11,8 @@ USER 0
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 RUN mkdir -p /licenses
 COPY --from=build /usr/src/app/LICENSE /licenses/LICENSE
-LABEL name="openshift-lightspeed/lightspeed-console" \
+LABEL name="openshift-lightspeed/lightspeed-console-plugin-pf5-rhel9" \
+      cpe="cpe:/a:redhat:openshift_lightspeed:1::el9" \
       com.redhat.component="openshift-lightspeed" \
       io.k8s.display-name="OpenShift Lightspeed Console" \
       summary="OpenShift Lightspeed Console provides OCP console plugin for OpenShift Lightspeed Service" \
