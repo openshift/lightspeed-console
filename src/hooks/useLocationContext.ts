@@ -89,11 +89,19 @@ export const useLocationContext = () => {
         // ACM search resources page
         if (path.startsWith('/multicloud/search/resources')) {
           const key = params.get('kind');
-          if (key && models[key] && params.get('name')) {
-            setKind(key);
-            setName(params.get('name'));
-            setNamespace(params.get('namespace') || undefined);
-            return;
+          if (key && params.get('name')) {
+            if (key === 'VirtualMachine') {
+              // ACM VirtualMachine details page
+              setKind('kubevirt.io~v1~VirtualMachine');
+              setName(params.get('name'));
+              setNamespace(params.get('namespace') || undefined);
+              return;
+            } else if (models[key]) {
+              setKind(key);
+              setName(params.get('name'));
+              setNamespace(params.get('namespace') || undefined);
+              return;
+            }
           }
         }
       }
