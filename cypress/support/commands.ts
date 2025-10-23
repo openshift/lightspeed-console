@@ -22,19 +22,6 @@ declare global {
         selector: string,
         options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
       ): Chainable<JQuery<HTMLElement>>;
-      byButtonText(selector: string): Chainable<JQuery<HTMLElement>>;
-      byDataID(selector: string): Chainable<JQuery<HTMLElement>>;
-      byTestSelector(
-        selector: string,
-        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-      ): Chainable<JQuery<HTMLElement>>;
-      byTestDropDownMenu(selector: string): Chainable<JQuery<HTMLElement>>;
-      byTestOperatorRow(
-        selector: string,
-        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-      ): Chainable<JQuery<HTMLElement>>;
-      byTestSectionHeading(selector: string): Chainable<JQuery<HTMLElement>>;
-      byTestOperandLink(selector: string): Chainable<JQuery<HTMLElement>>;
       adminCLI(command: string, options?);
       login(
         provider?: string,
@@ -79,37 +66,6 @@ Cypress.Commands.add(
     cy.get(`[data-test-id="${selector}"]`, options);
   },
 );
-
-Cypress.Commands.add('byButtonText', (selector: string) => {
-  cy.get('button[type="button"]').contains(`${selector}`);
-});
-
-Cypress.Commands.add('byDataID', (selector: string) => {
-  cy.get(`[data-id="${selector}"]`);
-});
-
-Cypress.Commands.add(
-  'byTestSelector',
-  (selector: string, options?: Partial<Loggable & Timeoutable & Withinable & Shadow>) => {
-    cy.get(`[data-test-selector="${selector}"]`, options);
-  },
-);
-
-Cypress.Commands.add('byTestDropDownMenu', (selector: string) => {
-  cy.get(`[data-test-dropdown-menu="${selector}"]`);
-});
-
-Cypress.Commands.add('byTestOperatorRow', (selector: string, options?: object) => {
-  cy.get(`[data-test-operator-row="${selector}"]`, options);
-});
-
-Cypress.Commands.add('byTestSectionHeading', (selector: string) => {
-  cy.get(`[data-test-section-heading="${selector}"]`);
-});
-
-Cypress.Commands.add('byTestOperandLink', (selector: string) => {
-  cy.get(`[data-test-operand-link="${selector}"]`);
-});
 
 Cypress.Commands.add(
   'login',
