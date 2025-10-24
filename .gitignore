@@ -5,3 +5,4 @@ dist/
 .env
 gui_test_screenshots
 .nodeenv
+.playwright-mcp
