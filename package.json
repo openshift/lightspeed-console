@@ -29,7 +29,7 @@
     "@patternfly/chatbot": "6.3.2",
     "@patternfly/react-code-editor": "6.3.1",
     "@patternfly/react-core": "6.3.1",
-    "@patternfly/react-icons": "6.3.1",
+    "@patternfly/react-icons": "6.4.0",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
     "js-yaml": "^4.1.0",
