@@ -942,7 +942,7 @@ metadata:
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      cy.get(attachButton).click();
+      cy.get(attachMenuButton).click();
       cy.get(attachMenu)
         .should('include.text', 'Upload from computer')
         .should('include.text', 'Full YAML file')
