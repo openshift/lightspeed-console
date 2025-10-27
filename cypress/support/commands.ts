@@ -17,11 +17,6 @@ declare global {
         selector: string,
         options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
       ): Chainable<Element>;
-      byTestActionID(selector: string): Chainable<JQuery<HTMLElement>>;
-      byLegacyTestID(
-        selector: string,
-        options?: Partial<Loggable & Timeoutable & Withinable & Shadow>,
-      ): Chainable<JQuery<HTMLElement>>;
       adminCLI(command: string, options?);
       login(
         provider?: string,
@@ -52,18 +47,6 @@ Cypress.Commands.add(
   'byTestID',
   (selector: string, options?: Partial<Loggable & Timeoutable & Withinable & Shadow>) => {
     cy.get(`[data-test="${selector}"]`, options);
-  },
-);
-
-Cypress.Commands.add('byTestActionID', (selector: string) =>
-  cy.get(`[data-test-action="${selector}"]:not([disabled])`),
-);
-
-// Deprecated!  new IDs should use 'data-test', ie. `cy.byTestID(...)`
-Cypress.Commands.add(
-  'byLegacyTestID',
-  (selector: string, options?: Partial<Loggable & Timeoutable & Withinable & Shadow>) => {
-    cy.get(`[data-test-id="${selector}"]`, options);
   },
 );
 
