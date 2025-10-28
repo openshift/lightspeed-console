@@ -66,9 +66,9 @@ repository.
 
 ### Tests (Cypress)
 
-- To run all tests: `CYPRESS_BASE_URL='http://localhost:9000' npm run test-headless`
+- To run all tests: `npm run test-headless`
 - To run just some tests filtered by tag:
-  `CYPRESS_grepTags='@acm' CYPRESS_BASE_URL='http://localhost:9000' npm run test-headless`
+  `CYPRESS_grepTags='@acm' npm run test-headless`
 - See `tests/README.md` for full details and environment variables
 
 ### Do not commit
@@ -82,4 +82,4 @@ repository.
 - Apply lint rules: `npm run lint-fix`
 - Update i18n strings: `npm run i18n`
 - Ensure build works: `npm run build`
-- Ensure tests pass: `CYPRESS_BASE_URL='http://localhost:9000' npm run test-headless`
+- Ensure tests pass: `npm run test-headless`
