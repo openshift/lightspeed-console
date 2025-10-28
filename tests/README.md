@@ -18,7 +18,7 @@ Test behavior can be customized by setting environment variables.
 
 If you are running the OpenShift Lightspeed UI locally (with login disabled),
 you normally just need to set `CYPRESS_BASE_URL`. For example, run
-`CYPRESS_BASE_URL='http://localhost:9000' npx cypress open` to run all the tests
+`CYPRESS_BASE_URL='http://localhost:9000' npm run test` to run all the tests
 in the Cypress GUI.
 
 If you are not running the OpenShift Lightspeed UI locally or otherwise need to
@@ -53,11 +53,11 @@ customize how the tests run, you can use the following environment variables.
 
 ## Run tests
 
-We can either open the Cypress GUI (`npx cypress open`) or run Cypress in
-headless mode (`npx cypress run`).
+We can either open the Cypress GUI (`npm run test`) or run Cypress in
+headless mode (`npm run test-headless`).
 
 For example,
-`CYPRESS_grepTags='@acm' CYPRESS_BASE_URL=http://localhost:9000 npx cypress run`
+`CYPRESS_grepTags='@acm' CYPRESS_BASE_URL=http://localhost:9000 npm run test-headless`
 runs just the ACM tests in headless mode.
 
 Artifacts (screenshots/videos) are saved in `gui_test_screenshots/cypress/`.
