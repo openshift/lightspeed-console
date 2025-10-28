@@ -185,15 +185,8 @@ spec:
     logLevel: INFO`;
     cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
-    cy.get('body').then(($body) => {
-      if ($body.find('.pf-v5-c-alert:contains("Web console update is available")').length > 0) {
-        cy.get('.pf-v5-c-alert', { timeout: 2 * MINUTE })
-          .contains('Web console update is available', { timeout: 2 * MINUTE })
-          .should('exist');
-      } else {
-        cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
-      }
-    });
+    cy.visit('/');
+    cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
   });
 
   after(() => {
@@ -214,9 +207,7 @@ spec:
     it('OpenShift Lightspeed popover UI is loaded and basic functionality is working', () => {
       cy.visit('/');
 
-      cy.get(mainButton, { timeout: 5 * MINUTE })
-        .should('exist')
-        .click();
+      cy.get(mainButton).click();
 
       // Test that popover UI was opened
       cy.get(popover)
