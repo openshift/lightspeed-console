@@ -21,7 +21,7 @@ const clearChatButton = `${popover} .ols-plugin__popover-clear-chat`;
 const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
 const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
-const attachMenuButton = `${popover} .ols-plugin__attach-menu`;
+const attachButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
 const promptAttachment = `${attachments} .ols-plugin__context-label`;
 const fileInput = 'input[type="file"]';
@@ -446,22 +446,7 @@ spec:
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      // The only attach option should be the upload file option
-      cy.get(attachMenuButton).click();
-      cy.get(attachMenu)
-        .should('include.text', 'Upload from computer')
-        .should('not.include.text', 'YAML')
-        .should('not.include.text', 'Events')
-        .should('not.include.text', 'Logs');
-    });
-
-    it('Test attach options on pod details page', () => {
-      // Navigate to the pod details page
-      pages.goToPodsList();
-
-      cy.get(mainButton).click();
-      cy.get(popover).should('exist');
-
+      // Confirm that the pod we are using for testing is present
       listPage.filter.byName(podNamePrefix);
       cy.get('[data-test-rows="resource-row"]', { timeout: 2 * MINUTE }).should(
         'have.length.at.least',
@@ -469,7 +454,7 @@ spec:
       );
 
       // The only attach option should be the upload file option
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu)
         .should('include.text', 'Upload from computer')
         .should('not.include.text', 'YAML')
@@ -486,7 +471,7 @@ spec:
       cy.get(attachments).should('be.empty');
 
       // Test that the context menu now has options
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu, { timeout: MINUTE })
         .should('include.text', 'Full YAML file')
         .should('include.text', 'Filtered YAML')
@@ -495,13 +480,13 @@ spec:
         .should('include.text', 'Upload from computer');
     });
 
-    it('Test attaching YAML (OLS-745)', () => {
+    it('Test attaching YAML', () => {
       pages.goToPodDetails('openshift-console', podNamePrefix);
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
       // Test attaching pod YAML
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
       cy.get(attachments)
         .should('include.text', podNamePrefix)
@@ -521,7 +506,7 @@ spec:
       cy.get(promptInput).type('Test{enter}');
 
       // Test attaching pod YAML status section
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('button').contains('Filtered YAML').click();
       cy.get(attachments)
         .should('include.text', podNamePrefix)
@@ -547,7 +532,7 @@ spec:
       cy.get(popover).should('exist');
 
       // Test attaching pod YAML
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
       cy.get(promptAttachment).click();
       cy.get(modal).find('button').contains('Dismiss').click();
@@ -570,12 +555,12 @@ spec:
         .and('contain.text', 'Test modifying YAML');
     });
 
-    it('Test attaching events (OLS-746)', () => {
+    it('Test attaching events', () => {
       pages.goToPodDetails('openshift-lightspeed', podNamePrefix);
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('button').contains('Events').click();
       cy.get(modal).should('include.text', 'Configure events attachment');
       cy.get(modal).find('button').contains('Attach').click();
@@ -619,12 +604,12 @@ spec:
       cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
     });
 
-    it('Test attaching logs (OLS-747)', () => {
+    it('Test attaching logs', () => {
       pages.goToPodDetails('openshift-console', podNamePrefix);
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('button').contains('Logs').click();
       cy.get(modal)
         .should('include.text', 'Configure log attachment')
@@ -662,18 +647,19 @@ spec:
 
       cy.visit('/search/all-namespaces');
       cy.get(mainButton).click();
-      cy.get(attachMenuButton).click();
+      cy.get(popover).should('exist');
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('button').contains('Upload from computer').click();
 
       // File with invalid YAML
       cy.get(fileInput).selectFile(
         {
-          contents: Cypress.Buffer.from(`abc`),
+          contents: Cypress.Buffer.from('abc'),
         },
         // Use `force: true` because the input is display:none
         { force: true },
       );
-      cy.get(attachMenu).contains('Uploaded file is not valid YAML');
+      cy.get(popover).should('contain', 'Uploaded file is not valid YAML');
 
       // File that is too large
       const largeFileContent = 'a'.repeat(MAX_FILE_SIZE_MB * 1024 * 1024 + 1);
@@ -683,7 +669,8 @@ spec:
         },
         { force: true },
       );
-      cy.get(attachMenu).contains(
+      cy.get(popover).should(
+        'contain',
         `Uploaded file is too large. Max size is ${MAX_FILE_SIZE_MB} MB.`,
       );
 
@@ -711,7 +698,7 @@ metadata:
       cy.get(popover).should('exist');
 
       // Test that the attach menu shows the option for ManagedCluster
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu)
         .should('include.text', ACM_ATTACH_CLUSTER_TEXT)
         .should('include.text', 'Upload from computer')
@@ -869,7 +856,7 @@ metadata:
         },
       ).as('getManagedClusterInfoError');
 
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu).find('button').contains(ACM_ATTACH_CLUSTER_TEXT).click();
 
       // Wait for API calls
@@ -898,7 +885,7 @@ metadata:
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu)
         .should('include.text', 'Upload from computer')
         .should('include.text', 'Full YAML file')
@@ -933,7 +920,7 @@ metadata:
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      cy.get(attachMenuButton).click();
+      cy.get(attachButton).click();
       cy.get(attachMenu)
         .should('include.text', 'Upload from computer')
         .should('include.text', 'Full YAML file')
