@@ -412,7 +412,9 @@ spec:
         }
       });
     });
+  });
 
+  describe('Attach menu', { tags: ['@attach'] }, () => {
     it('Test attach options on pods list page', () => {
       pages.goToPodsList('openshift-console');
       cy.get(mainButton).click();
@@ -433,9 +435,7 @@ spec:
         .should('not.include.text', 'Events')
         .should('not.include.text', 'Logs');
     });
-  });
 
-  describe('Attach menu', { tags: ['@attach'] }, () => {
     it('Test attach options on pod details page', () => {
       pages.goToPodDetails('openshift-console', podNamePrefix);
       cy.get(mainButton).click();
