@@ -111,7 +111,6 @@ Cypress.Commands.add(
         cacheAcrossSpecs: true,
         validate() {
           cy.visit(Cypress.config('baseUrl'));
-          cy.byTestID('tour-step-footer-secondary').click();
           cy.byTestID('username').should('exist');
         },
       },
