@@ -186,7 +186,6 @@ spec:
     cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
     cy.visit('/');
-    cy.byTestID('tour-step-footer-secondary', { timeout: MINUTE }).click();
     cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
   });
 
