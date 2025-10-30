@@ -42,6 +42,7 @@ import { copyToClipboard } from '../clipboard';
 import { ErrorType, getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useFirstTimeUser } from '../hooks/useFirstTimeUser';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import {
   attachmentsClear,
@@ -61,6 +62,7 @@ import NewChatModal from './NewChatModal';
 import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
 import ResponseTools from './ResponseTools';
+import WelcomeNotice from './WelcomeNotice';
 
 import './general-page.css';
 import '@patternfly/chatbot/dist/css/main.css';
@@ -425,6 +427,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
 
   const [authStatus] = useAuth();
+  const [isFirstTimeUser] = useFirstTimeUser();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
 
@@ -518,6 +521,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             </Title>
             <AuthAlert authStatus={authStatus} />
             <PrivacyAlert />
+            {isFirstTimeUser && <WelcomeNotice />}
             {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
               <ChatHistoryEntry
                 conversationID={conversationID}
