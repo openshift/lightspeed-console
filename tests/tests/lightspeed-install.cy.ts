@@ -523,6 +523,7 @@ spec:
         .find('.ols-plugin__code-block__title')
         .should('be.visible')
         .and('contain.text', podNamePrefix);
+      cy.get(modal).find('.monaco-editor').should('be.visible').and('contain.text', podNamePrefix);
       cy.get(modal).find('.monaco-editor textarea').type('Test modifying YAML', { force: true });
       cy.get(modal).find('button').contains('Save').click();
       cy.get(promptAttachment).click();
