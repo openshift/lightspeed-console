@@ -185,6 +185,11 @@ spec:
     logLevel: INFO`;
     cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
+    // Create empty secret
+    cy.exec(
+      `oc create secret generic openai-api-keys --from-literal=apitoken=empty -n openshift-lightspeed --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+    );
+
     cy.visit('/');
     cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
   });
