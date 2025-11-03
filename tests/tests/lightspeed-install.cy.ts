@@ -191,6 +191,7 @@ spec:
     );
 
     cy.visit('/');
+    cy.byTestID('tour-step-footer-secondary', { timeout: MINUTE }).click();
     cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
   });
 
