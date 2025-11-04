@@ -196,7 +196,10 @@ spec:
 
   after(() => {
     // Delete entire namespace to delete operator and ensure everything else is cleaned up
-    cy.adminCLI(`oc delete namespace ${OLS.namespace}`, { failOnNonZeroExit: false });
+    cy.adminCLI(`oc delete namespace ${OLS.namespace}`, {
+      failOnNonZeroExit: false,
+      timeout: 2 * MINUTE,
+    });
 
     // Delete config
     cy.exec(
