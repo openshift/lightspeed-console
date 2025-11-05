@@ -29,6 +29,7 @@ import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
+import { useAutoContextDescription } from '../hooks/useAutoContextDescription';
 import {
   attachmentDelete,
   attachmentsClear,
@@ -108,6 +109,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [kind, name, namespace] = useLocationContext();
+  const autoContextDescription = useAutoContextDescription();
 
   const k8sContext = useK8sWatchResource<K8sResourceKind>(
     kind && kind !== 'Alert' && name ? { isList: false, kind, name, namespace } : null,
@@ -480,8 +482,23 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     );
     scrollIntoView();
 
+    // Prepare attachments including hidden auto-context
+    const userAttachments = attachments.valueSeq().map(toOLSAttachment);
+    const allAttachments = autoContextDescription
+      ? [
+          ...userAttachments,
+          {
+            // eslint-disable-next-line camelcase
+            attachment_type: 'error message',
+            content: autoContextDescription,
+            // eslint-disable-next-line camelcase
+            content_type: 'text/plain',
+          },
+        ]
+      : userAttachments;
+
     const requestJSON = {
-      attachments: attachments.valueSeq().map(toOLSAttachment),
+      attachments: allAttachments,
       // eslint-disable-next-line camelcase
       conversation_id: conversationID,
       // eslint-disable-next-line camelcase
@@ -586,7 +603,16 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     dispatch(setQuery(''));
     dispatch(attachmentsClear());
     focusPromptInput();
-  }, [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t]);
+  }, [
+    attachments,
+    autoContextDescription,
+    conversationID,
+    dispatch,
+    isStreaming,
+    query,
+    scrollIntoView,
+    t,
+  ]);
 
   const streamingResponseID: string = isStreaming
     ? (chatHistory.last()?.get('id') as string)
