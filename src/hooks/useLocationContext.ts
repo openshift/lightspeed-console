@@ -125,8 +125,8 @@ export const useLocationContext = () => {
         }
       }
 
-      // Alert details page
-      if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
+      // Alert details page (including the ACM UI's Alert details page)
+      if (new RegExp('/monitoring/alerts/[0-9]+').test(path)) {
         if (params.has('alertname')) {
           setKind('Alert');
           setName(params.get('alertname'));
