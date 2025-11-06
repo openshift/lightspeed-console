@@ -104,6 +104,25 @@ export const useLocationContext = () => {
             }
           }
         }
+
+        // ACM Application or ApplicationSet details page
+        urlMatches = path.match(
+          new RegExp(`/multicloud/applications/details/(${ns})/(${resourceName})/overview`),
+        );
+        if (urlMatches) {
+          // Map the apiVersion GET param in the URL to the model kind
+          const applicationKind = {
+            'applicationset.argoproj.io': 'argoproj.io~v1alpha1~ApplicationSet',
+            'application.argoproj.io': 'argoproj.io~v1alpha1~Application',
+            'application.app.k8s.io': 'app.k8s.io~v1beta1~Application',
+          }[params.get('apiVersion')];
+          if (applicationKind) {
+            setKind(applicationKind);
+            setName(urlMatches[2]);
+            setNamespace(urlMatches[1]);
+            return;
+          }
+        }
       }
 
       // Alert details page
