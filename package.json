@@ -65,7 +65,7 @@
     "junit-report-merger": "^8.0.0",
     "mocha-junit-reporter": "^2.2.1",
     "mochawesome": "^7.1.4",
-    "mochawesome-merge": "^4.4.1",
+    "mochawesome-merge": "^5.0.0",
     "mochawesome-report-generator": "^6.3.2",
     "pluralize": "^8.0.0",
     "prettier": "^3.6.2",
