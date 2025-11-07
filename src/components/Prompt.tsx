@@ -1,6 +1,6 @@
 import { Map as ImmutableMap } from 'immutable';
 import { dump as dumpYAML, load as loadYAML } from 'js-yaml';
-import { cloneDeep, each, isMatch, omit, uniqueId } from 'lodash';
+import { cloneDeep, each, isEmpty, isMatch, omit, uniqueId } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -165,7 +165,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   );
 
   const showEvents =
-    !!context &&
+    !isEmpty(context) &&
     [
       'CronJob',
       'DaemonSet',
@@ -183,7 +183,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     ].includes(kind);
 
   const showLogs =
-    !!context &&
+    !isEmpty(context) &&
     [
       'CronJob',
       'DaemonSet',
@@ -200,7 +200,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       'StatefulSet',
     ].includes(kind);
 
-  const isResourceContext = !!context && !!kind && !!name;
+  const isResourceContext = !isEmpty(context) && !!kind && !!name;
 
   const attachMenuItems = React.useMemo(
     () => [
@@ -362,7 +362,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         setLoading();
 
         // First attach the ManagedCluster object
-        if (context) {
+        if (!isEmpty(context)) {
           const clusterData = cloneDeep(context);
           delete clusterData.metadata.managedFields;
           try {
@@ -405,7 +405,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
             setLoaded();
           });
       } else if (
-        context &&
+        !isEmpty(context) &&
         (attachmentType === AttachmentTypes.YAML || attachmentType === AttachmentTypes.YAMLFiltered)
       ) {
         const data = cloneDeep(
@@ -674,7 +674,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         type="file"
       />
 
-      {showEvents && context && context.metadata?.uid && (
+      {showEvents && context.metadata?.uid && (
         <AttachEventsModal
           isOpen={isEventsModalOpen}
           kind={context.kind}
