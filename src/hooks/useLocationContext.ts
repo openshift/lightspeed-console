@@ -73,7 +73,7 @@ export const useLocationContext = () => {
         urlMatches = path.match(
           // The URL path is not namespaced and the ManagedCluster name is repeated
           new RegExp(
-            `/multicloud/infrastructure/clusters/details/(${resourceName})/${resourceName}/overview`,
+            `/multicloud/infrastructure/clusters/details/(${resourceName})/${resourceName}/(overview|nodes|settings)`,
           ),
         );
         if (urlMatches) {
