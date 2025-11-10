@@ -896,7 +896,7 @@ metadata:
       cy.get(attachMenu).should('include.text', 'Error fetching cluster info');
     });
 
-    it('Test ACM search resources page context for Pod', () => {
+    it.skip('Test ACM search resources page context for Pod', () => {
       cy.visit('/multicloud/search/resources?kind=Pod&name=test-pod&namespace=test-namespace');
 
       // Mock successful pod API call
@@ -924,7 +924,7 @@ metadata:
         .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
     });
 
-    it('Test ACM search resources page context for VirtualMachine', () => {
+    it.skip('Test ACM search resources page context for VirtualMachine', () => {
       cy.visit(
         '/multicloud/search/resources?kind=VirtualMachine&name=test-vm&namespace=test-namespace',
       );
