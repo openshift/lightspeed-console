@@ -30,6 +30,9 @@ customize how the tests run, you can use the following environment variables.
   - Limits which tests are run
   - For example, set `CYPRESS_grepTags='@core @acm'` to run only the core
     functionality and ACM tests
+- `CYPRESS_SKIP_OLS_SETUP=true`
+  - Skip login and operator installation, which is generally what you want when
+    testing locally
 - `CYPRESS_KUBECONFIG_PATH=/path/to/kubeconfig`
 - `CYPRESS_LOGIN_IDP=kube:admin`
   - Use `flexy-htpasswd-provider` when running tests on flexy installed clusters
