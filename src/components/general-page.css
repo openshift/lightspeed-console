@@ -17,6 +17,7 @@
 .ols-plugin__code-block-code {
   max-height: 10rem;
   overflow: auto;
+  white-space: pre;
 }
 
 .ols-plugin__code-block--attachment .ols-plugin__code-block-code {
