@@ -43,9 +43,11 @@ export const attachmentSet = (
   namespace: string,
   value: string,
   originalValue?: string,
+  id?: string,
 ) =>
   action(ActionType.AttachmentSet, {
     attachmentType,
+    id,
     kind,
     name,
     namespace,

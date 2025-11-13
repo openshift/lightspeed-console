@@ -54,7 +54,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       return state.set('attachments', ImmutableMap());
 
     case ActionType.AttachmentSet: {
-      const id = `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}_${action.payload.ownerName ?? 'NO-OWNER'}`;
+      const id =
+        action.payload.id ??
+        `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}_${action.payload.ownerName ?? 'NO-OWNER'}`;
       return state.setIn(['attachments', id], action.payload);
     }
 

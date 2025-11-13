@@ -338,9 +338,25 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
             });
             if (alert) {
               try {
+                // Generate a unique ID for the alert
+                const sortedLabels = Object.keys(alert.labels)
+                  .sort()
+                  .map((key) => `${key}=${alert.labels[key]}`)
+                  .join(',');
+                const alertId = `${AttachmentTypes.YAML}_${kind}_${sortedLabels}`;
+
                 const yaml = dumpYAML(alert, { lineWidth: -1 }).trim();
                 dispatch(
-                  attachmentSet(AttachmentTypes.YAML, kind, name, undefined, namespace, yaml),
+                  attachmentSet(
+                    AttachmentTypes.YAML,
+                    kind,
+                    name,
+                    undefined,
+                    namespace,
+                    yaml,
+                    undefined,
+                    alertId,
+                  ),
                 );
               } catch (e) {
                 setError(t('Error converting to YAML: {{e}}', { e }));
