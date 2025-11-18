@@ -1,8 +1,9 @@
-node_modules/
-dist/
+.claude/settings.local.json
 .devcontainer/dev.env
 .DS_Store
 .env
-gui_test_screenshots
 .nodeenv
 .playwright-mcp
+dist/
+gui_test_screenshots/
+node_modules/
