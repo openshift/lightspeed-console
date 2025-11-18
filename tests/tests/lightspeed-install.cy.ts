@@ -71,101 +71,104 @@ const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
 
 describe('OLS UI', () => {
   before(() => {
-    cy.adminCLI(
-      `oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
-    );
+    if (Cypress.env('SKIP_OLS_SETUP')) {
+      cy.task('log', 'Skip OLS install and configuration because CYPRESS_SKIP_OLS_SETUP is true');
+    } else {
+      cy.adminCLI(
+        `oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
+      );
 
-    // Getting the oauth url for hypershift cluster login
-    cy.exec(
-      `oc get oauthclient openshift-browser-client -o go-template --template="{{index .redirectURIs 0}}" --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-    ).then((result) => {
-      if (result.stderr === '') {
-        const oauth = result.stdout;
-        // Trimming the origin part of the url
-        const oauthurl = new URL(oauth);
-        const oauthorigin = oauthurl.origin;
-        cy.log(oauthorigin);
-        cy.wrap(oauthorigin).as('oauthorigin');
-      } else {
-        throw new Error(`Execution of oc get oauthclient failed
+      // Get OAuth URL for HyperShift cluster login
+      cy.exec(
+        `oc get oauthclient openshift-browser-client -o go-template --template="{{index .redirectURIs 0}}" --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      ).then((result) => {
+        if (result.stderr === '') {
+          const oauthurl = new URL(result.stdout);
+          const oauthorigin = oauthurl.origin;
+          cy.task('log', `oauthorigin: "${oauthorigin}"`);
+          cy.wrap(oauthorigin).as('oauthorigin');
+        } else {
+          throw new Error(`Execution of oc get oauthclient failed
           Exit code: ${result.exitCode}
           Stdout:\n${result.stdout}
           Stderr:\n${result.stderr}`);
-      }
-    });
-    cy.get('@oauthorigin').then((oauthorigin) => {
-      cy.login(
-        Cypress.env('LOGIN_IDP'),
-        Cypress.env('LOGIN_USERNAME'),
-        Cypress.env('LOGIN_PASSWORD'),
-        String(oauthorigin),
-      );
-    });
-
-    // If UI_INSTALL exists, install via UI
-    // If running in nudges or pre-release, install with BUNDLE_IMAGE
-    // Otherwise install the latest operator
-    if (Cypress.env('UI_INSTALL')) {
-      operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
-      cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * MINUTE }).should(
-        'include.text',
-        'ready for use',
-      );
-    } else {
-      cy.exec(
-        `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      cy.exec(
-        `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
-      const bundleImage =
-        Cypress.env('BUNDLE_IMAGE') ||
-        'quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest';
-      cy.exec(
-        `operator-sdk run bundle --timeout=10m --namespace ${OLS.namespace} ${bundleImage} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-        { timeout: 12 * MINUTE, failOnNonZeroExit: false },
-      ).then((result) => {
-        cy.task('log', `\n"operator-sdk run bundle" stdout:\n${result.stdout}\n`)
-          .task('log', `"operator-sdk run bundle" stderr:\n${result.stderr}\n`)
-          .then(() => {
-            if (result.exitCode !== 0) {
-              throw new Error(`"operator-sdk run bundle" failed with exit code ${result.exitCode}`);
-            }
-          });
+        }
       });
-    }
+      cy.get('@oauthorigin').then((oauthorigin) => {
+        cy.login(
+          Cypress.env('LOGIN_IDP'),
+          Cypress.env('LOGIN_USERNAME'),
+          Cypress.env('LOGIN_PASSWORD'),
+          String(oauthorigin),
+        );
+      });
 
-    // If the console image exists, replace image in CSV and restart operator
-    // Console pod will restart automatically.
-    if (Cypress.env('CONSOLE_IMAGE')) {
-      cy.exec(
-        `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      ).then((result) => {
-        if (result.stderr === '') {
-          const csvname = result.stdout;
-          // If console image exists, replace it in csv
-          cy.exec(
-            `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-          );
-          cy.exec(
-            `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-          );
-          cy.exec(
-            `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/6", "value":"--console-image=${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-          );
-          cy.exec(
-            `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-          );
-        } else {
-          throw new Error(`Getting csv name failed
+      // If UI_INSTALL exists, install via UI
+      // If running in nudges or pre-release, install with BUNDLE_IMAGE
+      // Otherwise install the latest operator
+      if (Cypress.env('UI_INSTALL')) {
+        operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
+        cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * MINUTE }).should(
+          'include.text',
+          'ready for use',
+        );
+      } else {
+        cy.exec(
+          `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        );
+        cy.exec(
+          `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        );
+        const bundleImage =
+          Cypress.env('BUNDLE_IMAGE') ||
+          'quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest';
+        cy.exec(
+          `operator-sdk run bundle --timeout=10m --namespace ${OLS.namespace} ${bundleImage} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          { timeout: 12 * MINUTE, failOnNonZeroExit: false },
+        ).then((result) => {
+          cy.task('log', `\n"operator-sdk run bundle" stdout:\n${result.stdout}\n`)
+            .task('log', `"operator-sdk run bundle" stderr:\n${result.stderr}\n`)
+            .then(() => {
+              if (result.exitCode !== 0) {
+                throw new Error(
+                  `"operator-sdk run bundle" failed with exit code ${result.exitCode}`,
+                );
+              }
+            });
+        });
+      }
+
+      // If the console image exists, replace image in CSV and restart operator
+      // Console pod will restart automatically.
+      if (Cypress.env('CONSOLE_IMAGE')) {
+        cy.exec(
+          `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        ).then((result) => {
+          if (result.stderr === '') {
+            const csvname = result.stdout;
+            // If console image exists, replace it in CSV
+            cy.exec(
+              `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+            );
+            cy.exec(
+              `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+            );
+            cy.exec(
+              `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/6", "value":"--console-image=${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+            );
+            cy.exec(
+              `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+            );
+          } else {
+            throw new Error(`Getting csv name failed
               Exit code: ${result.exitCode}
               Stdout:\n${result.stdout}
               Stderr:\n${result.stderr}`);
-        }
-      });
-    }
+          }
+        });
+      }
 
-    const config = `apiVersion: ols.openshift.io/v1alpha1
+      const config = `apiVersion: ols.openshift.io/v1alpha1
 kind: ${OLS.config.kind}
 metadata:
   name: ${OLS.config.name}
@@ -183,32 +186,37 @@ spec:
     defaultModel: gpt-4o-mini
     defaultProvider: openai
     logLevel: INFO`;
-    cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
+      cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
 
-    // Create empty secret
-    cy.exec(
-      `oc create secret generic openai-api-keys --from-literal=apitoken=empty -n openshift-lightspeed --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-    );
+      // Create empty secret
+      cy.exec(
+        `oc create secret generic openai-api-keys --from-literal=apitoken=empty -n openshift-lightspeed --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
 
-    cy.visit('/');
-    cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
+      cy.visit('/');
+      cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
+    }
   });
 
   after(() => {
-    // Delete entire namespace to delete operator and ensure everything else is cleaned up
-    cy.adminCLI(`oc delete namespace ${OLS.namespace}`, {
-      failOnNonZeroExit: false,
-      timeout: 5 * MINUTE,
-    });
+    if (Cypress.env('SKIP_OLS_SETUP')) {
+      cy.task('log', 'Skip OLS uninstall because CYPRESS_SKIP_OLS_SETUP is true');
+    } else {
+      // Delete entire namespace to delete operator and ensure everything else is cleaned up
+      cy.adminCLI(`oc delete namespace ${OLS.namespace}`, {
+        failOnNonZeroExit: false,
+        timeout: 5 * MINUTE,
+      });
 
-    // Delete config
-    cy.exec(
-      `oc delete ${OLS.config.kind} ${OLS.config.name} -n ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-    );
+      // Delete config
+      cy.exec(
+        `oc delete ${OLS.config.kind} ${OLS.config.name} -n ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+      );
 
-    cy.adminCLI(
-      `oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
-    );
+      cy.adminCLI(
+        `oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
+      );
+    }
   });
 
   describe('Core functionality', { tags: ['@core'] }, () => {
