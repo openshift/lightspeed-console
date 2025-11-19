@@ -19,6 +19,7 @@ import { PencilAltIcon, UndoIcon } from '@patternfly/react-icons';
 
 import { AttachmentTypes, isAttachmentChanged } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
+import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import { attachmentSet, openAttachmentClear, openAttachmentSet } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment } from '../types';
@@ -54,9 +55,7 @@ const Editor: React.FC<EditorProps> = ({ onChange }) => {
     monaco.editor.onDidChangeMarkers = () => {};
   };
 
-  // In more recent versions of the dynamic plugin SDK, the useUserSettings hook can be used to get
-  // the current theme, but to maintain 4.15 compatibility we are not upgrading the SDK yet
-  const isDarkTheme = document.documentElement.classList.contains('pf-v5-theme-dark');
+  const [isDarkTheme] = useIsDarkTheme();
 
   return (
     <CodeEditor
