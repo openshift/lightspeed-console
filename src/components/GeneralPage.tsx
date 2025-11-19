@@ -42,6 +42,7 @@ import { getApiUrl } from '../config';
 import { getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useFirstTimeUser } from '../hooks/useFirstTimeUser';
 import {
   attachmentDelete,
   attachmentsClear,
@@ -65,6 +66,7 @@ import NewChatModal from './NewChatModal';
 import ReadinessAlert from './ReadinessAlert';
 import ResponseTools from './ResponseTools';
 import ToolModal from './ResponseToolModal';
+import WelcomeNotice from './WelcomeNotice';
 
 import './general-page.css';
 
@@ -379,6 +381,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [streamController, setStreamController] = React.useState(new AbortController());
 
   const [authStatus] = useAuth();
+  const [isFirstTimeUser] = useFirstTimeUser();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
 
@@ -661,6 +664,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
         {isWelcomePage && <Welcome />}
         <AuthAlert authStatus={authStatus} />
         <PrivacyAlert />
+        {isFirstTimeUser && <WelcomeNotice />}
         {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
           <ChatHistoryEntry conversationID={conversationID} entry={entry} entryIndex={i} key={i} />
         ))}
