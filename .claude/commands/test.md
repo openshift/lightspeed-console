@@ -11,7 +11,7 @@ run all tests
    `CYPRESS_grepTags='@<tag>' CYPRESS_SKIP_OLS_SETUP='true' npm run test-headless`
 3. Report the test results
 
-Ouput a bullet point list of each test that was run with a ✅, ❌ or ⏭️ to
+Output a bullet point list of each test that was run with a ✅, ❌ or ⏭️ to
 indicate whether the test passed, failed or was skipped. List the steps without
 any title, introduction or summary at the end, etc. If all tests were skipped,
 output "⚠️ All tests were skipped" at the end.
