@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS build
+FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:latest AS build
 USER root
 
 ADD . /usr/src/app
