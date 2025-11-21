@@ -34,7 +34,7 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: prefetch-input
-    value: '{"type": "npm", "path": "."}'    
+    value: '{"type": "npm", "path": "."}'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -614,7 +614,7 @@ spec:
         - name: name
           value: rpms-signature-scan
         - name: bundle
-          value: quay.io/konflux-ci/konflux-vanguard/task-rpms-signature-scan:0.2@sha256:b5b643c48ff0f4b13383b05095adcebdbdeb5f74f3d146bd582a2dc9b85ad486
+          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:1b6c20ab3dbfb0972803d3ebcb2fa72642e59400c77bd66dfd82028bdd09e120
         - name: kind
           value: task
         resolver: bundles
