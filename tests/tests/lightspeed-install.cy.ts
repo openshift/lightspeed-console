@@ -403,7 +403,9 @@ spec:
       cy.wait('@userFeedbackWithoutCommentStub');
       cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
     });
+  });
 
+  describe('Copy to clipboard', { tags: ['@clipboard'] }, () => {
     it('Test copy response functionality', () => {
       cy.visit('/search/all-namespaces');
       cy.get(mainButton).click();
