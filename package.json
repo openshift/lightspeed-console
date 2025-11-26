@@ -92,6 +92,7 @@
       "NullContextProvider": "./components/NullContextProvider",
       "OLSReducer": "./redux-reducers",
       "OverviewDetail": "./components/OverviewDetail",
+      "useOpenOLS": "./hooks/useOpenOLS",
       "usePopover": "./hooks/usePopover"
     },
     "dependencies": {
