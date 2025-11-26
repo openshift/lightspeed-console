@@ -1,17 +1,18 @@
 # OpenShift Lightspeed Console Plugin
 
-This project is a console plugin for the [OpenShift Lightspeed AI assistant](https://github.com/openshift/lightspeed-service)
+This project is a console plugin for the
+[OpenShift Lightspeed AI assistant](https://github.com/openshift/lightspeed-service)
 project.
 
 [Dynamic plugins](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk)
-allow you to extend the
-[OpenShift UI](https://github.com/openshift/console)
-at runtime, adding custom pages and other extensions. They are based on
+allow you to extend the [OpenShift UI](https://github.com/openshift/console) at
+runtime, adding custom pages and other extensions. They are based on
 [webpack module federation](https://webpack.js.org/concepts/module-federation/).
 Plugins are registered with console using the `ConsolePlugin` custom resource
 and enabled in the console operator config by a cluster administrator.
 
 Requires OpenShift 4.16 or higher.
+
 - `main` branch supports OpenShift 4.19+
 - `pattern-fly-5` branch supports OpenShift 4.16 – 4.18
 
@@ -31,8 +32,10 @@ In one terminal window, run:
 
 In another terminal window, run:
 
-1. `oc login` (requires [oc](https://console.redhat.com/openshift/downloads) and an [OpenShift cluster](https://console.redhat.com/openshift/create))
-2. `npm run start-console` (requires [Docker](https://www.docker.com) or [podman 3.2.0+](https://podman.io))
+1. `oc login` (requires [oc](https://console.redhat.com/openshift/downloads) and
+   an [OpenShift cluster](https://console.redhat.com/openshift/create))
+2. `npm run start-console` (requires [Docker](https://www.docker.com) or
+   [podman 3.2.0+](https://podman.io))
 
 This will run the OpenShift console in a container connected to the cluster
 you've logged into. The plugin HTTP server runs on port 9001 with CORS enabled.
@@ -46,16 +49,16 @@ environment variable to a valid bearer token.
 If your Lightspeed service is running on your local machine, you can test
 locally by running Chrome with CORS disabled.
 
-1. Set the `OLS_API_BASE_URL` environment variable when starting the development server.
+1. Set the `OLS_API_BASE_URL` environment variable when starting the development
+   server.
 
    ```bash
    OLS_API_BASE_URL='http://127.0.0.1:8080' npm run start
    ```
 
 2. Start Chrome with web security disabled so localhost requests don't fail due
-to CORS. ⚠️ WARNING: This disables Chrome security, so only use these flags for
-local development!
-
+   to CORS. ⚠️ WARNING: This disables Chrome security, so only use these flags
+   for local development!
    - macOS:
      ```bash
      open -na "Google Chrome" --args --disable-web-security --user-data-dir="$HOME/chrome-dev-data-dir/"
@@ -64,7 +67,6 @@ local development!
      ```bash
      google-chrome --disable-web-security --user-data-dir="$HOME/chrome-dev-data-dir/"
      ```
-
 
 #### Running start-console with Apple silicon and podman
 
@@ -89,7 +91,8 @@ the OpenShift console and the second container is the plugin. It requires that
 you have access to an existing OpenShift cluster. After the initial build, the
 cached containers will help you start developing in seconds.
 
-1. Create a `dev.env` file inside the `.devcontainer` folder with the correct values for your cluster:
+1. Create a `dev.env` file inside the `.devcontainer` folder with the correct
+   values for your cluster:
 
 ```bash
 OC_PLUGIN_NAME=openshift-console-plugin
@@ -104,8 +107,8 @@ OC_PASS=<password>
 
 ## Docker image
 
-Before you can deploy your plugin on a cluster, you must build an image and
-push it to an image registry.
+Before you can deploy your plugin on a cluster, you must build an image and push
+it to an image registry.
 
 1. Build the image:
 
@@ -148,14 +151,14 @@ with the message for the current language from the
 `plugin__lightspeed-console-plugin` namespace. For example:
 
 ```json
-  {
-    "type": "console.navigation/section",
-    "properties": {
-      "id": "admin-demo-section",
-      "perspective": "admin",
-      "name": "%plugin__lightspeed-console-plugin~My Label%"
-    }
+{
+  "type": "console.navigation/section",
+  "properties": {
+    "id": "admin-demo-section",
+    "perspective": "admin",
+    "name": "%plugin__lightspeed-console-plugin~My Label%"
   }
+}
 ```
 
 Running `npm run i18n` updates the JSON files in the `locales` folder when
