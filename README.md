@@ -196,9 +196,11 @@ import {
   ExtensionDeclaration,
 } from '@openshift-console/dynamic-plugin-sdk/lib/types';
 
+import { Attachment } from '../types';
+
 type OpenOLSHandlerProps = {
   contextId: string;
-  provider: () => (prompt?: string) => void;
+  provider: () => (prompt?: string, attachments?: Attachment[]) => void;
 };
 
 type OpenOLSHandlerExtension = ExtensionDeclaration<
@@ -213,15 +215,30 @@ const isOpenOLSHandlerExtension = (
   e.type === 'console.action/provider' &&
   e.properties?.contextId === 'ols-open-handler';
 
-const DemoContent: React.FC<{ useOpenOLS: () => (prompt?: string) => void }> = ({
+const DemoContent: React.FC<{ useOpenOLS: () => (prompt?: string, attachments?: Attachment[]) => void }> = ({
   useOpenOLS,
 }) => {
   const openOLS = useOpenOLS();
+
+  const attachment: Attachment = {
+    attachmentType: 'YAML',
+    kind: 'Deployment',
+    name: 'test-name',
+    namespace: 'test-namespace',
+    value: `kind: Deployment
+metadata:
+  name: test-name
+  namespace: test-namespace`,
+  };
 
   return (
     <>
       <Button onClick={() => openOLS()}>Open OLS</Button>
       <Button onClick={() => openOLS('How do I scale my deployment?')}>Open OLS with prompt</Button>
+      <Button onClick={() => openOLS(undefined, [attachment])}>Open OLS with attachment</Button>
+      <Button onClick={() => openOLS('How do I scale my deployment?', [attachment])}>
+        Open OLS with prompt and attachment
+      </Button>
     </>
   );
 };
@@ -231,7 +248,7 @@ const Demo: React.FC = () => {
 
   // Get the hook from the extension (should only be one)
   const useOpenOLS = (resolved ? extensions[0]?.properties?.provider : undefined) as
-    | (() => (prompt?: string) => void)
+    | (() => (prompt?: string, attachments?: Attachment[]) => void)
     | undefined;
 
   if (!useOpenOLS) {
