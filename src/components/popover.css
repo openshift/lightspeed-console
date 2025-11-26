@@ -79,23 +79,14 @@
   background-image: url('../assets/logo-dark.svg');
 }
 
-.ols-plugin__popover-clear-chat {
-  margin-right: var(--pf-v5-global--spacer--md);
-}
-
 .ols-plugin__popover-close {
   float: right;
-  height: var(--pf-v5-global--spacer--md);
-  margin-left: var(--pf-v5-global--spacer--md);
-  right: var(--pf-v5-global--spacer--sm);
-  top: var(--pf-v5-global--spacer--sm);
-  width: var(--pf-v5-global--spacer--md);
+  font-size: 1rem;
+  padding: 0;
 }
 
 .ols-plugin__popover-control {
-  float: right;
   font-size: 1rem !important;
-  height: var(--pf-v5-global--spacer--md) !important;
-  right: var(--pf-v5-global--spacer--sm);
-  width: var(--pf-v5-global--spacer--md);
+  padding-left: var(--pf-v5-global--spacer--sm);
+  padding-right: var(--pf-v5-global--spacer--sm);
 }

@@ -18,8 +18,6 @@ import {
   HelperTextItem,
   Label,
   LabelGroup,
-  Level,
-  LevelItem,
   Page,
   PageSection,
   Spinner,
@@ -27,13 +25,17 @@ import {
   SplitItem,
   TextArea,
   Title,
+  Tooltip,
 } from '@patternfly/react-core';
 import {
+  CheckIcon,
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
+  OutlinedCopyIcon,
   PaperPlaneIcon,
   StopIcon,
+  TimesIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
@@ -384,6 +386,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [isFirstTimeUser] = useFirstTimeUser();
 
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
+  const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
 
   const chatHistoryEndRef = React.useRef(null);
   const promptRef = React.useRef(null);
@@ -603,54 +606,95 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
 
   const isWelcomePage = chatHistory.size === 0;
 
+  const copyConversation = React.useCallback(async () => {
+    try {
+      const chatEntries = chatHistory.toJS();
+      let conversationText = '';
+
+      chatEntries.forEach((entry: ChatEntry) => {
+        if (entry.who === 'user') {
+          conversationText += `You: ${entry.text}\n\n`;
+        } else if (entry.who === 'ai' && entry.text && !entry.isStreaming) {
+          conversationText += `OpenShift Lightspeed: ${entry.text}\n\n`;
+        }
+      });
+
+      const trimmed = conversationText.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      await navigator.clipboard.writeText(trimmed);
+      setCopied();
+      setTimeout(setNotCopied, 2000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to copy conversation to clipboard: ', err);
+    }
+  }, [chatHistory, setCopied, setNotCopied]);
+
   return (
     <Page>
       <PageSection className={isWelcomePage ? undefined : 'ols-plugin__header'} variant="light">
-        {onExpand && (
-          <Button
-            className="ols-plugin__popover-control"
-            onClick={onExpand}
-            title={t('Expand')}
-            variant="plain"
-          >
-            <ExpandIcon />
-          </Button>
-        )}
-        {onCollapse && (
-          <Button
-            className="ols-plugin__popover-control"
-            onClick={onCollapse}
-            title={t('Collapse')}
-            variant="plain"
-          >
-            <CompressIcon />
-          </Button>
-        )}
-        <Button
-          className="ols-plugin__popover-control"
-          onClick={onClose}
-          title={t('Minimize')}
-          variant="plain"
-        >
-          <WindowMinimizeIcon />
-        </Button>
-        {!isWelcomePage && (
-          <Level>
-            <LevelItem>
-              <Title className="ols-plugin__heading" headingLevel="h1">
-                {t('Red Hat OpenShift Lightspeed')}
-              </Title>
-            </LevelItem>
-            <LevelItem>
+        <div className="ols-plugin__header-actions">
+          {chatHistory.size > 0 && (
+            <>
+              <Tooltip content={t('Clear chat')}>
+                <Button
+                  className="ols-plugin__popover-control"
+                  data-test="ols-plugin__clear-chat-button"
+                  icon={<TimesIcon />}
+                  onClick={openNewChatModal}
+                  variant="plain"
+                />
+              </Tooltip>
+              <Tooltip content={isCopied ? t('Copied') : t('Copy conversation')}>
+                <Button
+                  className="ols-plugin__popover-control"
+                  data-test="ols-plugin__copy-conversation-button"
+                  icon={isCopied ? <CheckIcon /> : <OutlinedCopyIcon />}
+                  onClick={copyConversation}
+                  variant="plain"
+                />
+              </Tooltip>
+            </>
+          )}
+          {onCollapse && (
+            <Tooltip content={t('Collapse')}>
               <Button
-                className="ols-plugin__popover-clear-chat"
-                onClick={openNewChatModal}
-                variant="primary"
-              >
-                {t('Clear chat')}
-              </Button>
-            </LevelItem>
-          </Level>
+                className="ols-plugin__popover-control"
+                icon={<CompressIcon />}
+                onClick={onCollapse}
+                title={t('Collapse')}
+                variant="plain"
+              />
+            </Tooltip>
+          )}
+          {onExpand && (
+            <Tooltip content={t('Expand')}>
+              <Button
+                className="ols-plugin__popover-control"
+                icon={<ExpandIcon />}
+                onClick={onExpand}
+                title={t('Expand')}
+                variant="plain"
+              />
+            </Tooltip>
+          )}
+          <Tooltip content={t('Minimize')}>
+            <Button
+              className="ols-plugin__popover-control"
+              icon={<WindowMinimizeIcon />}
+              onClick={onClose}
+              title={t('Minimize')}
+              variant="plain"
+            />
+          </Tooltip>
+        </div>
+        {!isWelcomePage && (
+          <Title className="ols-plugin__heading" headingLevel="h1">
+            {t('Red Hat OpenShift Lightspeed')}
+          </Title>
         )}
       </PageSection>
 

@@ -17,7 +17,7 @@ const mainButton = '.ols-plugin__popover-button';
 const minimizeButton = `${popover} .ols-plugin__popover-control[title=Minimize]`;
 const expandButton = `${popover} .ols-plugin__popover-control[title=Expand]`;
 const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`;
-const clearChatButton = `${popover} .ols-plugin__popover-clear-chat`;
+const clearChatButton = '[data-test="ols-plugin__clear-chat-button"]';
 const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
 const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
 const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
@@ -28,10 +28,13 @@ const fileInput = 'input[type="file"]';
 const promptInput = `${popover} textarea`;
 const userFeedback = `${popover} .ols-plugin__feedback`;
 const responseAction = `${userFeedback} .ols-plugin__response-action`;
+const copyConversationButton = '[data-test="ols-plugin__copy-conversation-button"]';
+const copyResponseButton = `${responseAction}[aria-label="Copy to clipboard"]`;
 const copyButton = `${userFeedback} #ols-plugin-copy-button`;
 const userFeedbackInput = `${userFeedback} textarea`;
 const userFeedbackSubmit = `${userFeedback} button.pf-m-primary`;
 const modal = '.ols-plugin__modal';
+const tooltip = '.pf-v5-c-tooltip';
 
 const podNamePrefix = 'console';
 
@@ -345,7 +348,7 @@ spec:
 
       // The clear chat action should clear the current conversation, but leave any text in the prompt
       cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
-      cy.get(clearChatButton).should('exist').contains('Clear chat').click();
+      cy.get(clearChatButton).should('exist').click();
       cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
       cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
       cy.get(userChatEntry).should('not.exist');
@@ -428,7 +431,9 @@ spec:
       cy.wait('@userFeedbackWithoutCommentStub');
       cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
     });
+  });
 
+  describe('Copy to clipboard', { tags: ['@clipboard'] }, () => {
     it('Test copy response functionality', () => {
       cy.visit('/search/all-namespaces');
       cy.get(mainButton).click();
@@ -438,12 +443,9 @@ spec:
       cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
       cy.wait('@queryStub');
 
-      cy.get(copyButton)
-        .should('exist')
-        .should('have.class', 'ols-plugin__response-action')
-        .should('not.have.class', 'ols-plugin__response-action--selected');
+      cy.get(copyResponseButton).should('exist');
       cy.window().focus();
-      cy.get(copyButton).click();
+      cy.get(copyResponseButton).click();
 
       // Verify that none of the response action buttons changed state
       cy.get(copyButton).should('not.have.class', 'ols-plugin__response-action--selected');
@@ -453,6 +455,42 @@ spec:
       cy.get(responseAction)
         .eq(1)
         .should('not.have.class', 'ols-plugin__response-action--selected');
+    });
+
+    it('Test copy conversation functionality', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+
+      // Submit first prompt and wait for response
+      cy.interceptQuery('queryStub1', PROMPT_SUBMITTED);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryStub1');
+
+      // Submit second prompt to create a conversation
+      const PROMPT_SUBMITTED_2 = 'Second test prompt';
+      cy.interceptQuery('queryStub2', PROMPT_SUBMITTED_2, CONVERSATION_ID);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
+      cy.wait('@queryStub2');
+
+      // Verify both messages are in the chat history
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2).should('exist');
+      cy.get(aiChatEntry).should('have.length', 2);
+
+      cy.get(copyConversationButton).should('exist').trigger('mouseenter');
+      cy.get(tooltip).should('be.visible').should('contain.text', 'Copy conversation');
+
+      cy.window().focus();
+      cy.get(copyConversationButton).click();
+
+      // Tooltip text should change, then revert back after a timeout
+      cy.get(tooltip).should('be.visible').should('contain.text', 'Copied');
+      cy.get(tooltip).should('contain.text', 'Copy conversation');
+
+      // Copy conversation button should not exist when there is no chat history
+      cy.get(clearChatButton).click();
+      cy.get(modal).find('button').contains('Erase and start new chat').click();
+      cy.get(copyConversationButton).should('not.exist');
     });
   });
 
