@@ -19,5 +19,12 @@
       "scope": "ols",
       "reducer": { "$codeRef": "OLSReducer" }
     }
+  },
+  {
+    "type": "console.action/provider",
+    "properties": {
+      "contextId": "ols-open-handler",
+      "provider": { "$codeRef": "useOpenOLS" }
+    }
   }
 ]
