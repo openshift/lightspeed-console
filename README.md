@@ -181,6 +181,84 @@ best practice is to prefix your CSS classnames with your plugin name to avoid
 conflicts. Please don't disable these rules without understanding how they can
 break console styles!
 
+## Opening the OpenShift Lightspeed UI from other console pages and plugins
+
+Other OpenShift console pages and plugins can open the OpenShift Lightspeed UI
+with an optional initial query using the extension discovery pattern.
+
+### Example
+
+```typescript
+import { Button, Spinner } from '@patternfly/react-core';
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk';
+import {
+  Extension,
+  ExtensionDeclaration,
+} from '@openshift-console/dynamic-plugin-sdk/lib/types';
+
+import { Attachment } from '../types';
+
+type OpenOLSHandlerProps = {
+  contextId: string;
+  provider: () => (prompt?: string, attachments?: Attachment[]) => void;
+};
+
+type OpenOLSHandlerExtension = ExtensionDeclaration<
+  'console.action/provider',
+  OpenOLSHandlerProps
+>;
+
+// Type guard for OpenShift Lightspeed open handler extensions
+const isOpenOLSHandlerExtension = (
+  e: Extension,
+): e is OpenOLSHandlerExtension =>
+  e.type === 'console.action/provider' &&
+  e.properties?.contextId === 'ols-open-handler';
+
+const DemoContent: React.FC<{ useOpenOLS: () => (prompt?: string, attachments?: Attachment[]) => void }> = ({
+  useOpenOLS,
+}) => {
+  const openOLS = useOpenOLS();
+
+  const attachment: Attachment = {
+    attachmentType: 'YAML',
+    kind: 'Deployment',
+    name: 'test-name',
+    namespace: 'test-namespace',
+    value: `kind: Deployment
+metadata:
+  name: test-name
+  namespace: test-namespace`,
+  };
+
+  return (
+    <>
+      <Button onClick={() => openOLS()}>Open OLS</Button>
+      <Button onClick={() => openOLS('How do I scale my deployment?')}>Open OLS with prompt</Button>
+      <Button onClick={() => openOLS(undefined, [attachment])}>Open OLS with attachment</Button>
+      <Button onClick={() => openOLS('How do I scale my deployment?', [attachment])}>
+        Open OLS with prompt and attachment
+      </Button>
+    </>
+  );
+};
+
+const Demo: React.FC = () => {
+  const [extensions, resolved] = useResolvedExtensions(isOpenOLSHandlerExtension);
+
+  // Get the hook from the extension (should only be one)
+  const useOpenOLS = (resolved ? extensions[0]?.properties?.provider : undefined) as
+    | (() => (prompt?: string, attachments?: Attachment[]) => void)
+    | undefined;
+
+  if (!useOpenOLS) {
+    return <Spinner />;
+  }
+
+  return <DemoContent useOpenOLS={useOpenOLS} />;
+};
+```
+
 ## References
 
 - [Console Plugin SDK README](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk)
