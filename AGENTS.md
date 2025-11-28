@@ -58,11 +58,13 @@ repository.
 - To run the project locally:
   - Run `npm run start` in one terminal
     - Starts the dev server for the plugin on port 9001
-    - If calling the OLS API locally, set the base URL
-      `OLS_API_BASE_URL='http://127.0.0.1:8080' npm run start`
   - Run `npm run start-console` in a second terminal
     - Run the OpenShift web console container connected to your current cluster
     - Requires prior `oc login`
+- For local development and testing, the lightspeed-service is expected to be
+  running on `http://localhost:8080`
+  - The `start-console.sh` script includes a proxy configuration that routes
+    requests through the console, avoiding CORS issues
 
 ### Tests (Cypress)
 
