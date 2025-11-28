@@ -75,7 +75,6 @@ const config: Configuration = {
   },
   plugins: [
     new DefinePlugin({
-      'process.env.OLS_API_BASE_URL': JSON.stringify(process.env.OLS_API_BASE_URL),
       'process.env.OLS_API_BEARER_TOKEN': JSON.stringify(process.env.OLS_API_BEARER_TOKEN),
     }),
     new ConsoleRemotePlugin(),
