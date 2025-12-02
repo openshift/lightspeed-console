@@ -70,6 +70,8 @@ const THUMBS_DOWN = -1;
 const THUMBS_UP = 1;
 
 const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
+const MOCK_PARTIAL_RESPONSE_TEXT = 'Partial response';
+const MOCK_ERROR_MESSAGE = 'Service temporarily unavailable';
 
 describe('OLS UI', () => {
   before(() => {
@@ -359,6 +361,22 @@ spec:
         .find('h1')
         .should('include.text', POPOVER_TITLE);
       cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
+    });
+
+    it('Test response with error, partial response text and tool call', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+
+      cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(loadingIndicator).should('exist');
+      cy.wait('@queryWithErrorStub');
+
+      cy.get(aiChatEntry).should('exist').contains(MOCK_PARTIAL_RESPONSE_TEXT);
+      cy.get(aiChatEntry).find('.pf-m-danger').should('exist').contains(MOCK_ERROR_MESSAGE);
+
+      // Verify that the tool call label is displayed
+      cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').contains('ABC');
     });
 
     it('Test user feedback form', () => {
