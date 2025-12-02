@@ -37,6 +37,11 @@ declare global {
         conversationId?: string | null,
         attachments?: Array<{ attachment_type: string; content_type: string }>,
       ): Chainable<Element>;
+      interceptQueryWithError(
+        alias: string,
+        query: string,
+        errorMessage: string,
+      ): Chainable<Element>;
     }
   }
 }
@@ -142,6 +147,33 @@ Cypress.Commands.add(
       });
 
       request.reply({ body: MOCK_STREAMED_RESPONSE_BODY, delay: 1000 });
+    }).as(alias);
+  },
+);
+
+const MOCK_STREAMED_RESPONSE_WITH_ERROR_BODY = `data: {"event": "start", "data": {"conversation_id": "5f424596-a4f9-4a3a-932b-46a768de3e7c"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Partial"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " response"}}
+
+data: {"event": "tool_call", "data": {"id": 123, "token": {"tool_name": "ABC", "arguments": {"some_key": "some_value"}}}}
+
+data: {"event": "tool_result", "data": {"id": 123,  "token": {"tool_name": "ABC", "response": "Tool response data"}}}
+
+data: {"event": "error", "data": "MOCK_ERROR_MESSAGE"}
+`;
+
+Cypress.Commands.add(
+  'interceptQueryWithError',
+  (alias: string, query: string, errorMessage: string) => {
+    cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
+      expect(request.body.query).to.equal(query);
+      const responseBody = MOCK_STREAMED_RESPONSE_WITH_ERROR_BODY.replace(
+        'MOCK_ERROR_MESSAGE',
+        errorMessage,
+      );
+      request.reply({ body: responseBody, delay: 500 });
     }).as(alias);
   },
 );

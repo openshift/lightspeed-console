@@ -250,22 +250,23 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
           actions={actions}
           avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
           extraContent={{
-            afterMainContent: entry.error ? (
-              <Alert
-                isExpandable={!!entry.error.moreInfo}
-                isInline
-                title={
-                  entry.error.moreInfo
-                    ? entry.error.message
-                    : t('Error querying OpenShift Lightspeed service')
-                }
-                variant="danger"
-              >
-                {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
-              </Alert>
-            ) : (
+            afterMainContent: (
               <>
                 <Markdown components={{ code: Code }}>{entry.text}</Markdown>
+                {entry.error && (
+                  <Alert
+                    isExpandable={!!entry.error.moreInfo}
+                    isInline
+                    title={
+                      entry.error.moreInfo
+                        ? entry.error.message
+                        : t('Error querying OpenShift Lightspeed service')
+                    }
+                    variant="danger"
+                  >
+                    {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
+                  </Alert>
+                )}
                 {entry.isTruncated && (
                   <Alert isInline title={t('History truncated')} variant="warning">
                     {t('Conversation history has been truncated to fit within context window.')}
