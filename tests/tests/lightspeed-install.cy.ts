@@ -71,6 +71,8 @@ const THUMBS_UP = 1;
 const WAITING_FOR_RESPONSE_TEXT = 'Waiting for LLM provider...';
 
 const MOCK_STREAMED_RESPONSE_TEXT = 'Mock OLS response';
+const MOCK_PARTIAL_RESPONSE_TEXT = 'Partial response';
+const MOCK_ERROR_MESSAGE = 'Service temporarily unavailable';
 
 describe('OLS UI', () => {
   before(() => {
@@ -318,7 +320,9 @@ spec:
       cy.get(aiChatEntry).should('exist');
       cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
     });
+  });
 
+  describe('Streamed response', { tags: ['@response'] }, () => {
     it('Test submitting a prompt and fetching the streamed response', () => {
       cy.visit('/search/all-namespaces');
       cy.get(mainButton).click();
@@ -361,6 +365,22 @@ spec:
       cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
     });
 
+    it('Test response with error, partial response text and tool call', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get(mainButton).click();
+
+      cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+      cy.wait('@queryWithErrorStub');
+
+      cy.get(aiChatEntry).should('exist').contains(MOCK_PARTIAL_RESPONSE_TEXT);
+      cy.get(aiChatEntry).find('.pf-m-danger').should('exist').contains(MOCK_ERROR_MESSAGE);
+      cy.get(aiChatEntry).find('.ols-plugin__references').should('exist').contains('ABC');
+    });
+  });
+
+  describe('User feedback', { tags: ['@feedback'] }, () => {
     it('Test user feedback form', () => {
       cy.visit('/search/all-namespaces');
       cy.get(mainButton).click();
