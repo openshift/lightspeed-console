@@ -321,105 +321,109 @@ spec:
       cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
     });
 
-    it('Test submitting a prompt and fetching the streamed response', () => {
-      cy.visit('/search/all-namespaces');
-      cy.get(mainButton).click();
+    describe('Streamed response', { tags: ['@response'] }, () => {
+      it('Test submitting a prompt and fetching the streamed response', () => {
+        cy.visit('/search/all-namespaces');
+        cy.get(mainButton).click();
 
-      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-      cy.get(loadingIndicator).should('exist');
-      cy.wait('@queryStub');
+        cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+        cy.get(loadingIndicator).should('exist');
+        cy.wait('@queryStub');
 
-      // Prompt should now be empty
-      cy.get(promptInput).should('have.value', '');
+        // Prompt should now be empty
+        cy.get(promptInput).should('have.value', '');
 
-      // Our prompt should now be shown in the chat history along with a response from OLS
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
-      cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+        // Our prompt should now be shown in the chat history along with a response from OLS
+        cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
+        cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
 
-      // Sending a second prompt should now send the conversation_id along with the prompt
-      const PROMPT_SUBMITTED_2 = 'Test prompt 2';
-      cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
-      cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
-      cy.get(loadingIndicator).should('exist');
-      cy.wait('@queryWithConversationIdStub');
+        // Sending a second prompt should now send the conversation_id along with the prompt
+        const PROMPT_SUBMITTED_2 = 'Test prompt 2';
+        cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
+        cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
+        cy.get(loadingIndicator).should('exist');
+        cy.wait('@queryWithConversationIdStub');
 
-      cy.get(promptInput).should('have.value', '');
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
-      cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+        cy.get(promptInput).should('have.value', '');
+        cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
+        cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
 
-      // The clear chat action should clear the current conversation, but leave any text in the prompt
-      cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
-      cy.get(clearChatButton).should('exist').click();
-      cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
-      cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
-      cy.get(userChatEntry).should('not.exist');
-      cy.get(aiChatEntry).should('not.exist');
-      cy.get(popover)
-        .should('include.text', FOOTER_TEXT)
-        .should('include.text', PRIVACY_TEXT)
-        .find('h1')
-        .should('include.text', POPOVER_TITLE);
-      cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
+        // The clear chat action should clear the current conversation, but leave any text in the prompt
+        cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
+        cy.get(clearChatButton).should('exist').click();
+        cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
+        cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
+        cy.get(userChatEntry).should('not.exist');
+        cy.get(aiChatEntry).should('not.exist');
+        cy.get(popover)
+          .should('include.text', FOOTER_TEXT)
+          .should('include.text', PRIVACY_TEXT)
+          .find('h1')
+          .should('include.text', POPOVER_TITLE);
+        cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
+      });
+
+      it('Test response with error, partial response text and tool call', () => {
+        cy.visit('/search/all-namespaces');
+        cy.get(mainButton).click();
+
+        cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
+        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+        cy.get(loadingIndicator).should('exist');
+        cy.wait('@queryWithErrorStub');
+
+        cy.get(aiChatEntry).should('exist').contains(MOCK_PARTIAL_RESPONSE_TEXT);
+        cy.get(aiChatEntry).find('.pf-m-danger').should('exist').contains(MOCK_ERROR_MESSAGE);
+
+        // Verify that the tool call label is displayed
+        cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').contains('ABC');
+      });
     });
 
-    it('Test response with error, partial response text and tool call', () => {
-      cy.visit('/search/all-namespaces');
-      cy.get(mainButton).click();
+    describe('User feedback', { tags: ['@feedback'] }, () => {
+      it('Test user feedback form', () => {
+        cy.visit('/search/all-namespaces');
+        cy.get(mainButton).click();
 
-      cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
-      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-      cy.get(loadingIndicator).should('exist');
-      cy.wait('@queryWithErrorStub');
+        cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+        cy.get(loadingIndicator).should('exist');
+        cy.wait('@queryStub');
 
-      cy.get(aiChatEntry).should('exist').contains(MOCK_PARTIAL_RESPONSE_TEXT);
-      cy.get(aiChatEntry).find('.pf-m-danger').should('exist').contains(MOCK_ERROR_MESSAGE);
+        // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
+        cy.get(responseAction).should('have.lengthOf', 3);
 
-      // Verify that the tool call label is displayed
-      cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').contains('ABC');
-    });
+        // Submit positive feedback with a comment
+        cy.get(responseAction).eq(0).click();
+        cy.get(popover).contains(USER_FEEDBACK_TEXT);
+        cy.interceptFeedback(
+          'userFeedbackStub',
+          CONVERSATION_ID,
+          THUMBS_UP,
+          USER_FEEDBACK_SUBMITTED,
+          `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+        );
+        cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
+        cy.get(userFeedbackSubmit).click();
+        cy.wait('@userFeedbackStub');
+        cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
 
-    it('Test user feedback form', () => {
-      cy.visit('/search/all-namespaces');
-      cy.get(mainButton).click();
-
-      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-      cy.get(loadingIndicator).should('exist');
-      cy.wait('@queryStub');
-
-      // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
-      cy.get(responseAction).should('have.lengthOf', 3);
-
-      // Submit positive feedback with a comment
-      cy.get(responseAction).eq(0).click();
-      cy.get(popover).contains(USER_FEEDBACK_TEXT);
-      cy.interceptFeedback(
-        'userFeedbackStub',
-        CONVERSATION_ID,
-        THUMBS_UP,
-        USER_FEEDBACK_SUBMITTED,
-        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
-      );
-      cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
-      cy.get(userFeedbackSubmit).click();
-      cy.wait('@userFeedbackStub');
-      cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
-
-      // Submit negative feedback with no comment
-      cy.get(responseAction).eq(1).click();
-      cy.get(popover).contains(USER_FEEDBACK_TEXT);
-      cy.interceptFeedback(
-        'userFeedbackWithoutCommentStub',
-        CONVERSATION_ID,
-        THUMBS_DOWN,
-        '',
-        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
-      );
-      cy.get(userFeedbackInput).clear();
-      cy.get(userFeedbackSubmit).click();
-      cy.wait('@userFeedbackWithoutCommentStub');
-      cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+        // Submit negative feedback with no comment
+        cy.get(responseAction).eq(1).click();
+        cy.get(popover).contains(USER_FEEDBACK_TEXT);
+        cy.interceptFeedback(
+          'userFeedbackWithoutCommentStub',
+          CONVERSATION_ID,
+          THUMBS_DOWN,
+          '',
+          `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+        );
+        cy.get(userFeedbackInput).clear();
+        cy.get(userFeedbackSubmit).click();
+        cy.wait('@userFeedbackWithoutCommentStub');
+        cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+      });
     });
   });
 
