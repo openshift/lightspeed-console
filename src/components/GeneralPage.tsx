@@ -223,7 +223,15 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
     return (
       <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-        {entry.error ? (
+        <Markdown components={{ code: Code }}>{entry.text}</Markdown>
+        {!entry.text && !entry.isCancelled && (
+          <HelperText>
+            <HelperTextItem variant="indeterminate">
+              {t('Waiting for LLM provider...')} <Spinner size="lg" />
+            </HelperTextItem>
+          </HelperText>
+        )}
+        {entry.error && (
           <Alert
             isExpandable={!!entry.error.moreInfo}
             isInline
@@ -236,36 +244,25 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
           >
             {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
           </Alert>
-        ) : (
-          <>
-            <Markdown components={{ code: Code }}>{entry.text}</Markdown>
-            {!entry.text && !entry.isCancelled && (
-              <HelperText>
-                <HelperTextItem variant="indeterminate">
-                  {t('Waiting for LLM provider...')} <Spinner size="lg" />
-                </HelperTextItem>
-              </HelperText>
-            )}
-            {entry.isTruncated && (
-              <Alert isInline title={t('History truncated')} variant="warning">
-                {t('Conversation history has been truncated to fit within context window.')}
-              </Alert>
-            )}
-            {entry.isCancelled && (
-              <Alert
-                className="ols-plugin__chat-entry-cancelled"
-                isInline
-                isPlain
-                title={t('Cancelled')}
-                variant="info"
-              />
-            )}
-            {entry.tools && <ResponseTools entryIndex={entryIndex} />}
-            <ReferenceDocs references={entry.references} />
-            {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
-              <Feedback conversationID={conversationID} entryIndex={entryIndex} />
-            )}
-          </>
+        )}
+        {entry.isTruncated && (
+          <Alert isInline title={t('History truncated')} variant="warning">
+            {t('Conversation history has been truncated to fit within context window.')}
+          </Alert>
+        )}
+        {entry.isCancelled && (
+          <Alert
+            className="ols-plugin__chat-entry-cancelled"
+            isInline
+            isPlain
+            title={t('Cancelled')}
+            variant="info"
+          />
+        )}
+        {entry.tools && <ResponseTools entryIndex={entryIndex} />}
+        <ReferenceDocs references={entry.references} />
+        {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
+          <Feedback conversationID={conversationID} entryIndex={entryIndex} />
         )}
       </div>
     );
