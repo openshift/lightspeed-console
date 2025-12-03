@@ -52,6 +52,7 @@ const POPOVER_TITLE = 'Red Hat OpenShift Lightspeed';
 const FOOTER_TEXT = 'Always review AI generated content prior to use.';
 const PRIVACY_TEXT =
   "OpenShift Lightspeed uses AI technology to help answer your questions. Do not include personal information or other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.";
+const WELCOME_TEXT = 'Welcome to OpenShift Lightspeed';
 
 const CLEAR_CHAT_TEXT =
   'Are you sure you want to erase the current chat conversation and start a new chat? This action cannot be undone.';
@@ -237,6 +238,7 @@ spec:
         .should('include.text', PRIVACY_TEXT)
         .should('include.text', READINESS_TITLE)
         .should('include.text', READINESS_TEXT)
+        .should('include.text', WELCOME_TEXT)
         .find('h1')
         .should('include.text', POPOVER_TITLE);
 
