@@ -530,15 +530,25 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let responseText = '';
+
+      // Use buffer because long strings (e.g. tool call output) may be split into multiple chunks
+      let buffer = '';
+
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const { value, done } = await reader.read();
         if (done) {
           break;
         }
-        const text = decoder.decode(value);
-        text
-          .split('\n')
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+
+        // Keep the last line in the buffer. If the chunk ended mid-line, this holds the incomplete
+        // line until more data arrives. If the chunk ended with '\n', split() produces an empty
+        // string as the last element, so we just hold an empty buffer and process all lines.
+        buffer = lines.pop() ?? '';
+
+        lines
           .filter((s) => s.startsWith('data: '))
           .forEach((s) => {
             const line = s.slice(5).trim();
