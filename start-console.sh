@@ -37,18 +37,18 @@ if [ -x "$(command -v podman)" ]; then
     if [ "$(uname -s)" = "Linux" ]; then
         # Use host networking on Linux since host.containers.internal is unreachable in some environments.
         BRIDGE_PLUGINS="lightspeed-console-plugin=http://localhost:9001"
-        podman run --pull always --rm --network=host --env-file <(set | grep BRIDGE) \
+        podman run --rm --network=host --env-file <(set | grep BRIDGE) \
         --env BRIDGE_PLUGIN_PROXY='{"services": [{"consoleAPIPath": "/api/proxy/plugin/lightspeed-console-plugin/ols/", "endpoint": "http://localhost:8080", "authorize": true}]}' \
         $CONSOLE_IMAGE
     else
         BRIDGE_PLUGINS="lightspeed-console-plugin=http://host.containers.internal:9001"
-        podman run --platform linux/amd64 --pull always --rm -p "$CONSOLE_PORT":9000 --env-file <(set | grep BRIDGE) \
+        podman run --platform linux/amd64 --rm -p "$CONSOLE_PORT":9000 --env-file <(set | grep BRIDGE) \
         --env BRIDGE_PLUGIN_PROXY='{"services": [{"consoleAPIPath": "/api/proxy/plugin/lightspeed-console-plugin/ols/", "endpoint": "http://host.containers.internal:8080", "authorize": true}]}' \
         $CONSOLE_IMAGE
     fi
 else
     BRIDGE_PLUGINS="lightspeed-console-plugin=http://host.docker.internal:9001"
-    docker run --platform linux/amd64 --pull always --rm -p "$CONSOLE_PORT":9000 --env-file <(set | grep BRIDGE) \
+    docker run --platform linux/amd64 --rm -p "$CONSOLE_PORT":9000 --env-file <(set | grep BRIDGE) \
     --env BRIDGE_PLUGIN_PROXY='{"services": [{"consoleAPIPath": "/api/proxy/plugin/lightspeed-console-plugin/ols/", "endpoint": "http://host.docker.internal:8080", "authorize": true}]}' \
     $CONSOLE_IMAGE
 fi
