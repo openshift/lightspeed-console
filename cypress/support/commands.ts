@@ -173,7 +173,7 @@ data: {"event": "token", "data": {"id": 1, "token": " response"}}
 
 data: {"event": "tool_call", "data": {"id": 123, "name": "ABC", "args": {"some_key": "some_value"}}}
 
-data: {"event": "tool_result", "data": {"id": 123,  "content": "Tool response", status: "success"}}
+data: {"event": "tool_result", "data": {"id": 123,  "content": "Tool response", "status": "success"}}
 
 data: {"event": "error", "data": "MOCK_ERROR_MESSAGE"}
 `;
