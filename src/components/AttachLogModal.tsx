@@ -63,8 +63,13 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
       onOpenChange={setIsOpen}
       onSelect={onSelect}
       toggle={(toggleRef) => (
-        <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
-          <ResourceIcon kind="Container" /> {selectedContainer}
+        <MenuToggle
+          icon={<ResourceIcon kind="Container" />}
+          isExpanded={isOpen}
+          onClick={toggleIsOpen}
+          ref={toggleRef}
+        >
+          {selectedContainer}
         </MenuToggle>
       )}
     >

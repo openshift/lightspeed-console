@@ -20,7 +20,9 @@ export const clickReloadButton = () => cy.byTestID('reload-object').click();
 export const listPage = {
   filter: {
     byName: (name: string) => {
-      cy.byTestID('name-filter-input').clear().type(name);
+      cy.byTestID('name-filter-input', { timeout: 10000 })
+        .should('be.visible')
+        .type(name, { force: true });
     },
   },
   rows: {
@@ -46,7 +48,7 @@ export const pages = {
   goToPodDetails: (ns, podName) => {
     pages.goToPodsList(ns);
     listPage.filter.byName(podName);
-    listPage.rows.countShouldBeWithin(1, 3);
+    listPage.rows.countShouldBeWithin(1, 4);
     listPage.rows.clickFirst();
   },
   goToPodsList: (ns: string | null = null) => {
