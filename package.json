@@ -68,8 +68,8 @@
     "mochawesome-merge": "^4.4.1",
     "mochawesome-report-generator": "^6.3.2",
     "pluralize": "^8.0.0",
-    "prettier": "^3.6.2",
-    "stylelint": "^16.26.0",
+    "prettier": "^3.7.3",
+    "stylelint": "^16.26.1",
     "stylelint-config-standard": "^39.0.1",
     "webpack-dev-server": "^5.2.2"
   },
