@@ -1,10 +1,10 @@
 Run Cypress tests filtered by tag.
 
-Arguments: [tag] - Optional tag to filter by (@core, @attach, @acm) or "all" to
+Arguments: [tag] - Optional tag to filter by (@core, @attach, etc.) or "all" to
 run all tests
 
 1. If a tag argument was provided, use it. Otherwise, ask the user which tag to
-   filter by (@core, @attach, @acm or "all" to run all tests)
+   filter by (@core, @attach, etc. or "all" to run all tests)
 2. If the tag is "all", run the tests using
    `CYPRESS_SKIP_OLS_SETUP='true' npm run test-headless`. Otherwise, run the
    tests using
