@@ -70,7 +70,7 @@ repository.
 
 - To run all tests: `npm run test-headless`
 - To run just some tests filtered by tag:
-  `CYPRESS_grepTags='@acm' npm run test-headless`
+  `CYPRESS_grepTags='@attach' npm run test-headless`
 - See `tests/README.md` for full details and environment variables
 
 ### Do not commit

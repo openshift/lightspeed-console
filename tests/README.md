@@ -28,8 +28,8 @@ customize how the tests run, you can use the following environment variables.
     running locally
 - `CYPRESS_grepTags`
   - Limits which tests are run
-  - For example, set `CYPRESS_grepTags='@core @acm'` to run only the core
-    functionality and ACM tests
+  - For example, set `CYPRESS_grepTags='@core @attach'` to run just the core
+    functionality and attachment related tests
 - `CYPRESS_SKIP_OLS_SETUP=true`
   - Skip login and operator installation, which is generally what you want when
     testing locally
@@ -59,7 +59,7 @@ customize how the tests run, you can use the following environment variables.
 You can either open the Cypress GUI (`npm run test`) or run Cypress in headless
 mode (`npm run test-headless`).
 
-For example, `CYPRESS_grepTags='@acm' npm run test-headless` runs just the ACM
-tests in headless mode.
+For example, `CYPRESS_grepTags='@attach' npm run test-headless` runs just the
+attachment related tests in headless mode.
 
 Artifacts (screenshots/videos) are saved in `gui_test_screenshots/cypress/`.
