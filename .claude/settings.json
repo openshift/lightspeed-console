@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(CYPRESS_SKIP_OLS_SETUP='true' npm run test-headless)",
+      "Bash(npm run build)",
+      "Bash(npm run i18n)",
+      "Bash(npm run lint-fix)",
+      "Bash(npm run lint)",
+      "Bash(npm view:*)",
+
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git status)",
+
+      "WebFetch(domain:docs.redhat.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.patternfly.org)"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(npm install)"
+    ]
+  }
+}
