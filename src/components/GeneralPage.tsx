@@ -2,7 +2,6 @@ import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 import { defer } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import Markdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -95,8 +94,8 @@ const isURL = (s: string): boolean => {
   }
 };
 
-const Code = ({ children }: { children: React.ReactNode }) => {
-  if (!String(children).includes('\n')) {
+const Code = ({ children }: { children?: React.ReactNode }) => {
+  if (!children || !String(children).includes('\n')) {
     return <code>{children}</code>;
   }
 
@@ -249,10 +248,10 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         <Message
           actions={actions}
           avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
+          content={entry.text}
           extraContent={{
             afterMainContent: (
               <>
-                <Markdown components={{ code: Code }}>{entry.text}</Markdown>
                 {entry.error && (
                   <Alert
                     isExpandable={!!entry.error.moreInfo}
@@ -302,6 +301,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
           isCompact
           isLoading={!entry.text && !entry.isCancelled && !entry.error}
           name="OpenShift Lightspeed"
+          reactMarkdownProps={{ components: { code: Code } }}
           role="bot"
           sources={sources}
           timestamp=" "
