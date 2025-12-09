@@ -54,14 +54,7 @@ const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
 // Sanity check on the upload file size
 const MAX_FILE_SIZE_MB = 1;
 
-const INPUT_ELEMENT_ID = 'ols-plugin__prompt-input';
 const SUBMIT_BUTTON_ELEMENT_CLASS = 'pf-chatbot__button--send';
-
-const focusPromptInput = () => {
-  // We use getElementById instead of a ref because of problems with getting the ref forwarded to
-  // MessageBar's underlying textarea element
-  (document.getElementById(INPUT_ELEMENT_ID) as HTMLTextAreaElement).focus();
-};
 
 const FilteredYAMLInfo = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -106,6 +99,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const [kind, name, namespace] = useLocationContext();
 
@@ -118,7 +112,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
   // Focus the prompt input when the UI is first opened
   React.useEffect(() => {
-    focusPromptInput();
+    textareaRef.current?.focus();
   }, []);
 
   const handleFileUpload = React.useCallback(
@@ -611,7 +605,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     // Clear prompt input and return focus to it
     dispatch(setQuery(''));
     dispatch(attachmentsClear());
-    focusPromptInput();
+    textareaRef.current?.focus();
   }, [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t]);
 
   const streamingResponseID: string = isStreaming
@@ -665,7 +659,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
           onStreamCancel({ preventDefault: () => {} } as unknown as React.FormEvent);
         }}
         hasStopButton={isStreaming}
-        id={INPUT_ELEMENT_ID}
+        innerRef={textareaRef}
         isSendButtonDisabled={!query || query.trim().length === 0}
         onChange={(e) => onChange(e, e.target.value)}
         onKeyDown={onKeyDown}
