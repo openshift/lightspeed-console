@@ -9,9 +9,10 @@ export default defineConfig({
   videosFolder: './gui_test_screenshots/cypress/videos',
   video: true,
   videoCompression: false,
-  reporter: './node_modules/cypress-multi-reporters',
+  reporter: 'mocha-junit-reporter',
   reporterOptions: {
-    configFile: 'reporter-config.json',
+    mochaFile: './gui_test_screenshots/junit_cypress-[hash].xml',
+    toConsole: false,
   },
   env: {
     grepFilterSpecs: true,
