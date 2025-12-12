@@ -371,12 +371,15 @@ spec:
 
       cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
       cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-      cy.get(popover).contains(WAITING_FOR_RESPONSE_TEXT);
+      cy.get(popover).should('contain', WAITING_FOR_RESPONSE_TEXT);
       cy.wait('@queryWithErrorStub');
 
-      cy.get(aiChatEntry).should('exist').contains(MOCK_PARTIAL_RESPONSE_TEXT);
-      cy.get(aiChatEntry).find('.pf-m-danger').should('exist').contains(MOCK_ERROR_MESSAGE);
-      cy.get(aiChatEntry).find('.ols-plugin__references').should('exist').contains('ABC');
+      cy.get(aiChatEntry).should('exist').should('contain', MOCK_PARTIAL_RESPONSE_TEXT);
+      cy.get(aiChatEntry)
+        .find('.pf-m-danger')
+        .should('exist')
+        .should('contain', MOCK_ERROR_MESSAGE);
+      cy.get(aiChatEntry).find('.ols-plugin__references').should('exist').should('contain', 'ABC');
     });
   });
 
