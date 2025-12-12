@@ -12,8 +12,6 @@ import {
   CodeBlockAction,
   CodeBlockCode,
   ExpandableSection,
-  Stack,
-  StackItem,
   Title,
   Tooltip,
 } from '@patternfly/react-core';
@@ -27,7 +25,9 @@ import {
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 import {
+  Chatbot,
   ChatbotContent,
+  ChatbotDisplayMode,
   ChatbotFooter,
   ChatbotFootnote,
   ChatbotHeader,
@@ -243,129 +243,125 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
       }
     }
     return (
-      <>
-        {/* @ts-expect-error: TS2786 */}
-        <Message
-          actions={actions}
-          avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
-          content={entry.text}
-          extraContent={{
-            afterMainContent: (
-              <>
-                {entry.error && (
-                  <Alert
-                    isExpandable={!!entry.error.moreInfo}
-                    isInline
-                    title={
-                      entry.error.moreInfo
-                        ? entry.error.message
-                        : t('Error querying OpenShift Lightspeed service')
-                    }
-                    variant="danger"
-                  >
-                    {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
-                  </Alert>
-                )}
-                {entry.isTruncated && (
-                  <Alert isInline title={t('History truncated')} variant="warning">
-                    {t('Conversation history has been truncated to fit within context window.')}
-                  </Alert>
-                )}
-                {entry.isCancelled && (
-                  <Alert
-                    className="ols-plugin__chat-entry-cancelled"
-                    isInline
-                    isPlain
-                    title={t('Cancelled')}
-                    variant="info"
-                  />
-                )}
-                {entry.tools && <ResponseTools entryIndex={entryIndex} />}
-              </>
-            ),
-            endContent: feedbackError ? (
-              <Alert
-                className="ols-plugin__alert"
-                isExpandable={!!feedbackError.moreInfo}
-                isInline
-                title={
-                  feedbackError.moreInfo ? feedbackError.message : t('Error submitting feedback')
-                }
-                variant="danger"
-              >
-                {feedbackError.moreInfo ? feedbackError.moreInfo : feedbackError.message}
-              </Alert>
-            ) : undefined,
-          }}
-          hasRoundAvatar={false}
-          isCompact
-          isLoading={!entry.text && !entry.isCancelled && !entry.error}
-          name="OpenShift Lightspeed"
-          reactMarkdownProps={{ components: { code: Code } }}
-          role="bot"
-          sources={sources}
-          timestamp=" "
-          userFeedbackComplete={
-            isFeedbackOpen && feedbackSubmitted ? { onClose: onFeedbackClose } : undefined
-          }
-          userFeedbackForm={
-            isFeedbackOpen && !feedbackSubmitted && sentiment !== undefined
-              ? {
-                  className: 'ols-plugin__feedback',
-                  hasTextArea: true,
-                  headingLevel: 'h6',
-                  onClose: onFeedbackClose,
-                  onSubmit: onFeedbackSubmit,
-                  submitWord: t('Submit'),
-                  title: t(
-                    "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
-                  ),
-                }
-              : undefined
-          }
-        />
-      </>
+      // @ts-expect-error: TS2786
+      <Message
+        actions={actions}
+        avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
+        content={entry.text}
+        extraContent={{
+          afterMainContent: (
+            <>
+              {entry.error && (
+                <Alert
+                  isExpandable={!!entry.error.moreInfo}
+                  isInline
+                  title={
+                    entry.error.moreInfo
+                      ? entry.error.message
+                      : t('Error querying OpenShift Lightspeed service')
+                  }
+                  variant="danger"
+                >
+                  {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
+                </Alert>
+              )}
+              {entry.isTruncated && (
+                <Alert isInline title={t('History truncated')} variant="warning">
+                  {t('Conversation history has been truncated to fit within context window.')}
+                </Alert>
+              )}
+              {entry.isCancelled && (
+                <Alert
+                  className="ols-plugin__chat-entry-cancelled"
+                  isInline
+                  isPlain
+                  title={t('Cancelled')}
+                  variant="info"
+                />
+              )}
+              {entry.tools && <ResponseTools entryIndex={entryIndex} />}
+            </>
+          ),
+          endContent: feedbackError ? (
+            <Alert
+              className="ols-plugin__alert"
+              isExpandable={!!feedbackError.moreInfo}
+              isInline
+              title={
+                feedbackError.moreInfo ? feedbackError.message : t('Error submitting feedback')
+              }
+              variant="danger"
+            >
+              {feedbackError.moreInfo ? feedbackError.moreInfo : feedbackError.message}
+            </Alert>
+          ) : undefined,
+        }}
+        hasRoundAvatar={false}
+        isCompact
+        isLoading={!entry.text && !entry.isCancelled && !entry.error}
+        name="OpenShift Lightspeed"
+        reactMarkdownProps={{ components: { code: Code } }}
+        role="bot"
+        sources={sources}
+        timestamp=" "
+        userFeedbackComplete={
+          isFeedbackOpen && feedbackSubmitted ? { onClose: onFeedbackClose } : undefined
+        }
+        userFeedbackForm={
+          isFeedbackOpen && !feedbackSubmitted && sentiment !== undefined
+            ? {
+                className: 'ols-plugin__feedback',
+                hasTextArea: true,
+                headingLevel: 'h6',
+                onClose: onFeedbackClose,
+                onSubmit: onFeedbackSubmit,
+                submitWord: t('Submit'),
+                title: t(
+                  "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
+                ),
+              }
+            : undefined
+        }
+      />
     );
   }
 
   if (entry.who === 'user') {
     return (
-      <>
-        {/* @ts-expect-error: TS2786 */}
-        <Message
-          avatar={userAvatar}
-          avatarProps={{ className: 'ols-plugin__avatar', isBordered: true }}
-          extraContent={{
-            afterMainContent: (
-              <>
-                <div>{entry.text}</div>
-                {entry.attachments && Object.keys(entry.attachments).length > 0 && (
-                  <ExpandableSection
-                    displaySize="lg"
-                    isExpanded={isContextExpanded}
-                    onToggle={toggleContextExpanded}
-                    toggleContent={
-                      <>
-                        Context <Badge>{Object.keys(entry.attachments).length}</Badge>
-                      </>
-                    }
-                  >
-                    {Object.keys(entry.attachments).map((key: string) => {
-                      const attachment: Attachment = entry.attachments[key];
-                      return <AttachmentLabel attachment={attachment} key={key} />;
-                    })}
-                  </ExpandableSection>
-                )}
-              </>
-            ),
-          }}
-          hasRoundAvatar={false}
-          isCompact
-          name="You"
-          role="user"
-          timestamp=" "
-        />
-      </>
+      // @ts-expect-error: TS2786
+      <Message
+        avatar={userAvatar}
+        avatarProps={{ className: 'ols-plugin__avatar', isBordered: true }}
+        extraContent={{
+          afterMainContent: (
+            <>
+              <div>{entry.text}</div>
+              {entry.attachments && Object.keys(entry.attachments).length > 0 && (
+                <ExpandableSection
+                  displaySize="lg"
+                  isExpanded={isContextExpanded}
+                  onToggle={toggleContextExpanded}
+                  toggleContent={
+                    <>
+                      Context <Badge>{Object.keys(entry.attachments).length}</Badge>
+                    </>
+                  }
+                >
+                  {Object.keys(entry.attachments).map((key: string) => {
+                    const attachment: Attachment = entry.attachments[key];
+                    return <AttachmentLabel attachment={attachment} key={key} />;
+                  })}
+                </ExpandableSection>
+              )}
+            </>
+          ),
+        }}
+        hasRoundAvatar={false}
+        isCompact
+        name="You"
+        role="user"
+        timestamp=" "
+      />
     );
   }
 
@@ -415,12 +411,20 @@ const PrivacyAlert: React.FC = () => {
 };
 
 type GeneralPageProps = {
+  ariaLabel: string;
+  className: string;
   onClose: () => void;
   onCollapse?: () => void;
   onExpand?: () => void;
 };
 
-const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand }) => {
+const GeneralPage: React.FC<GeneralPageProps> = ({
+  ariaLabel,
+  className,
+  onClose,
+  onCollapse,
+  onExpand,
+}) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -490,124 +494,123 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   }, [chatHistory, setCopied, setNotCopied]);
 
   return (
-    <Stack>
-      <StackItem>
+    // @ts-expect-error: TS2786
+    <Chatbot
+      ariaLabel={ariaLabel}
+      className={className}
+      displayMode={onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default}
+    >
+      {/* @ts-expect-error: TS2786 */}
+      <ChatbotHeader>
         {/* @ts-expect-error: TS2786 */}
-        <ChatbotHeader>
+        <ChatbotHeaderMain>
           {/* @ts-expect-error: TS2786 */}
-          <ChatbotHeaderMain>
-            {/* @ts-expect-error: TS2786 */}
-            <ChatbotHeaderTitle className="ols-plugin__header-title">
-              <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
-            </ChatbotHeaderTitle>
-          </ChatbotHeaderMain>
-          {/* @ts-expect-error: TS2786 */}
-          <ChatbotHeaderActions className="ols-plugin__header-actions">
-            {chatHistory.size > 0 && (
-              <>
-                <Tooltip content={t('Clear chat')}>
-                  <Button
-                    className="ols-plugin__popover-control"
-                    data-test="ols-plugin__clear-chat-button"
-                    icon={<TimesIcon />}
-                    onClick={openNewChatModal}
-                    variant="plain"
-                  />
-                </Tooltip>
-                <Tooltip
-                  content={isCopied ? t('Copied') : t('Copy conversation')}
-                  data-test="ols-plugin__copy-conversation-tooltip"
-                >
-                  <Button
-                    className="ols-plugin__popover-control"
-                    data-test="ols-plugin__copy-conversation-button"
-                    icon={isCopied ? <CheckIcon /> : <OutlinedCopyIcon />}
-                    onClick={copyConversation}
-                    variant="plain"
-                  />
-                </Tooltip>
-              </>
-            )}
-            {onExpand && (
-              <Button
-                className="ols-plugin__popover-control"
-                icon={<ExpandIcon />}
-                onClick={onExpand}
-                title={t('Expand')}
-                variant="plain"
-              />
-            )}
-            {onCollapse && (
-              <Button
-                className="ols-plugin__popover-control"
-                icon={<CompressIcon />}
-                onClick={onCollapse}
-                title={t('Collapse')}
-                variant="plain"
-              />
-            )}
+          <ChatbotHeaderTitle className="ols-plugin__header-title">
+            <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
+          </ChatbotHeaderTitle>
+        </ChatbotHeaderMain>
+        {/* @ts-expect-error: TS2786 */}
+        <ChatbotHeaderActions className="ols-plugin__header-actions">
+          {chatHistory.size > 0 && (
+            <>
+              <Tooltip content={t('Clear chat')}>
+                <Button
+                  className="ols-plugin__popover-control"
+                  data-test="ols-plugin__clear-chat-button"
+                  icon={<TimesIcon />}
+                  onClick={openNewChatModal}
+                  variant="plain"
+                />
+              </Tooltip>
+              <Tooltip
+                content={isCopied ? t('Copied') : t('Copy conversation')}
+                data-test="ols-plugin__copy-conversation-tooltip"
+              >
+                <Button
+                  className="ols-plugin__popover-control"
+                  data-test="ols-plugin__copy-conversation-button"
+                  icon={isCopied ? <CheckIcon /> : <OutlinedCopyIcon />}
+                  onClick={copyConversation}
+                  variant="plain"
+                />
+              </Tooltip>
+            </>
+          )}
+          {onExpand && (
             <Button
               className="ols-plugin__popover-control"
-              icon={<WindowMinimizeIcon />}
-              onClick={onClose}
-              title={t('Minimize')}
+              icon={<ExpandIcon />}
+              onClick={onExpand}
+              title={t('Expand')}
               variant="plain"
             />
-          </ChatbotHeaderActions>
-        </ChatbotHeader>
-      </StackItem>
+          )}
+          {onCollapse && (
+            <Button
+              className="ols-plugin__popover-control"
+              icon={<CompressIcon />}
+              onClick={onCollapse}
+              title={t('Collapse')}
+              variant="plain"
+            />
+          )}
+          <Button
+            className="ols-plugin__popover-control"
+            icon={<WindowMinimizeIcon />}
+            onClick={onClose}
+            title={t('Minimize')}
+            variant="plain"
+          />
+        </ChatbotHeaderActions>
+      </ChatbotHeader>
 
-      <StackItem className="ols-plugin__chat-history" isFilled>
+      {/* @ts-expect-error: TS2786 */}
+      <ChatbotContent aria-label={t('OpenShift Lightspeed chat history')}>
         {/* @ts-expect-error: TS2786 */}
-        <ChatbotContent aria-label={t('OpenShift Lightspeed chat history')}>
-          {/* @ts-expect-error: TS2786 */}
-          <MessageBox>
-            <div className="ols-plugin__welcome-logo"></div>
-            <Title className="ols-plugin__welcome-subheading" headingLevel="h5">
-              {t(
-                'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
-              )}
-            </Title>
-            <AuthAlert authStatus={authStatus} />
-            <PrivacyAlert />
-            {isFirstTimeUser && <WelcomeNotice />}
-            {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
-              <ChatHistoryEntry
-                conversationID={conversationID}
-                entry={entry}
-                entryIndex={i}
-                key={i}
-              />
-            ))}
-            <AttachmentsSizeAlert />
-            <ReadinessAlert />
-            <div ref={chatHistoryEndRef} />
-          </MessageBox>
-        </ChatbotContent>
-      </StackItem>
+        <MessageBox>
+          <div className="ols-plugin__welcome-logo"></div>
+          <Title className="ols-plugin__welcome-subheading" headingLevel="h5">
+            {t(
+              'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
+            )}
+          </Title>
+          <AuthAlert authStatus={authStatus} />
+          <PrivacyAlert />
+          {isFirstTimeUser && <WelcomeNotice />}
+          {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
+            <ChatHistoryEntry
+              conversationID={conversationID}
+              entry={entry}
+              entryIndex={i}
+              key={i}
+            />
+          ))}
+          <AttachmentsSizeAlert />
+          <ReadinessAlert />
+          <div ref={chatHistoryEndRef} />
+        </MessageBox>
+      </ChatbotContent>
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-        <StackItem>
+        // @ts-expect-error: TS2786
+        <ChatbotFooter>
+          <Prompt scrollIntoView={scrollIntoView} />
           {/* @ts-expect-error: TS2786 */}
-          <ChatbotFooter>
-            <Prompt scrollIntoView={scrollIntoView} />
-            {/* @ts-expect-error: TS2786 */}
-            <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
-            <div className="ols-plugin__footnote">
-              {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
-              <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-                email the Red Hat team
-              </ExternalLink>
-            </div>
-            <NewChatModal
-              isOpen={isNewChatModalOpen}
-              onClose={closeNewChatModal}
-              onConfirm={onConfirmNewChat}
-            />
-          </ChatbotFooter>
-        </StackItem>
+          <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
+          <div className="ols-plugin__footnote">
+            {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
+            <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
+              email the Red Hat team
+            </ExternalLink>
+          </div>
+          <NewChatModal
+            isOpen={isNewChatModalOpen}
+            onClose={closeNewChatModal}
+            onConfirm={onConfirmNewChat}
+          />
+        </ChatbotFooter>
       )}
-    </Stack>
+    </Chatbot>
   );
 };
 
