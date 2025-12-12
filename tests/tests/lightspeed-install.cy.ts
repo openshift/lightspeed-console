@@ -373,11 +373,14 @@ spec:
         cy.get(loadingIndicator).should('exist');
         cy.wait('@queryWithErrorStub');
 
-        cy.get(aiChatEntry).should('exist').contains(MOCK_PARTIAL_RESPONSE_TEXT);
-        cy.get(aiChatEntry).find('.pf-m-danger').should('exist').contains(MOCK_ERROR_MESSAGE);
+        cy.get(aiChatEntry).should('exist').should('contain', MOCK_PARTIAL_RESPONSE_TEXT);
+        cy.get(aiChatEntry)
+          .find('.pf-m-danger')
+          .should('exist')
+          .should('contain', MOCK_ERROR_MESSAGE);
 
         // Verify that the tool call label is displayed
-        cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').contains('ABC');
+        cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').should('contain', 'ABC');
       });
     });
 
