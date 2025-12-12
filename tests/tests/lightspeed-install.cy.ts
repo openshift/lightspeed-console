@@ -242,7 +242,7 @@ spec:
 
       // Test that we can submit a prompt
       cy.get(promptInput).should('exist').type(`${PROMPT_SUBMITTED}{enter}`);
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
       cy.get(aiChatEntry).should('exist');
 
       // Populate the prompt input, but don't submit it
@@ -255,9 +255,9 @@ spec:
       // Open the popover UI again
       // Previous messages and text in the prompt input should have been preserved
       cy.get(mainButton).click();
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
       cy.get(aiChatEntry).should('exist');
-      cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+      cy.get(promptInput).should('contain', PROMPT_NOT_SUBMITTED);
 
       // When expanded, the popover width should fill most of the viewport
       const isExpanded = (popoverElement) =>
@@ -316,9 +316,9 @@ spec:
         });
 
       // Previous messages and text in the prompt input should have been preserved
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
       cy.get(aiChatEntry).should('exist');
-      cy.get(promptInput).contains(PROMPT_NOT_SUBMITTED).should('exist');
+      cy.get(promptInput).should('contain', PROMPT_NOT_SUBMITTED);
     });
 
     describe('Streamed response', { tags: ['@response'] }, () => {
@@ -335,8 +335,8 @@ spec:
         cy.get(promptInput).should('have.value', '');
 
         // Our prompt should now be shown in the chat history along with a response from OLS
-        cy.get(userChatEntry).contains(PROMPT_SUBMITTED);
-        cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+        cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
+        cy.get(aiChatEntry).should('exist').should('contain', MOCK_STREAMED_RESPONSE_TEXT);
 
         // Sending a second prompt should now send the conversation_id along with the prompt
         const PROMPT_SUBMITTED_2 = 'Test prompt 2';
@@ -346,13 +346,13 @@ spec:
         cy.wait('@queryWithConversationIdStub');
 
         cy.get(promptInput).should('have.value', '');
-        cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2);
-        cy.get(aiChatEntry).should('exist').contains(MOCK_STREAMED_RESPONSE_TEXT);
+        cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED_2);
+        cy.get(aiChatEntry).should('exist').should('contain', MOCK_STREAMED_RESPONSE_TEXT);
 
         // The clear chat action should clear the current conversation, but leave any text in the prompt
         cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
         cy.get(clearChatButton).should('exist').click();
-        cy.get(modal).should('exist').contains(CLEAR_CHAT_TEXT);
+        cy.get(modal).should('exist').should('contain', CLEAR_CHAT_TEXT);
         cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
         cy.get(userChatEntry).should('not.exist');
         cy.get(aiChatEntry).should('not.exist');
@@ -399,7 +399,7 @@ spec:
 
         // Submit positive feedback with a comment
         cy.get(responseAction).eq(0).click();
-        cy.get(popover).contains(USER_FEEDBACK_TEXT);
+        cy.get(popover).should('contain', USER_FEEDBACK_TEXT);
         cy.interceptFeedback(
           'userFeedbackStub',
           CONVERSATION_ID,
@@ -410,11 +410,11 @@ spec:
         cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
         cy.get(userFeedbackSubmit).click();
         cy.wait('@userFeedbackStub');
-        cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+        cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
 
         // Submit negative feedback with no comment
         cy.get(responseAction).eq(1).click();
-        cy.get(popover).contains(USER_FEEDBACK_TEXT);
+        cy.get(popover).should('contain', USER_FEEDBACK_TEXT);
         cy.interceptFeedback(
           'userFeedbackWithoutCommentStub',
           CONVERSATION_ID,
@@ -425,7 +425,7 @@ spec:
         cy.get(userFeedbackInput).clear();
         cy.get(userFeedbackSubmit).click();
         cy.wait('@userFeedbackWithoutCommentStub');
-        cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+        cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
       });
     });
   });
@@ -475,8 +475,8 @@ spec:
       cy.wait('@queryStub2');
 
       // Verify both messages are in the chat history
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED).should('exist');
-      cy.get(userChatEntry).contains(PROMPT_SUBMITTED_2).should('exist');
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED_2);
       cy.get(aiChatEntry).should('have.length', 2);
 
       cy.get(copyConversationButton).should('exist').trigger('mouseenter');
@@ -661,7 +661,7 @@ spec:
       cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
       cy.get(userFeedbackSubmit).click();
       cy.wait('@userFeedbackWithAttachmentStub');
-      cy.get(popover).contains(USER_FEEDBACK_RECEIVED_TEXT);
+      cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
     });
 
     it('Test attaching logs', () => {
