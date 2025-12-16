@@ -1,5 +1,4 @@
 :root {
-  --popover-border-radius: 12px;
   --popover-button-size: var(--pf-t--global--spacer--2xl);
   --popover-margin: var(--pf-t--global--spacer--lg);
   --popover-bottom: calc(
@@ -14,21 +13,8 @@
   padding-bottom: var(--popover-button-size);
 }
 
-.ols-plugin__popover, .ols-plugin__popover-button {
-  border-radius: var(--popover-border-radius);
-  box-shadow: var(--pf-t--global--box-shadow--lg);
-  position: absolute;
-  right: var(--popover-margin);
-  z-index: 199;
-}
-
 .ols-plugin__popover {
-  --pf-t--chatbot--background: none;
-
-  background-color: var(--pf-t--global--background--color--primary--default);
   border: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
-  bottom: var(--popover-bottom);
-  overflow: hidden;
 }
 
 .ols-plugin__popover--collapsed {
@@ -58,7 +44,12 @@
 }
 
 .ols-plugin__popover--expanded {
+  border-radius: var(--pf-t--global--border--radius--medium);
+  box-shadow: var(--pf-t--global--box-shadow--lg);
   height: calc(100% - var(--popover-bottom) - var(--popover-margin));
+  margin-bottom: var(--popover-bottom);
+  margin-right: var(--popover-margin);
+  overflow: hidden;
   width: calc(100% - 2*var(--popover-margin));
 }
 
@@ -67,15 +58,18 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: calc(var(--popover-button-size) + 3px);
+  border-radius: 12px;
   bottom: var(--popover-margin);
   box-shadow: var(--pf-t--global--box-shadow--lg);
   height: var(--popover-button-size);
   padding: 0;
-  position: absolute !important;
+  position: absolute;
+  right: var(--popover-margin);
   width: var(--popover-button-size);
+  z-index: var(--pf-t--global--z-index--md);
 }
 
-.ols-plugin__popover-container--dark .ols-plugin__popover-button {
+.ols-plugin__popover-button--dark {
   background-color: var(--pf-t--global--dark--background--color--100);
   background-image: url('../assets/logo-dark.svg');
 }

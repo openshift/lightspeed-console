@@ -88,7 +88,7 @@
   padding-left: calc(var(--logo-spacer-left) + var(--logo-size) + var(--logo-spacer-right));
 }
 
-.ols-plugin__popover-container--dark .ols-plugin__header-title {
+.ols-plugin__popover--dark .ols-plugin__header-title {
   background-image: url('../assets/logo-dark.svg');
 }
 
@@ -108,12 +108,13 @@
   --logo-size: var(--pf-t--global--spacer--4xl);
 
   background-image: url('../assets/logo.svg');
+  flex-shrink: 0;
   height: var(--logo-size);
   margin: var(--pf-t--global--spacer--2xl) auto var(--pf-t--global--spacer--lg) auto;
   width: var(--logo-size);
 }
 
-.ols-plugin__popover-container--dark .ols-plugin__welcome-logo {
+.ols-plugin__popover--dark .ols-plugin__welcome-logo {
   background-image: url('../assets/logo-dark.svg');
 }
 
