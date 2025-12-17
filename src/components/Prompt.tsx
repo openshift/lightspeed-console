@@ -49,6 +49,8 @@ import ResourceIcon from './ResourceIcon';
 import ToolModal from './ResponseToolModal';
 
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
+const ALERTS_THANOS_ENDPOINT =
+  '/api/proxy/plugin/monitoring-console-plugin/thanos-proxy/api/v1/rules?type=alert';
 const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
 
 // Sanity check on the upload file size
@@ -316,7 +318,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       } else if (kind === 'Alert') {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
-        consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader())
+        const alertsEndpoint = labels.cluster ? ALERTS_THANOS_ENDPOINT : ALERTS_ENDPOINT;
+        consoleFetchJSON(alertsEndpoint, 'get', getRequestInitWithAuthHeader())
           .then((response) => {
             let alert;
             each(response?.data?.groups, (group) => {
