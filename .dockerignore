@@ -1,6 +1,14 @@
 **/.DS_Store
+.claude
+.cursor
+.devcontainer
 .git
+.github
 .gitignore
+.tekton
 .vscode
+cypress
 dist
+gui_test_screenshots
 node_modules
+tests
