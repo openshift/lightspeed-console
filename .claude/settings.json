@@ -8,6 +8,8 @@
       "Bash(npm run lint)",
       "Bash(npm view:*)",
 
+      "Bash(npx stylelint:*)",
+
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
