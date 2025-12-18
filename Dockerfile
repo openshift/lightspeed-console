@@ -1,9 +1,16 @@
 FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:latest AS build
 USER root
 
-ADD . /usr/src/app
 WORKDIR /usr/src/app
+
+# Copy only package files first for better layer caching
+COPY package.json package-lock.json ./
+
 RUN NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=dev --omit=optional --loglevel verbose --ignore-scripts --no-fund
+
+COPY console-extensions.json LICENSE tsconfig.json types.d.ts webpack.config.ts ./
+COPY locales ./locales
+COPY src ./src
 RUN npm run build --loglevel verbose
 
 FROM registry.access.redhat.com/ubi9/nginx-124:latest
