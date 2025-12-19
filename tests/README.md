@@ -5,7 +5,7 @@ cluster and then run a series of Cypress e2e tests against the UI.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 18
+- [Node.js](https://nodejs.org/) >= 22
 
 ## Install dependencies
 

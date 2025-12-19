@@ -16,8 +16,8 @@ Requires OpenShift 4.16 or higher.
 - `main` branch supports OpenShift 4.19+
 - `pattern-fly-5` branch supports OpenShift 4.16 – 4.18
 
-[Node.js](https://nodejs.org/en/) and [npm](https://www.npmjs.com) are required
-to build and run the example. To run OpenShift console in a container, either
+[Node.js](https://nodejs.org/en/) >= 22 and [npm](https://www.npmjs.com) are
+required to build and run. To run OpenShift console in a container, either
 [Docker](https://www.docker.com) or [podman 3.2.0+](https://podman.io) and
 [oc](https://console.redhat.com/openshift/downloads) are required.
 
