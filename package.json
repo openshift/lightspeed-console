@@ -4,6 +4,9 @@
   "private": true,
   "repository": "git@github.com:openshift/lightspeed-console.git",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && NODE_ENV=production npm run ts-node node_modules/.bin/webpack",
