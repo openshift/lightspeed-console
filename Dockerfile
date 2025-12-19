@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:latest AS build
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:latest AS build
 USER root
 
 WORKDIR /usr/src/app
