@@ -1,0 +1,82 @@
+---
+lockfileVersion: 1
+lockfileVendor: redhat
+arches:
+- arch: aarch64
+  packages:
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-1.20.1-22.el9_6.3.aarch64.rpm
+    repoid: ubi-9-for-aarch64-appstream-rpms
+    size: 38034
+    checksum: sha256:acf0e009df1d2a0bf3302af6ffdeb940cc55cebd758d87444b28033b0cd07ab4
+    name: nginx
+    evr: 2:1.20.1-22.el9_6.3
+    sourcerpm: nginx-1.20.1-22.el9_6.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-core-1.20.1-22.el9_6.3.aarch64.rpm
+    repoid: ubi-9-for-aarch64-appstream-rpms
+    size: 585353
+    checksum: sha256:92b3fe4c68952603e9151ac185faa2e98fb2e5750bfe616d379dedda5de0e44a
+    name: nginx-core
+    evr: 2:1.20.1-22.el9_6.3
+    sourcerpm: nginx-1.20.1-22.el9_6.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-filesystem-1.20.1-22.el9_6.3.noarch.rpm
+    repoid: ubi-9-for-aarch64-appstream-rpms
+    size: 10729
+    checksum: sha256:987a844a7ddf5bc2d54c5ced49ce4eba6b3d49aeb8960e0744792935b854d831
+    name: nginx-filesystem
+    evr: 2:1.20.1-22.el9_6.3
+    sourcerpm: nginx-1.20.1-22.el9_6.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/r/redhat-logos-httpd-90.5-1.el9_6.1.noarch.rpm
+    repoid: ubi-9-for-aarch64-appstream-rpms
+    size: 16643
+    checksum: sha256:a3b0e027da9390f7c047cdbd6eea0ce2de11781ec2b4e6e951d74fb15af93ff4
+    name: redhat-logos-httpd
+    evr: 90.5-1.el9_6.1
+    sourcerpm: redhat-logos-90.5-1.el9_6.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/l/logrotate-3.18.0-12.el9.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 74117
+    checksum: sha256:9b8142fb8bd0a89c48655a385a58357e3d78ffa9a119db4eb24cec67b6e8ded8
+    name: logrotate
+    evr: 3.18.0-12.el9
+    sourcerpm: logrotate-3.18.0-12.el9.src.rpm
+  source: []
+  module_metadata: []
+- arch: x86_64
+  packages:
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-1.20.1-22.el9_6.3.x86_64.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 38094
+    checksum: sha256:ac60f31368828d6eb017ad6a755270abd48b2c15c347903a11127ac3c186c619
+    name: nginx
+    evr: 2:1.20.1-22.el9_6.3
+    sourcerpm: nginx-1.20.1-22.el9_6.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-core-1.20.1-22.el9_6.3.x86_64.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 584421
+    checksum: sha256:77c7fabc1d6366608ae0fa0392be79519c93276b30f2b905d1639ae56db89796
+    name: nginx-core
+    evr: 2:1.20.1-22.el9_6.3
+    sourcerpm: nginx-1.20.1-22.el9_6.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-filesystem-1.20.1-22.el9_6.3.noarch.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 10729
+    checksum: sha256:987a844a7ddf5bc2d54c5ced49ce4eba6b3d49aeb8960e0744792935b854d831
+    name: nginx-filesystem
+    evr: 2:1.20.1-22.el9_6.3
+    sourcerpm: nginx-1.20.1-22.el9_6.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/r/redhat-logos-httpd-90.5-1.el9_6.1.noarch.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 16643
+    checksum: sha256:a3b0e027da9390f7c047cdbd6eea0ce2de11781ec2b4e6e951d74fb15af93ff4
+    name: redhat-logos-httpd
+    evr: 90.5-1.el9_6.1
+    sourcerpm: redhat-logos-90.5-1.el9_6.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/logrotate-3.18.0-12.el9.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 76162
+    checksum: sha256:ffa6b348d400fd25151f9a8042ed33cbf9b0dd305ee532e80c5f342e30e6fdf6
+    name: logrotate
+    evr: 3.18.0-12.el9
+    sourcerpm: logrotate-3.18.0-12.el9.src.rpm
+  source: []
+  module_metadata: []
