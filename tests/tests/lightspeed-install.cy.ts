@@ -24,7 +24,7 @@ const attachments = `${popover} .ols-plugin__chat-prompt-attachments`;
 const attachButton = `${popover} .ols-plugin__attach-menu`;
 const attachMenu = `${popover} .ols-plugin__context-menu`;
 const promptAttachment = `${attachments} .ols-plugin__context-label`;
-const fileInput = 'input[type="file"]';
+const fileInput = '[data-test="ols-plugin__file-upload"]';
 const promptInput = `${popover} textarea`;
 const userFeedback = `${popover} .ols-plugin__feedback`;
 const responseAction = `${userFeedback} .ols-plugin__response-action`;
