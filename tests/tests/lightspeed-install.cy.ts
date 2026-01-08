@@ -24,7 +24,7 @@ const loadingIndicator = `${popover} .pf-chatbot__message-loading`;
 const attachments = `${popover} .ols-plugin__prompt-attachments`;
 const attachMenu = `.pf-chatbot__menu`;
 const promptAttachment = `${attachments} .ols-plugin__context-label`;
-const fileInput = `${popover} input[type="file"][accept=".yaml,.yml"]`;
+const fileInput = '[data-test="ols-plugin__file-upload"]';
 const responseAction = `${popover} .pf-chatbot__button--response-action`;
 const copyConversationButton = '[data-test="ols-plugin__copy-conversation-button"]';
 const copyConversationTooltip = '[data-test="ols-plugin__copy-conversation-tooltip"]';
