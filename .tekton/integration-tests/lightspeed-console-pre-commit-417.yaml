@@ -40,6 +40,7 @@ spec:
     - name: provision-cluster
       runAfter:
         - eaas-provision-space
+        - lint
       taskSpec:
         results:
           - name: clusterName
@@ -130,6 +131,43 @@ spec:
               dnf -y install jq
               echo -n "$(jq -r --arg component_name "lightspeed-console-pf5" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.console-image.path)
               echo -n "$(jq -r --arg component_name "lightspeed-console-pf5" '.components[] | select(.name == $component_name) | .source.git.revision' <<< "$SNAPSHOT")" > $(step.results.commit.path)
+    - name: lint
+      description: Run lint checks
+      runAfter:
+        - extract-snapshot-metadata
+      params:
+        - name: commit
+          value: $(tasks.extract-snapshot-metadata.results.commit)
+      taskSpec:
+        params:
+          - name: commit
+        steps:
+          - name: run-lint
+            env:
+              - name: COMMIT_SHA
+                value: $(params.commit)
+            image: cypress/browsers:24.11.0
+            resources:
+              limits:
+                memory: 4Gi
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              cd /home
+              git clone https://github.com/openshift/lightspeed-console.git
+              cd lightspeed-console
+              git fetch origin "${COMMIT_SHA}"
+              git config advice.detachedHead false
+              git checkout "${COMMIT_SHA}"
+              echo "---------------------------------------------"
+              echo "node version: $(node -v)"
+              echo "npm version: $(npm -v)"
+              echo "---------------------------------------------"
+              NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
+              echo "---------------------------------------------"
+              npm run lint
+              echo "---------------------------------------------"
+              npm run i18n
     - name: ols-e2e-tests
       description: Task to run tests from service repository
       runAfter:
@@ -227,9 +265,11 @@ spec:
               cd lightspeed-console
               git config --global user.email olsci@redhat.com
               git config --global user.name olsci
-              git fetch origin ${COMMIT_SHA}
-              git checkout ${COMMIT_SHA}
+              git fetch origin "${COMMIT_SHA}"
+              git config advice.detachedHead false
+              git checkout "${COMMIT_SHA}"
               echo "---------------------------------------------"
+              echo "node version: $(node -v)"
               echo "npm version: $(npm -v)"
               echo "---------------------------------------------"
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
