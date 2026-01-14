@@ -99,11 +99,23 @@ const Popover: React.FC = () => {
           onExpand={expand}
         />
       )}
-      <Button aria-label={title} className={buttonClassName} onClick={close} variant="link" />
+      <Button
+        aria-label={title}
+        className={buttonClassName}
+        data-test="ols-plugin__popover-button"
+        onClick={close}
+        variant="link"
+      />
     </>
   ) : (
     <Tooltip content={title}>
-      <Button aria-label={title} className={buttonClassName} onClick={open} variant="link" />
+      <Button
+        aria-label={title}
+        className={buttonClassName}
+        data-test="ols-plugin__popover-button"
+        onClick={open}
+        variant="link"
+      />
     </Tooltip>
   );
 };

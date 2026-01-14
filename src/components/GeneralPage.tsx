@@ -498,6 +498,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
     <Chatbot
       ariaLabel={ariaLabel}
       className={className}
+      data-test="ols-plugin__popover"
       displayMode={onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default}
     >
       {/* @ts-expect-error: TS2786 */}
@@ -539,6 +540,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
           {onExpand && (
             <Button
               className="ols-plugin__popover-control"
+              data-test="ols-plugin__popover-expand-button"
               icon={<ExpandIcon />}
               onClick={onExpand}
               title={t('Expand')}
@@ -548,6 +550,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
           {onCollapse && (
             <Button
               className="ols-plugin__popover-control"
+              data-test="ols-plugin__popover-collapse-button"
               icon={<CompressIcon />}
               onClick={onCollapse}
               title={t('Collapse')}
@@ -556,6 +559,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
           )}
           <Button
             className="ols-plugin__popover-control"
+            data-test="ols-plugin__popover-minimize-button"
             icon={<WindowMinimizeIcon />}
             onClick={onClose}
             title={t('Minimize')}
