@@ -391,6 +391,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             <Tooltip content={t('Collapse')}>
               <Button
                 className="ols-plugin__popover-control"
+                data-test="ols-plugin__popover-collapse-button"
                 icon={<CompressIcon />}
                 onClick={onCollapse}
                 title={t('Collapse')}
@@ -402,6 +403,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             <Tooltip content={t('Expand')}>
               <Button
                 className="ols-plugin__popover-control"
+                data-test="ols-plugin__popover-expand-button"
                 icon={<ExpandIcon />}
                 onClick={onExpand}
                 title={t('Expand')}
@@ -412,6 +414,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
           <Tooltip content={t('Minimize')}>
             <Button
               className="ols-plugin__popover-control"
+              data-test="ols-plugin__popover-minimize-button"
               icon={<WindowMinimizeIcon />}
               onClick={onClose}
               title={t('Minimize')}

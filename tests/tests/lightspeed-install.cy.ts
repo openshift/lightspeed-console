@@ -12,11 +12,11 @@ const OLS = {
   },
 };
 
-const popover = '.ols-plugin__popover';
-const mainButton = '.ols-plugin__popover-button';
-const minimizeButton = `${popover} .ols-plugin__popover-control[title=Minimize]`;
-const expandButton = `${popover} .ols-plugin__popover-control[title=Expand]`;
-const collapseButton = `${popover} .ols-plugin__popover-control[title=Collapse]`;
+const popover = '[data-test="ols-plugin__popover"]';
+const mainButton = '[data-test="ols-plugin__popover-button"]';
+const minimizeButton = '[data-test="ols-plugin__popover-minimize-button"]';
+const expandButton = '[data-test="ols-plugin__popover-expand-button"]';
+const collapseButton = '[data-test="ols-plugin__popover-collapse-button"]';
 const clearChatButton = '[data-test="ols-plugin__clear-chat-button"]';
 const userChatEntry = `${popover} .ols-plugin__chat-entry--user`;
 const aiChatEntry = `${popover} .ols-plugin__chat-entry--ai`;
