@@ -150,22 +150,50 @@ describe('OLS UI', () => {
           `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
         ).then((result) => {
           if (result.stderr === '') {
-            const csvname = result.stdout;
+            const csvName = result.stdout;
             // If console image exists, replace it in CSV
             cy.exec(
               `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
             );
             cy.exec(
-              `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              `oc patch ${csvName} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
             );
             cy.exec(
-              `oc patch ${csvname} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args/8", "value":"--console-image=${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-            );
-            cy.exec(
-              `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-            );
+              `oc get ${csvName} --namespace=${OLS.namespace} -o json --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+            ).then((csvResult) => {
+              if (csvResult.stderr !== '') {
+                throw new Error(`Getting csv failed
+                  Exit code: ${csvResult.exitCode}
+                  Stdout:\n${csvResult.stdout}
+                  Stderr:\n${csvResult.stderr}`);
+              }
+
+              const csv = JSON.parse(csvResult.stdout);
+              const args =
+                csv.spec.install.spec.deployments[0].spec.template.spec.containers[0].args.map(
+                  (arg) =>
+                    arg.startsWith('--console-image=')
+                      ? `--console-image=${Cypress.env('CONSOLE_IMAGE')}`
+                      : arg,
+                );
+
+              const patch = JSON.stringify([
+                {
+                  op: 'replace',
+                  path: '/spec/install/spec/deployments/0/spec/template/spec/containers/0/args',
+                  value: args,
+                },
+              ]);
+              cy.exec(
+                `oc patch ${csvName} --namespace=${OLS.namespace} --type='json' -p='${patch}' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              );
+
+              cy.exec(
+                `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              );
+            });
           } else {
-            throw new Error(`Getting csv name failed
+            throw new Error(`Getting CSV name failed
               Exit code: ${result.exitCode}
               Stdout:\n${result.stdout}
               Stderr:\n${result.stderr}`);
