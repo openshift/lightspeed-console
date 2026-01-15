@@ -88,6 +88,7 @@ const Popover: React.FC = () => {
             className={`ols-plugin__popover ols-plugin__popover--${
               isExpanded ? 'expanded' : 'collapsed'
             }`}
+            data-test="ols-plugin__popover"
           >
             {isExpanded ? (
               <GeneralPage onClose={close} onCollapse={collapse} />
@@ -98,6 +99,7 @@ const Popover: React.FC = () => {
           <Button
             aria-label={title}
             className="ols-plugin__popover-button"
+            data-test="ols-plugin__popover-button"
             onClick={close}
             variant="link"
           />
@@ -107,6 +109,7 @@ const Popover: React.FC = () => {
           <Button
             aria-label={title}
             className="ols-plugin__popover-button"
+            data-test="ols-plugin__popover-button"
             onClick={open}
             variant="link"
           />
