@@ -148,7 +148,10 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
 
   if (entry.who === 'ai') {
     return (
-      <div className="ols-plugin__chat-entry ols-plugin__chat-entry--ai">
+      <div
+        className="ols-plugin__chat-entry ols-plugin__chat-entry--ai"
+        data-test="ols-plugin__chat-entry-ai"
+      >
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
         <Markdown components={{ code: Code }}>{entry.text}</Markdown>
         {!entry.text && !entry.isCancelled && (
@@ -196,7 +199,10 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   }
   if (entry.who === 'user') {
     return (
-      <div className="ols-plugin__chat-entry ols-plugin__chat-entry--user">
+      <div
+        className="ols-plugin__chat-entry ols-plugin__chat-entry--user"
+        data-test="ols-plugin__chat-entry-user"
+      >
         <div className="ols-plugin__chat-entry-name">You</div>
         <div className="ols-plugin__chat-entry-text">{entry.text}</div>
         {entry.attachments && Object.keys(entry.attachments).length > 0 && (
