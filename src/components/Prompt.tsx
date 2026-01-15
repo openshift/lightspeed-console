@@ -146,6 +146,7 @@ const FileUploadSelectOption: React.FC<FileUploadSelectOptionProps> = ({ setErro
       <FileUploadIcon /> {t('Upload from computer')}
       <input
         accept=".yaml,.yml"
+        data-test="ols-plugin__file-upload"
         onChange={handleFileUpload}
         ref={fileInput}
         style={{ display: 'none' }}
