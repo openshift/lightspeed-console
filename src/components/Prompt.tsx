@@ -691,6 +691,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
       <input
         accept=".yaml,.yml"
+        data-test="ols-plugin__file-upload"
         onChange={handleFileUpload}
         ref={fileInputRef}
         style={{ display: 'none' }}
