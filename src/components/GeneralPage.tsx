@@ -248,6 +248,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         actions={actions}
         avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
         content={entry.text}
+        data-test="ols-plugin__chat-entry-ai"
         extraContent={{
           afterMainContent: (
             <>
@@ -332,6 +333,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
       <Message
         avatar={userAvatar}
         avatarProps={{ className: 'ols-plugin__avatar', isBordered: true }}
+        data-test="ols-plugin__chat-entry-user"
         extraContent={{
           afterMainContent: (
             <>
