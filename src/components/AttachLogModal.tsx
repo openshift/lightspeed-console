@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import {
   consoleFetchText,
   K8sResourceKind,
-  ResourceIcon,
   useK8sWatchResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -33,6 +32,7 @@ import { useBoolean } from '../hooks/useBoolean';
 import { attachmentSet } from '../redux-actions';
 import CopyAction from './CopyAction';
 import Modal from './Modal';
+import ResourceIcon from './ResourceIcon';
 
 const DEFAULT_LOG_LINES = 25;
 
