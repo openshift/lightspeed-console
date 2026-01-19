@@ -47,14 +47,14 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
   selectedContainer,
   setContainer,
 }) => {
-  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
+  const [isOpen, toggleIsOpen, , closeDropdown, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string) => {
-      close();
+      closeDropdown();
       setContainer(newValue);
     },
-    [close, setContainer],
+    [closeDropdown, setContainer],
   );
 
   return (
@@ -139,17 +139,17 @@ type PodInputProps = {
 };
 
 const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => {
-  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
+  const [isOpen, toggleIsOpen, , closeDropdown, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
     (_e: React.MouseEvent<Element, MouseEvent> | undefined, podUID: string) => {
-      close();
+      closeDropdown();
       const newPod = pods.find((p: K8sResourceKind) => p.metadata?.uid === podUID);
       if (newPod) {
         setPod(newPod);
       }
     },
-    [close, pods, setPod],
+    [closeDropdown, pods, setPod],
   );
 
   return (

@@ -407,7 +407,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   yaml,
                 ),
               );
-              close();
             } catch (e) {
               setError(t('Error converting ManagedClusterInfo to YAML: {{e}}', { e }));
             }

@@ -65,7 +65,7 @@ const Popover: React.FC = () => {
     dispatch(openOLS());
   }, [dispatch]);
 
-  const close = React.useCallback(() => {
+  const onClose = React.useCallback(() => {
     // Mark user as experienced when they close chat for the first time
     if (isFirstTimeUser) {
       markAsExperienced();
@@ -88,14 +88,14 @@ const Popover: React.FC = () => {
         <GeneralPage
           ariaLabel={title}
           className={popoverClassName}
-          onClose={close}
+          onClose={onClose}
           onCollapse={collapse}
         />
       ) : (
         <GeneralPage
           ariaLabel={title}
           className={popoverClassName}
-          onClose={close}
+          onClose={onClose}
           onExpand={expand}
         />
       )}
@@ -103,7 +103,7 @@ const Popover: React.FC = () => {
         aria-label={title}
         className={buttonClassName}
         data-test="ols-plugin__popover-button"
-        onClick={close}
+        onClick={onClose}
         variant="link"
       />
     </>
