@@ -168,7 +168,7 @@ const AttachMenu: React.FC = () => {
   const [isEventsModalOpen, , openEventsModal, closeEventsModal] = useBoolean(false);
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
   const [isLoading, , setLoading, setLoaded] = useBoolean(false);
-  const [isOpen, toggleIsOpen, , close, setIsOpen] = useBoolean(false);
+  const [isOpen, toggleIsOpen, , closeMenu, setIsOpen] = useBoolean(false);
 
   const [kind, name, namespace] = useLocationContext();
 
@@ -182,10 +182,10 @@ const AttachMenu: React.FC = () => {
     (_ev: React.MouseEvent, attachmentType: string) => {
       if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
-        close();
+        closeMenu();
       } else if (attachmentType === AttachmentTypes.Log) {
         openLogModal();
-        close();
+        closeMenu();
       } else if (kind === 'Alert') {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
@@ -225,7 +225,7 @@ const AttachMenu: React.FC = () => {
                     alertId,
                   ),
                 );
-                close();
+                closeMenu();
               } catch (e) {
                 setError(t('Error converting to YAML: {{e}}', { e }));
               }
@@ -278,7 +278,7 @@ const AttachMenu: React.FC = () => {
                   yaml,
                 ),
               );
-              close();
+              closeMenu();
             } catch (e) {
               setError(t('Error converting ManagedClusterInfo to YAML: {{e}}', { e }));
             }
@@ -302,14 +302,14 @@ const AttachMenu: React.FC = () => {
         try {
           const yaml = dumpYAML(data, { lineWidth: -1 }).trim();
           dispatch(attachmentSet(attachmentType, kind, name, undefined, namespace, yaml));
-          close();
+          closeMenu();
         } catch (e) {
           setError(t('Error converting to YAML: {{e}}', { e }));
         }
       }
     },
     [
-      close,
+      closeMenu,
       context,
       dispatch,
       kind,
