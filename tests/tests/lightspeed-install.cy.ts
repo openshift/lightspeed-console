@@ -554,7 +554,7 @@ spec:
         .should('not.include.text', 'Logs');
     });
 
-    it('Test attach options on pod details page', () => {
+    it('Test attaching YAML', () => {
       pages.goToPodDetails('openshift-console', podNamePrefix);
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
@@ -562,24 +562,15 @@ spec:
       // There should be not prompt attachments initially
       cy.get(attachments).should('be.empty');
 
-      // Test that the context menu now has options
       cy.get(attachButton).click();
-      cy.get(attachMenu, { timeout: MINUTE })
+      cy.get(attachMenu)
         .should('include.text', 'Full YAML file')
         .should('include.text', 'Filtered YAML')
         .should('include.text', 'Events')
         .should('include.text', 'Logs')
         .should('include.text', 'Upload from computer');
-    });
 
-    it('Test attaching YAML', () => {
-      pages.goToPodDetails('openshift-console', podNamePrefix);
-      cy.get(mainButton).click();
-      cy.get(popover).should('exist');
-
-      // Test attaching pod YAML
-      cy.get(attachButton).click();
-      cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
+      cy.get(attachMenu).find('button').contains('Full YAML file').click();
       cy.get(attachments)
         .should('include.text', podNamePrefix)
         .should('include.text', 'YAML')
@@ -597,7 +588,6 @@ spec:
         .click();
       cy.get(promptInput).type('Test{enter}');
 
-      // Test attaching pod YAML status section
       cy.get(attachButton).click();
       cy.get(attachMenu).find('button').contains('Filtered YAML').click();
       cy.get(attachments)
@@ -623,9 +613,8 @@ spec:
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      // Test attaching pod YAML
       cy.get(attachButton).click();
-      cy.get(attachMenu).find('li:first-of-type button').contains('Full YAML file').click();
+      cy.get(attachMenu).find('button').contains('Full YAML file').click();
       cy.get(promptAttachment).click();
       cy.get(modal).find('button').contains('Dismiss').click();
       cy.get(promptAttachment).click();
