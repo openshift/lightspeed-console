@@ -71,12 +71,6 @@ export default defineConfig({
           console.table(data);
           return null;
         },
-        readFileIfExists(filename) {
-          if (fs.existsSync(filename)) {
-            return fs.readFileSync(filename, 'utf8');
-          }
-          return null;
-        },
       });
       on('after:spec', (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => {
         if (results && results.video) {
