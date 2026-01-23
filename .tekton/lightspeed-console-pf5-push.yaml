@@ -23,7 +23,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-console-pf5:{{revision}}
+    value: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-console-pf5:{{revision}}
   - name: build-platforms
     value:
     - linux/x86_64
