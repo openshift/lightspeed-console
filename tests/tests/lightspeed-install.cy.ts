@@ -129,7 +129,7 @@ describe('OLS UI', () => {
           'quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest';
         cy.exec(
           `operator-sdk run bundle --timeout=10m --namespace ${OLS.namespace} ${bundleImage} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-          { timeout: 12 * MINUTE, failOnNonZeroExit: false },
+          { failOnNonZeroExit: false, timeout: 12 * MINUTE },
         ).then((result) => {
           cy.task('log', `\n"operator-sdk run bundle" stdout:\n${result.stdout}\n`)
             .task('log', `"operator-sdk run bundle" stderr:\n${result.stderr}\n`)
@@ -242,9 +242,10 @@ spec:
         timeout: 5 * MINUTE,
       });
 
-      // Delete config
+      // Delete config, making sure the Cypress timeout is longer than the oc --timeout
       cy.exec(
-        `oc delete ${OLS.config.kind} ${OLS.config.name} -n ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        `oc delete --timeout=2m ${OLS.config.kind} ${OLS.config.name} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        { failOnNonZeroExit: false, timeout: 3 * MINUTE },
       );
 
       cy.adminCLI(
