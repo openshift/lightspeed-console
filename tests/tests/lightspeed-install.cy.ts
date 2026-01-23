@@ -244,7 +244,7 @@ spec:
 
       // Delete config
       cy.exec(
-        `oc delete ${OLS.config.kind} ${OLS.config.name} -n ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        `oc delete ${OLS.config.kind} ${OLS.config.name} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
       );
 
       cy.adminCLI(
