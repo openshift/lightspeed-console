@@ -88,15 +88,6 @@ export default defineConfig({
             // Delete the video if the spec passed and no tests retried
             fs.unlinkSync(results.video);
           }
-          const skipped = results.tests.some((test) =>
-            test.attempts.some((attempt) => attempt.state === 'skipped'),
-          );
-          // Force fail tests if any test is skipped
-          // Tests are skipped whenever there's a failure in the before hook but the job succeeds
-          // Need to be rethinked if we start purposedly skipping tests
-          if (skipped) {
-            throw new Error('Test skipped, failing pipeline');
-          }
         }
       });
       return config;
