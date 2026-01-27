@@ -28,7 +28,7 @@ import {
   ExpandIcon,
   ExternalLinkAltIcon,
   OutlinedCopyIcon,
-  TimesIcon,
+  TrashIcon,
   WindowMinimizeIcon,
 } from '@patternfly/react-icons';
 
@@ -377,7 +377,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
                 <Button
                   className="ols-plugin__popover-control"
                   data-test="ols-plugin__clear-chat-button"
-                  icon={<TimesIcon />}
+                  icon={<TrashIcon />}
                   onClick={openNewChatModal}
                   variant="plain"
                 />
