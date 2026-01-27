@@ -1,8 +1,8 @@
 /* global Cypress, cy, afterEach */
 import './commands';
-import registerCypressGrep from '@cypress/grep';
+import { register } from '@cypress/grep';
 
-registerCypressGrep();
+register();
 
 // Collect browser console errors and warnings for output after each test
 const browserLogs = [];
