@@ -123,6 +123,17 @@ export const useLocationContext = () => {
             return;
           }
         }
+
+        // ACM Governance Policy details page
+        urlMatches = path.match(
+          new RegExp(`/multicloud/governance/policies/(details|edit)/(${ns})/(${resourceName})`),
+        );
+        if (urlMatches) {
+          setKind('policy.open-cluster-management.io~v1~Policy');
+          setName(urlMatches[3]);
+          setNamespace(urlMatches[2]);
+          return;
+        }
       }
 
       // Alert details page
