@@ -33,7 +33,10 @@ repository.
 
 ### Linting
 
-- Find and fix lint errors with `npm run lint-fix`
+- ALWAYS use `npm run lint-fix` instead of `npm run lint`. The `lint-fix`
+  command automatically fixes most ESLint, Prettier, and Stylelint issues
+- Only use `npm run lint` if you specifically need to check for errors without
+  fixing them.
 
 ### CSS
 
