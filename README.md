@@ -146,15 +146,16 @@ adding or changing messages.
 
 ## Linting
 
-This project adds prettier, eslint, and stylelint. Linting can be run with
-`npm run lint`.
+This project uses Prettier, ESLint, and Stylelint for code linting.
 
-The stylelint config disallows hex colors since these cause problems with dark
+Run `npm run lint-fix` to lint and to automatically fix issues where possible.
+
+The Stylelint config disallows hex colors since these cause problems with dark
 mode. You should use the
 [PatternFly design tokens](https://www.patternfly.org/tokens/all-patternfly-tokens/)
 for colors instead.
 
-The stylelint config also disallows naked element selectors like `table` and
+The Stylelint config also disallows naked element selectors like `table` and
 `.pf-` or `.co-` prefixed classes. This prevents plugins from accidentally
 overwriting default console styles, breaking the layout of existing pages. The
 best practice is to prefix your CSS classnames with your plugin name to avoid
