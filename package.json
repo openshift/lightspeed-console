@@ -1,6 +1,6 @@
 {
   "name": "lightspeed-console-plugin",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "private": true,
   "repository": "git@github.com:openshift/lightspeed-console.git",
   "license": "Apache-2.0",
@@ -71,7 +71,7 @@
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "displayName": "OpenShift Lightspeed Console Plugin",
     "description": "Add UI elements for interacting with OpenShift Lightspeed to the OpenShift web console.",
     "exposedModules": {
