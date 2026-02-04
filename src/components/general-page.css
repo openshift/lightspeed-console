@@ -130,3 +130,60 @@
   margin-bottom: var(--pf-t--global--spacer--lg);
   margin-top: -25px;
 }
+
+.ols-plugin__promql-value {
+  margin: var(--pf-t--global--spacer--md) 0;
+}
+
+.ols-plugin__promql-value-badge {
+  animation: ols-plugin-flash 0.6s ease-out;
+  background-color: var(--pf-t--global--background--color--100);
+  border: 1px solid var(--pf-t--global--border--color--default);
+  border-radius: var(--pf-t--global--border--radius--small);
+  font-family: var(--pf-t--global--font--family--mono);
+  font-size: var(--pf-t--global--font--size--heading--md);
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+  padding: var(--pf-t--global--spacer--xs) var(--pf-t--global--spacer--sm);
+}
+
+@keyframes ols-plugin-flash {
+  0% {
+    background-color: var(--pf-t--global--background--color--tertiary--default);
+  }
+
+  100% {
+    background-color: var(--pf-t--global--background--color--secondary--default);
+  }
+}
+
+.ols-plugin__promql-value-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.ols-plugin__promql-value-item {
+  align-items: baseline;
+  display: flex;
+  gap: var(--pf-t--global--spacer--md);
+}
+
+.ols-plugin__promql-value-labels {
+  color: var(--pf-t--global--text--color--subtle);
+  font-family: var(--pf-t--global--font--family--mono);
+  font-size: var(--pf-t--global--font--size--body--sm);
+}
+
+.ols-plugin__promql-value-error {
+  color: var(--pf-t--global--color--status--danger--default);
+}
+
+.ols-plugin__promql-value-empty {
+  color: var(--pf-t--global--text--color--subtle);
+  font-style: italic;
+}
+
+.ols-plugin__promql-value-input {
+  font-size: var(--pf-t--global--font--size--body--sm);
+  margin-top: var(--pf-t--global--spacer--md);
+}
