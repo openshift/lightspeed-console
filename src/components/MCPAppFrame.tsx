@@ -15,6 +15,8 @@ import { CompressIcon, ExpandIcon, SyncAltIcon } from '@patternfly/react-icons';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 
+import './mcp-app-card.css';
+
 type MCPAppFrameProps = {
   resourceUri: string;
   serverName: string;
