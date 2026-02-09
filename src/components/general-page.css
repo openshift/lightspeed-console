@@ -124,3 +124,52 @@
   max-width: 30rem;
   text-align: center;
 }
+
+.ols-plugin__tool-metadata {
+  margin-bottom: var(--pf-t--global--spacer--md);
+  margin-top: var(--pf-t--global--spacer--md);
+}
+
+.ols-plugin__tool-section-title {
+  margin-bottom: var(--pf-t--global--spacer--sm);
+  margin-top: var(--pf-t--global--spacer--md);
+}
+
+.ols-plugin__mcp-app-card {
+  margin-top: var(--pf-t--global--spacer--md);
+  transition: all 0.2s ease-in-out;
+}
+
+.ols-plugin__mcp-app-card--expanded {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  z-index: 1000;
+  border-radius: 0;
+}
+
+.ols-plugin__mcp-app-card--expanded .ols-plugin__mcp-app-body {
+  height: calc(100% - 48px);
+  overflow: auto;
+}
+
+.ols-plugin__mcp-app-card--expanded .ols-plugin__mcp-app-iframe {
+  height: 100% !important;
+  min-height: 400px;
+}
+
+.ols-plugin__mcp-app-body {
+  padding: 0;
+}
+
+.ols-plugin__mcp-app-iframe {
+  background: transparent;
+  border: none;
+  display: block;
+  min-height: 60px;
+  width: 100%;
+}
