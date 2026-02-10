@@ -1,6 +1,6 @@
 import { Map as ImmutableMap } from 'immutable';
 import { dump as dumpYAML, load as loadYAML } from 'js-yaml';
-import { cloneDeep, each, isEmpty, isMatch, omit, uniqueId } from 'lodash';
+import { cloneDeep, each, isEmpty, isMatch, omit, throttle, uniqueId } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -527,6 +527,13 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       const decoder = new TextDecoder();
       let responseText = '';
 
+      // Throttle response text updates to prevent excessive re-renders during streaming
+      const dispatchTokens = throttle(
+        () => dispatch(chatHistoryUpdateByID(chatEntryID, { text: responseText })),
+        100,
+        { leading: false, trailing: true },
+      );
+
       // Use buffer because long strings (e.g. tool call output) may be split into multiple chunks
       let buffer = '';
 
@@ -560,8 +567,9 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                 dispatch(setConversationID(json.data.conversation_id));
               } else if (json.event === 'token') {
                 responseText += json.data.token;
-                dispatch(chatHistoryUpdateByID(chatEntryID, { text: responseText }));
+                dispatchTokens();
               } else if (json.event === 'end') {
+                dispatchTokens.flush();
                 dispatch(
                   chatHistoryUpdateByID(chatEntryID, {
                     isStreaming: false,
@@ -576,6 +584,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                 const { content, id, status } = json.data;
                 dispatch(chatHistoryUpdateTool(chatEntryID, id, { content, status }));
               } else if (json.event === 'error') {
+                dispatchTokens.flush();
                 dispatch(
                   chatHistoryUpdateByID(chatEntryID, {
                     error: getFetchErrorMessage({ json: { detail: json.data } }, t),
