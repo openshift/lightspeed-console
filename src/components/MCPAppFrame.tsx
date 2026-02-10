@@ -770,6 +770,22 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
               break;
             }
 
+            // Send host context (including theme) so apps can apply it
+            // immediately. The hostContext in the initialize response is stored
+            // by the SDK but apps commonly rely on the
+            // onhostcontextchanged callback to apply the theme, which only
+            // fires for this notification.
+            iframeRef.current.contentWindow.postMessage(
+              {
+                jsonrpc: '2.0',
+                method: 'ui/notifications/host-context-changed',
+                params: {
+                  theme: isDarkTheme ? 'dark' : 'light',
+                },
+              },
+              '*',
+            );
+
             // Send tool input arguments so the app can display them
             // (e.g., the PromQL query string or chart title)
             iframeRef.current.contentWindow.postMessage(
@@ -864,6 +880,22 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
     toolContent,
     toolName,
   ]);
+
+  // Notify ext-apps iframe when the theme changes after initial load
+  React.useEffect(() => {
+    if (useExtApps && iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        {
+          jsonrpc: '2.0',
+          method: 'ui/notifications/host-context-changed',
+          params: {
+            theme: isDarkTheme ? 'dark' : 'light',
+          },
+        },
+        '*',
+      );
+    }
+  }, [isDarkTheme, useExtApps]);
 
   // Load content - try MCP resource first (decoupled approach), fall back to generated HTML
   React.useEffect(() => {
@@ -1011,7 +1043,9 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
           ),
         }}
       >
-        <CardTitle>{t('Interactive view from {{toolName}}', { toolName })}</CardTitle>
+        <CardTitle className="ols-plugin__mcp-app-title">
+          {t('Interactive view from {{toolName}}', { toolName })}
+        </CardTitle>
       </CardHeader>
       <CardBody className="ols-plugin__mcp-app-body">
         <iframe

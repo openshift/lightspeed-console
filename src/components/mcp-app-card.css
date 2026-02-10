@@ -25,6 +25,12 @@
   min-height: 400px;
 }
 
+.ols-plugin__mcp-app-title {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  font-weight: var(--pf-t--global--font--weight--body--default);
+}
+
 .ols-plugin__mcp-app-body {
   padding: 0;
 }
