@@ -10,7 +10,14 @@ import {
   CardTitle,
   Spinner,
 } from '@patternfly/react-core';
-import { CompressIcon, ExpandIcon, SyncAltIcon } from '@patternfly/react-icons';
+import {
+  CompressIcon,
+  ExpandIcon,
+  MinusIcon,
+  SyncAltIcon,
+  TimesIcon,
+  WindowRestoreIcon,
+} from '@patternfly/react-icons';
 
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
@@ -576,6 +583,8 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [useExtApps, setUseExtApps] = React.useState(false);
+  const [isClosed, setIsClosed] = React.useState(false);
+  const [isMinimized, setIsMinimized] = React.useState(false);
 
   // Handle tool call from ext-apps iframe
   const handleToolCall = React.useCallback(
@@ -992,6 +1001,60 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
     setIsExpanded((prev) => !prev);
   }, []);
 
+  // Minimize the card to a compact bar
+  const handleMinimize = React.useCallback(() => {
+    setIsMinimized(true);
+    setIsExpanded(false);
+  }, []);
+
+  // Restore from minimized state
+  const handleRestore = React.useCallback(() => {
+    setIsMinimized(false);
+  }, []);
+
+  // Close/dismiss the card entirely
+  const handleClose = React.useCallback(() => {
+    setIsClosed(true);
+    setIsExpanded(false);
+  }, []);
+
+  if (isClosed) {
+    return null;
+  }
+
+  if (isMinimized && content) {
+    return (
+      <Card className="ols-plugin__mcp-app-card ols-plugin__mcp-app-card--minimized" isCompact>
+        <CardHeader
+          actions={{
+            actions: (
+              <>
+                <Button
+                  aria-label={t('Restore')}
+                  icon={<WindowRestoreIcon />}
+                  onClick={handleRestore}
+                  title={t('Restore')}
+                  variant="plain"
+                />
+                <Button
+                  aria-label={t('Close')}
+                  icon={<TimesIcon />}
+                  onClick={handleClose}
+                  title={t('Close')}
+                  variant="plain"
+                />
+              </>
+            ),
+          }}
+        >
+          <CardTitle className="ols-plugin__mcp-app-title">
+            {t('Interactive view from {{toolName}}', { toolName })}
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   if (isLoading) {
     return (
       <Card className="ols-plugin__mcp-app-card">
@@ -1037,6 +1100,20 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
                 icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
                 onClick={handleToggleExpand}
                 title={isExpanded ? t('Collapse') : t('Expand')}
+                variant="plain"
+              />
+              <Button
+                aria-label={t('Minimize')}
+                icon={<MinusIcon />}
+                onClick={handleMinimize}
+                title={t('Minimize')}
+                variant="plain"
+              />
+              <Button
+                aria-label={t('Close')}
+                icon={<TimesIcon />}
+                onClick={handleClose}
+                title={t('Close')}
                 variant="plain"
               />
             </>

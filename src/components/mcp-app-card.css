@@ -25,6 +25,14 @@
   min-height: 400px;
 }
 
+.ols-plugin__mcp-app-card--minimized {
+  opacity: 0.75;
+}
+
+.ols-plugin__mcp-app-card--minimized:hover {
+  opacity: 1;
+}
+
 .ols-plugin__mcp-app-title {
   color: var(--pf-t--global--text--color--subtle);
   font-size: var(--pf-t--global--font--size--sm);
