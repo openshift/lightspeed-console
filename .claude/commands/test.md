@@ -8,7 +8,7 @@ run all tests
 2. If the tag is "all", run the tests using
    `CYPRESS_SKIP_OLS_SETUP='true' npm run test-headless`. Otherwise, run the
    tests using
-   `CYPRESS_grepTags='@<tag>' CYPRESS_SKIP_OLS_SETUP='true' npm run test-headless`
+   `CYPRESS_SKIP_OLS_SETUP='true' npm run test-headless -- --expose grepTags="@<tag>"`
 3. Report the test results
 
 Output a bullet point list of each test that was run with a ✅, ❌ or ⏭️ to
