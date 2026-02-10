@@ -26,10 +26,6 @@ customize how the tests run, you can use the following environment variables.
 - `CYPRESS_BASE_URL=<UI base URL>`
   - Defaults to `http://localhost:9000`, which is the default base URL when
     running locally
-- `CYPRESS_grepTags`
-  - Limits which tests are run
-  - For example, set `CYPRESS_grepTags='@core @attach'` to run just the core
-    functionality and attachment related tests
 - `CYPRESS_SKIP_OLS_SETUP=true`
   - Skip login and operator installation, which is generally what you want when
     testing locally
@@ -59,7 +55,10 @@ customize how the tests run, you can use the following environment variables.
 You can either open the Cypress GUI (`npm run test`) or run Cypress in headless
 mode (`npm run test-headless`).
 
-For example, `CYPRESS_grepTags='@attach' npm run test-headless` runs just the
-attachment related tests in headless mode.
+You can limit which tests are run by tag by using `--expose grepTags="<@tags>"`
+(Cypress CLI flag, passed after `--`).
+
+For example, `npm run test-headless -- --expose grepTags="@core @attach"` runs
+the core functionality and attachment related tests in headless mode.
 
 Artifacts (screenshots/videos) are saved in `gui_test_screenshots/cypress/`.

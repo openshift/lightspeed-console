@@ -45,7 +45,7 @@
     "webpack-cli": "^6.0.1"
   },
   "devDependencies": {
-    "@cypress/grep": "^5.1.0",
+    "@cypress/grep": "^6.0.0",
     "@types/node": "^24.10.12",
     "@types/react": "^17.0.88",
     "@typescript-eslint/eslint-plugin": "^8.53.0",
