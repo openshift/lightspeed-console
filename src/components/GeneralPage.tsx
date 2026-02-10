@@ -3,6 +3,7 @@ import { defer } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Alert,
@@ -153,7 +154,9 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         data-test="ols-plugin__chat-entry-ai"
       >
         <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
-        <Markdown components={{ code: Code }}>{entry.text}</Markdown>
+        <Markdown components={{ code: Code }} remarkPlugins={[remarkGfm]}>
+          {entry.text}
+        </Markdown>
         {!entry.text && !entry.isCancelled && (
           <HelperText>
             <HelperTextItem variant="indeterminate">
