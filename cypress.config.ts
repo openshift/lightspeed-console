@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress';
+import { plugin as cypressGrepPlugin } from '@cypress/grep/plugin';
 import * as fs from 'fs';
 import * as console from 'console';
 
@@ -14,7 +15,7 @@ export default defineConfig({
     mochaFile: './gui_test_screenshots/junit_cypress-[hash].xml',
     toConsole: false,
   },
-  env: {
+  expose: {
     grepFilterSpecs: true,
   },
   fixturesFolder: 'fixtures',
@@ -78,6 +79,7 @@ export default defineConfig({
           return null;
         },
       });
+      cypressGrepPlugin(config);
       on('after:spec', (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => {
         if (results && results.video) {
           // Do we have failures for any retry attempts?
