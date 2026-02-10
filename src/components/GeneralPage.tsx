@@ -121,15 +121,10 @@ const THUMBS_UP = 1;
 
 type ChatHistoryEntryProps = {
   conversationID: string;
-  entry: ChatEntry;
   entryIndex: number;
 };
 
-const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
-  conversationID,
-  entry,
-  entryIndex,
-}) => {
+const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistoryEntryProps) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const dispatch = useDispatch();
@@ -137,6 +132,9 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   const [feedbackError, setFeedbackError] = React.useState<ErrorType>();
   const [feedbackSubmitted, setFeedbackSubmitted] = React.useState(false);
   const [isContextExpanded, toggleContextExpanded] = useBoolean(false);
+
+  const entryMap = useSelector((s: State) => s.plugins?.ols?.getIn(['chatHistory', entryIndex]));
+  const entry = entryMap.toJS() as ChatEntry;
 
   const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
@@ -368,7 +366,8 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   }
 
   return null;
-};
+});
+ChatHistoryEntry.displayName = 'ChatHistoryEntry';
 
 type AuthAlertProps = {
   authStatus: AuthStatus;
@@ -583,14 +582,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
           <AuthAlert authStatus={authStatus} />
           <PrivacyAlert />
           {isFirstTimeUser && <WelcomeNotice />}
-          {chatHistory.toJS().map((entry: ChatEntry, i: number) => (
-            <ChatHistoryEntry
-              conversationID={conversationID}
-              entry={entry}
-              entryIndex={i}
-              key={i}
-            />
-          ))}
+          {chatHistory
+            .map((entry, i) => (
+              <ChatHistoryEntry
+                conversationID={conversationID}
+                entryIndex={i}
+                key={(entry.get('id') as string) ?? i}
+              />
+            ))
+            .toArray()}
           <AttachmentsSizeAlert />
           <ReadinessAlert />
           <div ref={chatHistoryEndRef} />
