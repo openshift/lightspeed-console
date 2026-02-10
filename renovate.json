@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "packageRules": [
+    {
+      "matchPackageNames": ["react-markdown", "remark-gfm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}
