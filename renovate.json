@@ -1,7 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "minimumReleaseAge": "3 days",
+  "schedule": ["* 6 * * *"],
+  "timezone": "UTC",
   "packageRules": [
+    {
+      "matchPackageNames": ["react", "react-dom", "react-i18next"],
+      "enabled": false
+    },
     {
       "matchPackageNames": ["react-markdown", "remark-gfm"],
       "matchUpdateTypes": ["major"],
@@ -9,6 +15,7 @@
     }
   ],
   "vulnerabilityAlerts": {
-    "minimumReleaseAge": "0 days"
+    "minimumReleaseAge": "0 days",
+    "schedule": ["* * * * *"]
   }
 }
