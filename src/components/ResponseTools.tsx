@@ -2,7 +2,7 @@ import { Map as ImmutableMap } from 'immutable';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Label, LabelGroup } from '@patternfly/react-core';
-import { CodeIcon, InfoCircleIcon } from '@patternfly/react-icons';
+import { CodeIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons';
 
 import { openToolSet } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -23,16 +23,25 @@ const ToolLabel: React.FC<ToolProps> = ({ entryIndex, toolID }) => {
     dispatch(openToolSet(entryIndex, toolID));
   }, [dispatch, entryIndex, toolID]);
 
-  const isError = tool.get('status') === 'error';
+  const status = tool.get('status') as string | undefined;
+  const isError = status === 'error';
+  const isTruncated = status === 'truncated';
+  const hasUI = !!tool.get('uiResourceUri');
+
+  const color = isError ? 'red' : isTruncated ? 'yellow' : hasUI ? 'blue' : undefined;
+  const icon = isError ? (
+    <InfoCircleIcon />
+  ) : isTruncated ? (
+    <InfoCircleIcon />
+  ) : hasUI ? (
+    <ExternalLinkAltIcon />
+  ) : (
+    <CodeIcon />
+  );
 
   return (
-    <Label
-      color={isError ? 'red' : undefined}
-      icon={isError ? <InfoCircleIcon /> : <CodeIcon />}
-      onClick={onClick}
-      textMaxWidth="16ch"
-    >
-      {tool.get('name')}
+    <Label color={color} icon={icon} onClick={onClick} textMaxWidth="16ch">
+      {tool.get('name') as string}
     </Label>
   );
 };
