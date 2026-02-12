@@ -30,7 +30,11 @@ export type Tool = {
   args: { [key: string]: Array<string> };
   content: string;
   name: string;
-  status: 'error' | 'success';
+  status: 'error' | 'success' | 'truncated';
+  // MCP app fields (optional - present when tool provides UI)
+  uiResourceUri?: string;
+  serverName?: string;
+  structuredContent?: Record<string, unknown>;
 };
 
 type ChatEntryUser = {
