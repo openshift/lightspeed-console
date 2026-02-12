@@ -1,6 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "minimumReleaseAge": "3 days",
+  "schedule": ["* 6 * * *"],
+  "timezone": "UTC",
   "packageRules": [
     {
       "matchPackageNames": ["react-markdown", "remark-gfm"],
@@ -9,6 +11,7 @@
     }
   ],
   "vulnerabilityAlerts": {
-    "minimumReleaseAge": "0 days"
+    "minimumReleaseAge": "0 days",
+    "schedule": ["* * * * *"]
   }
 }
