@@ -5,6 +5,10 @@
   "timezone": "UTC",
   "packageRules": [
     {
+      "matchPackageNames": ["react", "react-dom", "react-i18next"],
+      "enabled": false
+    },
+    {
       "matchPackageNames": ["react-markdown", "remark-gfm"],
       "matchUpdateTypes": ["major"],
       "enabled": false
