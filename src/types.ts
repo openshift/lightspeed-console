@@ -30,7 +30,10 @@ export type Tool = {
   args: { [key: string]: Array<string> };
   content: string;
   name: string;
-  status: 'error' | 'success';
+  status: 'error' | 'success' | 'truncated';
+  uiResourceUri?: string;
+  serverName?: string;
+  structuredContent?: Record<string, unknown>;
 };
 
 type ChatEntryUser = {
