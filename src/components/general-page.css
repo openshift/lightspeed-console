@@ -124,3 +124,9 @@
   max-width: 30rem;
   text-align: center;
 }
+
+.ols-plugin__query-browser-input {
+  font-size: var(--pf-t--global--font--size--body--sm);
+  margin-bottom: var(--pf-t--global--spacer--lg);
+  margin-top: -25px;
+}
