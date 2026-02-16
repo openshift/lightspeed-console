@@ -1,9 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "minimumReleaseAge": "3 days",
   "schedule": ["* 6 * * *"],
   "timezone": "UTC",
   "packageRules": [
+    {
+      "matchUpdateTypes": ["major", "minor", "patch", "digest"],
+      "minimumReleaseAge": "3 days"
+    },
     {
       "matchPackageNames": ["react", "react-dom", "react-i18next"],
       "enabled": false
@@ -13,9 +16,5 @@
       "matchUpdateTypes": ["major"],
       "enabled": false
     }
-  ],
-  "vulnerabilityAlerts": {
-    "minimumReleaseAge": "0 days",
-    "schedule": ["* * * * *"]
-  }
+  ]
 }
