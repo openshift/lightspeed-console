@@ -1,5 +1,11 @@
 [
   {
+    "properties": {
+      "handler": { "$codeRef": "OLSFlags.enableLightspeedPluginFlag" }
+    },
+    "type": "console.flag"
+  },
+  {
     "type": "console.context-provider",
     "properties": {
       "provider": { "$codeRef": "NullContextProvider" },

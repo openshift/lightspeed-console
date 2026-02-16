@@ -74,6 +74,7 @@
     "displayName": "OpenShift Lightspeed Console Plugin",
     "description": "Add UI elements for interacting with OpenShift Lightspeed to the OpenShift web console.",
     "exposedModules": {
+      "OLSFlags": "./flags",
       "NullContextProvider": "./components/NullContextProvider",
       "OLSReducer": "./redux-reducers",
       "OverviewDetail": "./components/OverviewDetail",
