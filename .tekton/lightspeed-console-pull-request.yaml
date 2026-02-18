@@ -32,7 +32,7 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: prefetch-input
-    value: '{"type": "npm", "path": "."}'
+    value: '[{"type": "npm", "path": "."}, {"type": "rpm", "path": "."}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -80,7 +80,7 @@ spec:
       description: Execute the build with network isolation
       name: hermetic
       type: string
-    - default: ''
+    - default: 'true'
       description: Build dependencies to be prefetched by Cachi2
       name: prefetch-input
       type: string
