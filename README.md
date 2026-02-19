@@ -240,6 +240,18 @@ const Demo: React.FC = () => {
 };
 ```
 
+## Detecting whether OpenShift Lightspeed is running
+
+This plugin sets a `LIGHTSPEED_CONSOLE` feature flag via the `console.flag`
+extension. This allows other OpenShift console plugins to check if the OpenShift
+Lightspeed plugin is running:
+
+```typescript
+import { useFlag } from '@openshift-console/dynamic-plugin-sdk';
+
+const isLightspeedRunning = useFlag('LIGHTSPEED_CONSOLE');
+```
+
 ## References
 
 - [Console Plugin SDK README](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk)
