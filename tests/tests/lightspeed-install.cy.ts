@@ -559,7 +559,7 @@ spec:
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      // There should be not prompt attachments initially
+      // There should be no prompt attachments initially
       cy.get(attachments).should('be.empty');
 
       cy.get(attachButton).click();
