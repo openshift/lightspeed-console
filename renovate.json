@@ -6,7 +6,8 @@
     {
       "matchUpdateTypes": ["major", "minor", "patch", "digest"],
       "minimumReleaseAge": "3 days",
-      "rangeStrategy": "bump"
+      "rangeStrategy": "bump",
+      "schedule": ["* * * * *"]
     },
     {
       "matchPackageNames": ["react", "react-dom", "react-i18next"],
