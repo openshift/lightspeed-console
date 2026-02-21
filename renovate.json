@@ -2,11 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "schedule": ["* 6 * * *"],
   "timezone": "UTC",
+  "rangeStrategy": "bump",
   "packageRules": [
     {
       "matchUpdateTypes": ["major", "minor", "patch", "digest"],
       "minimumReleaseAge": "3 days",
-      "rangeStrategy": "bump",
       "schedule": ["* * * * *"]
     },
     {
