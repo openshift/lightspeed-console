@@ -240,7 +240,7 @@ const Demo: React.FC = () => {
 };
 ```
 
-## Detecting whether OpenShift Lightspeed is running
+## Detecting whether OpenShift Lightspeed is running (PatternFly 6 version only)
 
 This plugin sets a `LIGHTSPEED_CONSOLE` feature flag via the `console.flag`
 extension. This allows other OpenShift console plugins to check if the OpenShift
