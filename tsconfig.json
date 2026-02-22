@@ -6,7 +6,9 @@
     "target": "es2020",
     "jsx": "react",
     "allowJs": true,
-    "strict": false,
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "noUnusedLocals": true,
     "sourceMap": false
   },
