@@ -18,7 +18,7 @@
       "enabled": false
     },
     {
-      "matchPackageNames": ["react-markdown", "remark-gfm"],
+      "matchPackageNames": ["@types/node", "@types/react", "react-markdown", "remark-gfm"],
       "matchUpdateTypes": ["major"],
       "enabled": false
     }
