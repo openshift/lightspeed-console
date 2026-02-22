@@ -977,10 +977,11 @@ metadata:
             namespace: 'test-namespace',
           },
         },
-      }).as('getManagedCluster');
+      }).as('getPod');
 
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
+      cy.wait('@getPod');
 
       cy.get(attachButton).click();
       cy.get(attachMenu)
@@ -1016,6 +1017,7 @@ metadata:
 
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
+      cy.wait('@getVirtualMachine');
 
       cy.get(attachButton).click();
       cy.get(attachMenu)
