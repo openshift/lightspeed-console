@@ -6,8 +6,31 @@ repository.
 ### Overview
 
 - This repo is an OpenShift Console dynamic plugin for the OpenShift Lightspeed
-  chat UI
+  (OLS) chat UI
 - See `README.md` for general project instructions
+
+### Architecture
+
+This plugin adds an AI chat assistant (OpenShift Lightspeed) to the OpenShift
+web console. It runs as a dynamic plugin, meaning the console discovers and
+loads it at runtime. The main UI is a floating popover chat window that appears
+over any console page.
+
+**Entry points:** `console-extensions.json` declares the OpenShift web console
+extensions used by this plugin.
+
+**API proxy:** All requests to the OLS backend API go through the console's
+built-in plugin proxy at `/api/proxy/plugin/lightspeed-console-plugin/ols`. This
+avoids CORS issues and leverages the console's authentication.
+
+### Data flow
+
+The user types a prompt and optionally attaches context from the Kubernetes
+resource they are currently viewing (YAML, logs, events). The prompt is sent as
+a streaming request to the OLS backend API via the console's API proxy. Tokens
+are streamed back and rendered incrementally in the chat window.
+
+All conversation state (chat history, attachments, etc.) is managed in Redux.
 
 ### Code structure
 
@@ -36,7 +59,7 @@ repository.
 - ALWAYS use `npm run lint-fix` instead of `npm run lint`. The `lint-fix`
   command automatically fixes most ESLint, Prettier, and Stylelint issues
 - Only use `npm run lint` if you specifically need to check for errors without
-  fixing them.
+  fixing them
 
 ### CSS
 
@@ -51,7 +74,8 @@ repository.
 
 - We use the react-i18next internationalization framework
 - i18n JSON files are in `locales/`
-- Use i18n for all user-facing strings by wrapping them in t('...') translation calls
+- Use i18n for all user-facing strings by wrapping them in t('...') translation
+  calls
 - All translations should use the namespace `plugin__lightspeed-console-plugin`
 - After adding or changing UI text, update locale files by running
   `npm run i18n`
