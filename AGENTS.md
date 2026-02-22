@@ -51,6 +51,7 @@ repository.
 
 - We use the react-i18next internationalization framework
 - i18n JSON files are in `locales/`
+- Use i18n for all user-facing strings by wrapping them in t('...') translation calls
 - All translations should use the namespace `plugin__lightspeed-console-plugin`
 - After adding or changing UI text, update locale files by running
   `npm run i18n`
