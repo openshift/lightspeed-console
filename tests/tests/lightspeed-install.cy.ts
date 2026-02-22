@@ -256,11 +256,16 @@ spec:
 
   describe('Core functionality', { tags: ['@core'] }, () => {
     it('OpenShift Lightspeed popover UI is loaded and basic functionality is working', () => {
+      // Mock readiness endpoint to ensure the readiness warning is always shown
+      cy.intercept('GET', '/api/proxy/plugin/lightspeed-console-plugin/ols/readiness', {
+        statusCode: 200,
+        body: { ready: false },
+      });
+
       cy.visit('/');
 
-      cy.get(mainButton).click();
-
-      // Test that popover UI was opened
+      // Wait for the popover to auto-open for first-time users
+      cy.get(mainButton).should('exist');
       cy.get(popover)
         .should('exist')
         .should('include.text', FOOTER_TEXT)
