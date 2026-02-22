@@ -305,7 +305,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   );
 
   const onAttachMenuSelect = React.useCallback(
-    (_ev: React.MouseEvent, attachmentType: string) => {
+    (_ev: React.MouseEvent, attachmentType: string | number) => {
       setIsOpen(false);
 
       if (attachmentType === AttachmentTypes.Events) {
