@@ -4,6 +4,7 @@
 .env
 .nodeenv
 .playwright-mcp
+CLAUDE.local.md
 dist/
 gui_test_screenshots/
 node_modules/
