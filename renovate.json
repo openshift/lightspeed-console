@@ -10,6 +10,10 @@
       "schedule": ["* * * * *"]
     },
     {
+      "matchPackageNames": ["/^quay\\.io\\/konflux-ci\\//"],
+      "minimumReleaseAge": "0 days"
+    },
+    {
       "matchPackageNames": ["react", "react-dom", "react-i18next"],
       "enabled": false
     },
