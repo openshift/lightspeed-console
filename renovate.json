@@ -14,12 +14,17 @@
       "minimumReleaseAge": "0 days"
     },
     {
-      "matchPackageNames": ["react", "react-dom", "react-i18next"],
+      "matchPackageNames": ["react", "react-dom", "react-i18next", "react-redux"],
       "enabled": false
     },
     {
       "matchPackageNames": ["@types/node", "@types/react", "react-markdown", "remark-gfm"],
       "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["@openshift-console/dynamic-plugin-sdk", "@openshift-console/dynamic-plugin-sdk-webpack"],
+      "matchUpdateTypes": ["major", "minor"],
       "enabled": false
     }
   ]
