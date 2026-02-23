@@ -14,7 +14,7 @@
       "minimumReleaseAge": "0 days"
     },
     {
-      "matchPackageNames": ["react", "react-dom", "react-i18next"],
+      "matchPackageNames": ["react", "react-dom", "react-i18next", "react-redux"],
       "enabled": false
     },
     {
