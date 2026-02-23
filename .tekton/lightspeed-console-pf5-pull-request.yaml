@@ -370,7 +370,7 @@ spec:
         - name: name
           value: sast-snyk-check-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check-oci-ta:0.4@sha256:0c2ab8ce6d419400b63dd67d061052ac51de7b1ebe93f8ae86ed07ac638d756d
+          value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check-oci-ta:0.4@sha256:c4b79e009cbfe58cdb80775aedd16e7fc7ee5896ec77431584abb36f067c6484
         - name: kind
           value: task
         resolver: bundles
@@ -463,7 +463,7 @@ spec:
         - name: name
           value: coverity-availability-check
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-coverity-availability-check:0.2@sha256:a24d8f3cd01ccc54fa6fb73aa57a78f5559a0e58eddfe0583fc9cb97d59b4efc
+          value: quay.io/konflux-ci/tekton-catalog/task-coverity-availability-check:0.2@sha256:c9b9301c442830eca3ad7d9d5287b082b94c38d406442f391447484147afd006
         - name: kind
           value: task
         resolver: bundles
@@ -489,7 +489,7 @@ spec:
         - name: name
           value: sast-shell-check-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-sast-shell-check-oci-ta:0.1@sha256:f475b4b6b0c1687fa1aafa5ba38813e04f080b185af2975e12b457742d9dd857
+          value: quay.io/konflux-ci/tekton-catalog/task-sast-shell-check-oci-ta:0.1@sha256:a528f0170b0d0de8db53dfdf02b96d201f3d9f735a904c645b5b111cea7ef44f
         - name: kind
           value: task
         resolver: bundles
@@ -515,7 +515,7 @@ spec:
         - name: name
           value: sast-unicode-check-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-sast-unicode-check-oci-ta:0.4@sha256:b38140b2f0b2163def80e28a792b2702245d38a5610a504f2e56c198f3b8f70b
+          value: quay.io/konflux-ci/tekton-catalog/task-sast-unicode-check-oci-ta:0.4@sha256:2bcccabd857914f66543d17a676f4d259daa67fe55c63a7d317000365c369792
         - name: kind
           value: task
         resolver: bundles
