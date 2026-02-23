@@ -146,7 +146,7 @@ spec:
             env:
               - name: COMMIT_SHA
                 value: $(params.commit)
-            image: cypress/browsers:24.13.1
+            image: cypress/browsers:25.0.0
             resources:
               limits:
                 memory: 4Gi
@@ -234,7 +234,7 @@ spec:
             resources:
               limits:
                 memory: 8Gi
-            image: cypress/browsers:24.13.1
+            image: cypress/browsers:25.0.0
             script: |
               echo "COMMIT_SHA: ${COMMIT_SHA}"
               echo "CYPRESS_BASE_URL: ${CYPRESS_BASE_URL}"
