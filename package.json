@@ -57,7 +57,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "i18next-parser": "^9.3.0",
+    "i18next-parser": "^9.4.0",
     "mocha-junit-reporter": "^2.2.1",
     "pluralize": "^8.0.0",
     "prettier": "^3.8.1",
