@@ -23,6 +23,7 @@
         "@types/react",
         "@patternfly/*",
         "eslint",
+        "node",
         "react-markdown",
         "react-router-dom-v5-compat",
         "remark-gfm"
