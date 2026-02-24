@@ -35,6 +35,25 @@
       "matchPackageNames": ["@openshift-console/dynamic-plugin-sdk", "@openshift-console/dynamic-plugin-sdk-webpack"],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
+    },
+    {
+      "groupName": "lint",
+      "matchPackageNames": [
+        "@typescript-eslint/*",
+        "eslint",
+        "eslint-*",
+        "prettier",
+        "stylelint",
+        "stylelint-*"
+      ]
+    },
+    {
+      "groupName": "patternfly",
+      "matchPackageNames": ["@patternfly/*"]
+    },
+    {
+      "groupName": "test",
+      "matchPackageNames": ["@cypress/*", "cypress", "mocha-junit-reporter"]
     }
   ]
 }
