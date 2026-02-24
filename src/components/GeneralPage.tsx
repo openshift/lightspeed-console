@@ -64,6 +64,8 @@ import ImportAction from './ImportAction';
 import NewChatModal from './NewChatModal';
 import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
+import PromQLValue from './PromQLValue';
+import QueryBrowserGraph from './QueryBrowserGraph';
 import ResponseTools from './ResponseTools';
 import WelcomeNotice from './WelcomeNotice';
 
@@ -94,7 +96,23 @@ const isURL = (s: string): boolean => {
   }
 };
 
-const Code = ({ children }: { children?: React.ReactNode }) => {
+type CodeProps = {
+  children?: React.ReactNode;
+  className?: string;
+};
+
+const Code: React.FC<CodeProps> = ({ children, className }) => {
+  const isPromQLInstant = className?.includes('language-promql-instant');
+  const isPromQL = className?.includes('language-promql') && !isPromQLInstant;
+
+  if (isPromQLInstant && children) {
+    return <PromQLValue query={String(children).trim()} />;
+  }
+
+  if (isPromQL && children) {
+    return <QueryBrowserGraph query={String(children).trim()} />;
+  }
+
   if (!children || !String(children).includes('\n')) {
     return <code>{children}</code>;
   }

@@ -25,6 +25,7 @@ import { FileCodeIcon, FileUploadIcon, InfoCircleIcon, TaskIcon } from '@pattern
 
 import { AttachmentTypes, toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
+import { LLM_INSTRUCTIONS } from '../llm-instructions';
 import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -498,7 +499,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       conversation_id: conversationID,
       // eslint-disable-next-line camelcase
       media_type: 'application/json',
-      query,
+      query: `${query}\n\n${LLM_INSTRUCTIONS}`,
     };
 
     const streamResponse = async () => {
