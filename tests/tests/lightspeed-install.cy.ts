@@ -1,6 +1,6 @@
 import '../../cypress/support/commands';
 import { operatorHubPage } from '../views/operator-hub-page';
-import { listPage, pages } from '../views/pages';
+import { listPage, pages, setEditorContent } from '../views/pages';
 
 const OLS = {
   namespace: 'openshift-lightspeed',
@@ -631,7 +631,7 @@ spec:
         .should('be.visible')
         .and('contain.text', podNamePrefix);
       cy.get(modal).find('.monaco-editor').should('be.visible').and('contain.text', podNamePrefix);
-      cy.get(modal).find('.monaco-editor textarea').type('Test modifying YAML', { force: true });
+      setEditorContent('Test modifying YAML');
       cy.get(modal).find('button').contains('Save').click();
       cy.get(promptAttachment).click();
       cy.get(modal)
