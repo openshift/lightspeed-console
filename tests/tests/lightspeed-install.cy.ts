@@ -360,6 +360,7 @@ spec:
     describe('Streamed response', { tags: ['@response'] }, () => {
       it('Test submitting a prompt and fetching the streamed response', () => {
         cy.visit('/search/all-namespaces');
+        cy.get('h1').contains('Search').should('exist');
         cy.get(mainButton).click();
 
         cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
@@ -402,6 +403,7 @@ spec:
 
       it('Test response with error, partial response text and tool call', () => {
         cy.visit('/search/all-namespaces');
+        cy.get('h1').contains('Search').should('exist');
         cy.get(mainButton).click();
 
         cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
@@ -423,6 +425,7 @@ spec:
     describe('User feedback', { tags: ['@feedback'] }, () => {
       it('Test user feedback form', () => {
         cy.visit('/search/all-namespaces');
+        cy.get('h1').contains('Search').should('exist');
         cy.get(mainButton).click();
 
         cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
@@ -469,6 +472,7 @@ spec:
   describe('Copy to clipboard', { tags: ['@clipboard'] }, () => {
     it('Test copy response functionality', () => {
       cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
       cy.get(mainButton).click();
 
       cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
@@ -497,6 +501,7 @@ spec:
 
     it('Test copy conversation functionality', () => {
       cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
       cy.get(mainButton).click();
 
       // Submit first prompt and wait for response
@@ -731,6 +736,7 @@ spec:
       const MAX_FILE_SIZE_MB = 1;
 
       cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
       cy.get(attachButton).click();
