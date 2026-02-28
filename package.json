@@ -61,7 +61,7 @@
     "mocha-junit-reporter": "^2.2.1",
     "pluralize": "^8.0.0",
     "prettier": "^3.8.1",
-    "stylelint": "^17.3.0",
+    "stylelint": "^17.4.0",
     "stylelint-config-standard": "^40.0.0",
     "webpack-dev-server": "^5.2.3"
   },
