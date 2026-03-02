@@ -6,6 +6,7 @@ import { CodeIcon, InfoCircleIcon } from '@patternfly/react-icons';
 
 import { openToolSet } from '../redux-actions';
 import { State } from '../redux-reducers';
+import OlsToolUIs from './OlsToolUIs';
 
 type ToolProps = {
   entryIndex: number;
@@ -47,11 +48,14 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
   );
 
   return (
-    <LabelGroup numLabels={4}>
-      {tools.keySeq().map((toolID) => (
-        <ToolLabel entryIndex={entryIndex} key={toolID} toolID={toolID} />
-      ))}
-    </LabelGroup>
+    <>
+      <LabelGroup numLabels={4}>
+        {tools.keySeq().map((toolID) => (
+          <ToolLabel entryIndex={entryIndex} key={toolID} toolID={toolID} />
+        ))}
+      </LabelGroup>
+      <OlsToolUIs entryIndex={entryIndex} />
+    </>
   );
 };
 
