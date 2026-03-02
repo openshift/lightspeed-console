@@ -623,6 +623,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   tool_meta: toolMeta,
                 } = json.data;
                 const uiResourceUri = toolMeta?.ui?.resourceUri as string | undefined;
+                const olsToolUiID = toolMeta?.olsUi?.id as string | undefined;
                 dispatch(
                   chatHistoryUpdateTool(chatEntryID, id, {
                     content,
@@ -630,6 +631,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                     ...(uiResourceUri && { uiResourceUri }),
                     ...(serverName && { serverName }),
                     ...(structuredContent && { structuredContent }),
+                    ...(olsToolUiID && { olsToolUiID }),
                   }),
                 );
               } else if (json.event === 'error') {

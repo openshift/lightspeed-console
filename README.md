@@ -258,6 +258,56 @@ import { useFlag } from '@openshift-console/dynamic-plugin-sdk';
 const isLightspeedRunning = useFlag('LIGHTSPEED_CONSOLE');
 ```
 
+## Providing tool visualization from an external plugin
+
+Other plugins can define a visualization for a specific MCP tool.
+
+In order to do so, they need to:
+
+1. annotate the particular MCP tool inside the MCP server:
+
+``` json
+"_meta": {
+  "additionalFields": {
+    "olsUi": {
+      "id": "my-mcp/my-tool"
+    }
+  }
+}
+```
+
+2. define an extension of type `ols.tool-ui` inside the plugin, connecting the tool (using the annotated id)
+with the particular component:
+
+``` json
+{
+  "type": "ols.tool-ui",
+  "properties": {
+    "id": "my-mcp/my-tool",
+    "component": {
+      "$codeRef": "MyToolUI"
+    }
+  }
+}
+```
+
+This needs to follow the standard `openshift-console/dynamic-plugin-sdk` practices
+of exporting the referenced component.
+
+3. Once the MCP tool gets called, OLS passes the tool details to the ToolUI component in the `tool` argument:
+
+``` typescript
+type MyTool = {
+  name: 'my-tool';
+  args: object,
+  // ...
+};
+
+export const MyToolUI: React.FC<{ tool: MyTool }> = ({ tool }) => {
+  // component implementation
+}
+```
+
 ## References
 
 - [Console Plugin SDK README](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk)
