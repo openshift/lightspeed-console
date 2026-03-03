@@ -320,7 +320,7 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
           case 'notifications/initialized': {
             // The ext-apps SDK completed initialization and is ready for data.
             // Fetch the tool result directly from the MCP server via the proxy
-            // endpoint. The stream only provides metadata (ui_resource_uri,
+            // endpoint. The stream only provides metadata (tool_meta,
             // server_name, args); actual data comes from the MCP server.
             if (!iframeRef.current?.contentWindow) {
               break;
@@ -468,6 +468,7 @@ const MCPAppFrame: React.FC<MCPAppFrameProps> = ({
             resourceEndpoint,
             {
               resource_uri: resourceUri,
+              server_name: serverName,
             },
             getRequestInitWithAuthHeader(),
           );
