@@ -70,7 +70,7 @@ const ImportAction: React.FC<Props> = ({ value }) => {
       <Tooltip aria="none" content={t('Import to console')} trigger="mouseenter focus click">
         <Button
           aria-label={t('Import to console')}
-          icon={<PlusCircleIcon />}
+          icon={<PlusCircleIcon color="var(--pf-t--color--white)" />}
           onClick={handleClick}
           variant={ButtonVariant.plain}
         />
