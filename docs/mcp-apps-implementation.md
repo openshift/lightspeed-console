@@ -49,7 +49,7 @@ The `tool_meta.ui.resourceUri` field indicates this tool has an associated MCP A
 
 **5. Iframe persists in conversation** → It's part of that message's response and stays visible as the user continues chatting
 
-**6. User interacts with iframe** (e.g., clicks Refresh button) → Iframe sends `postMessage` to parent window
+**6. User clicks Refresh in card header** → MCPAppFrame calls OLS endpoint directly
 
 **7. UI independently calls OLS endpoint:**
 ```
@@ -162,31 +162,41 @@ Each section is conditionally rendered — for non-MCP tools only `status` and `
 
 This is the main component that renders interactive views. It:
 
-1. **Receives props**: `resourceUri`, `serverName`, `toolName`, `toolContent`, `status`, `structuredContent`
+1. **Receives props**: `resourceUri`, `serverName`, `toolName`, `toolArgs`, `toolContent`, `status` (note: `structuredContent` is not a prop — it is fetched via the proxy endpoint during the ext-apps lifecycle)
 2. **Loads MCP resource**: Fetches the HTML resource from the MCP server via the OLS proxy; falls back to locally generated HTML if unavailable
-3. **Renders in iframe**: Uses `srcDoc` to display the HTML securely
-4. **Handles ext-apps protocol**: Responds to `ui/initialize`, sends `ui/notifications/tool-input` (tool arguments) followed by `ui/notifications/tool-result` (tool output), proxies `tools/call` requests from the iframe to OLS, and handles `ui/notifications/size-changed` for auto-sizing
-5. **Supports refresh**: Re-calls the tool endpoint when refresh is requested
+3. **Renders in iframe**: Uses `srcDoc` to display the HTML securely (sandbox is `allow-scripts allow-same-origin` for ext-apps mode, `allow-scripts` for fallback)
+4. **Handles ext-apps protocol**: Responds to `ui/initialize`, sends `ui/notifications/host-context-changed` (theme), `ui/notifications/tool-input` (tool arguments), then `ui/notifications/tool-result` (fresh data from proxy call), proxies `tools/call` and `tools/list` requests from the iframe to OLS, and handles `ui/notifications/size-changed` for auto-sizing
+5. **Supports refresh**: Card header button re-calls the tool endpoint and pushes new data into the iframe
 
 #### MCP Apps lifecycle notifications (ext-apps compliance)
 
-When the iframe's ext-apps SDK sends `ui/notifications/initialized`, MCPAppFrame sends two notifications in order:
+When the iframe's ext-apps SDK sends `ui/notifications/initialized`, MCPAppFrame sends three notifications in order:
 
-**1. `ui/notifications/tool-input`** — carries the tool's input arguments:
+**1. `ui/notifications/host-context-changed`** — sends the current theme:
+
+- `theme`: `"dark"` or `"light"`
+
+This ensures apps using the `onhostcontextchanged` callback can apply the correct theme immediately after initialization.
+
+**2. `ui/notifications/tool-input`** — carries the tool's input arguments:
 
 - `arguments`: the complete tool call arguments from the LLM (e.g., `{ query: "up{}", step: "1m", title: "Uptime" }`)
 
 This matches the [`McpUiToolInputNotification`](https://modelcontextprotocol.github.io/ext-apps/api/interfaces/app.McpUiToolInputNotification.html) spec. MCP Apps can use this to display context about what was queried (e.g., chart title, PromQL query string, filter parameters) without needing to embed that information in the tool result.
 
-**2. `ui/notifications/tool-result`** — carries the tool execution result:
+**3. `ui/notifications/tool-result`** — carries a fresh tool execution result:
 
-- `content`: `[{ type: "text", text: toolContent }]` (real tool output, not a placeholder)
+The component calls the tool **again** via `POST /mcp-apps/tools/call` (not using the already-streamed content) so the iframe receives structured data in the ext-apps format:
+
+- `content`: `[{ type: "text", text: "..." }]` (from the proxy response)
 - `structuredContent`: the structured data from the tool result (if available)
-- `isError`: `true` when `status === "error"`
+- `isError`: `true` when the tool returned an error
+
+If the proxy call fails, MCPAppFrame falls back to the streamed text content: `content: [{ type: "text", text: toolContent }]`.
 
 This matches the [`McpUiToolResultNotification`](https://modelcontextprotocol.github.io/ext-apps/api/interfaces/app.McpUiToolResultNotification.html) spec and ensures the iframe's `app.ontoolresult` callback receives real data on first load.
 
-Both notifications are also re-sent on refresh so the app can update headers/context alongside the data.
+All three notifications are also re-sent on refresh (triggered by the card header button) so the app can update headers/context alongside the data.
 
 #### Immutable.js caveat for tool arguments
 
@@ -194,13 +204,14 @@ Tool arguments are stored in Redux via Immutable.js `mergeIn`, which deep-conver
 
 The conversion is wrapped in `React.useMemo` (keyed on the raw Immutable Map reference) to avoid creating a new object on every render. Without memoization, every Redux state change would produce a new `toolArgs` reference, causing `MCPAppFrame`'s `useEffect` hooks to re-fire and reload iframe content.
 
-#### Generated HTML Features
+#### Generated HTML Fallback
 
-- **Summary cards**: Total pods, average CPU, average memory
-- **Data table**: Pod names with CPU/memory bars (color-coded by severity)
-- **Refresh button**: Triggers data reload via `postMessage`
-- **Auto-resize**: Iframe height adjusts to content (starts small, grows/shrinks via resize messages, clamped to 60–960px)
-- **Theme support**: Adapts to dark/light mode
+When the MCP server's HTML resource is unavailable, MCPAppFrame falls back to calling the tool via the proxy endpoint and rendering the result generically:
+
+- **`generateGenericDataHtml`**: Renders `structuredContent` (or the raw response) as formatted JSON in a `<pre>` block with the tool name as a heading
+- **`wrapHtmlContent`**: Wraps raw HTML text content in a minimal styled page (used when no structured data is available)
+- **Auto-resize**: Both generated pages include a `ResizeObserver` that sends `mcp-app-resize` messages to auto-size the iframe
+- **Theme support**: Background and text colors adapt to dark/light mode via inline styles
 
 #### Iframe Auto-Sizing
 
@@ -221,41 +232,48 @@ The iframe communicates with the parent via `postMessage`:
 |--------------|-----------|---------|
 | `ui/initialize` | iframe → parent | Ext-apps SDK initialization request |
 | `ui/notifications/initialized` | iframe → parent | Ext-apps SDK ready for data |
+| `ui/notifications/host-context-changed` | parent → iframe | Theme and host context updates |
 | `ui/notifications/tool-input` | parent → iframe | Tool input arguments (query, title, filters, etc.) |
 | `ui/notifications/tool-result` | parent → iframe | Tool execution result with structured content |
 | `ui/notifications/size-changed` | iframe → parent | Request iframe height change (ext-apps SDK) |
 | `ui/tools/call` | iframe → parent | Iframe requests a tool call via host proxy |
 | `ui/tools/list` | iframe → parent | Iframe requests available tools |
 | `mcp-app-resize` | iframe → parent | Request iframe height change (generated HTML) |
-| `mcp-app-refresh` | iframe → parent | Request data refresh (generated HTML) |
 
 ### 6. Data Refresh Flow
 
+Refresh is triggered by the **card header button** (SyncAltIcon), not by a postMessage from the iframe.
+
 ```
-User clicks Refresh button in iframe
+User clicks Refresh button in card header
     ↓
-iframe sends postMessage({ type: 'mcp-app-refresh' })
-    ↓
-MCPAppFrame.handleRefreshData() called
+MCPAppFrame.handleRefresh() called
     ↓
 POST /api/proxy/plugin/lightspeed-console-plugin/ols/v1/mcp-apps/tools/call
     ↓
 Backend calls MCP server tool
     ↓
-New structured_content returned
+New result returned (content + structured_content)
     ↓
-MCPAppFrame regenerates HTML with new data
+ext-apps mode: sends ui/notifications/tool-input + ui/notifications/tool-result to iframe
+fallback mode: regenerates HTML with new data via generateGenericDataHtml
 ```
 
-### 7. Expand/Collapse Functionality
+### 7. Card Controls
 
-The card header includes an expand button that toggles between:
-- **Normal**: Card inline within chat messages
-- **Expanded**: Card fills the entire chat panel (absolute positioning)
+The card header includes four action buttons:
+
+| Button | Icon | Behavior |
+|--------|------|----------|
+| Refresh | `SyncAltIcon` | Re-calls the tool via proxy and pushes new data |
+| Expand / Collapse | `ExpandIcon` / `CompressIcon` | Toggles between inline and full-panel mode |
+| Minimize | `MinusIcon` | Collapses to a compact title bar (restore via `WindowRestoreIcon`) |
+| Close | `TimesIcon` | Dismisses the card entirely (not recoverable) |
 
 CSS classes:
-- `.ols-plugin__mcp-app-card` - Base styles
-- `.ols-plugin__mcp-app-card--expanded` - Full-panel overlay
+- `.ols-plugin__mcp-app-card` — Base styles
+- `.ols-plugin__mcp-app-card--expanded` — Full-panel overlay (absolute positioning)
+- `.ols-plugin__mcp-app-card--minimized` — Compact title bar with reduced opacity
 
 ## Technical Decisions
 
@@ -268,7 +286,7 @@ MCPAppFrame supports two approaches, tried in order:
 
 ### Why Use iframe with srcDoc?
 
-- **Security**: `sandbox="allow-scripts"` prevents XSS attacks
+- **Security**: `sandbox="allow-scripts"` (fallback) or `sandbox="allow-scripts allow-same-origin"` (ext-apps mode, needed for SDK origin checks) prevents XSS attacks
 - **Isolation**: Styles don't leak between chat and visualization
 - **Flexibility**: Can render any HTML content
 
@@ -282,8 +300,8 @@ The implementation relies on these OLS backend endpoints:
 
 | Endpoint | Purpose |
 |----------|---------|
-| `POST /v1/mcp-apps/tools/call` | Call an MCP tool directly |
-| `POST /v1/mcp-apps/resources` | Fetch UI resource HTML (for future ext-apps support) |
+| `POST /v1/mcp-apps/tools/call` | Call an MCP tool directly (from card refresh or ext-apps `tools/call`) |
+| `POST /v1/mcp-apps/resources` | Fetch `ui://` HTML resource from an MCP server (for ext-apps iframe rendering) |
 
 ### Tool Call Request
 
@@ -318,7 +336,8 @@ The implementation relies on these OLS backend endpoints:
 | `src/components/ResponseTools.tsx` | Render MCPAppFrame for tool results with UI; color-coded tool labels (red/yellow/blue/grey) |
 | `src/components/ResponseToolModal.tsx` | Updated to show all tool fields (metadata, content, structured content) |
 | `src/components/Prompt.tsx` | Extract tool results from streaming |
-| `src/components/general-page.css` | MCP app card styles, tool modal metadata/section styles |
+| `src/components/mcp-app-card.css` | MCP app card, expanded, and minimized styles |
+| `src/components/general-page.css` | Tool modal metadata/section styles |
 | `src/types.ts` | Tool type definition (status includes `'truncated'`) |
 | `locales/en/plugin__lightspeed-console-plugin.json` | i18n strings |
 
@@ -327,7 +346,6 @@ The implementation relies on these OLS backend endpoints:
 1. **Caching**: Cache tool results to avoid redundant calls
 2. **Error handling**: Better error states and retry mechanisms
 3. **Accessibility**: Ensure ARIA labels and keyboard navigation
-4. **Host context updates**: Send `ui/notifications/host-context-changed` on theme changes
 
 ## Testing
 
