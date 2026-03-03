@@ -577,10 +577,11 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   content,
                   id,
                   status,
-                  ui_resource_uri: uiResourceUri,
                   server_name: serverName,
                   structured_content: structuredContent,
+                  tool_meta: toolMeta,
                 } = json.data;
+                const uiResourceUri = toolMeta?.ui?.resourceUri as string | undefined;
                 dispatch(
                   chatHistoryUpdateTool(chatEntryID, id, {
                     content,
