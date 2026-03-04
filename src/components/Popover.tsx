@@ -7,6 +7,7 @@ import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import { getApiUrl } from '../config';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
+import { useConversationRestore } from '../hooks/useConversationRestore';
 import { useFirstTimeUser } from '../hooks/useFirstTimeUser';
 import { useHideLightspeed } from '../hooks/useHideLightspeed';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
@@ -27,6 +28,7 @@ const Popover: React.FC = () => {
 
   const isOpen = useSelector((s: State) => s.plugins?.ols?.get('isOpen'));
 
+  const isConversationRestored = useConversationRestore();
   const [isExpanded, , expand, collapse] = useBoolean(false);
   const [isHidden] = useHideLightspeed();
   const [isDarkTheme] = useIsDarkTheme();
@@ -50,16 +52,15 @@ const Popover: React.FC = () => {
       });
   }, [dispatch]);
 
-  // Auto-open chat for first-time users
+  // Auto-open chat for first-time users (wait for conversation restore to finish)
   React.useEffect(() => {
-    if (firstTimeLoaded && isFirstTimeUser && !isOpen && !isHidden) {
-      // Small delay to allow the page to load before opening
+    if (isConversationRestored && firstTimeLoaded && isFirstTimeUser && !isOpen && !isHidden) {
       const timer = setTimeout(() => {
         dispatch(openOLS());
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [firstTimeLoaded, isFirstTimeUser, isOpen, isHidden, dispatch]);
+  }, [isConversationRestored, firstTimeLoaded, isFirstTimeUser, isOpen, isHidden, dispatch]);
 
   const open = React.useCallback(() => {
     dispatch(openOLS());

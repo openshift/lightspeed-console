@@ -59,3 +59,10 @@ export type CodeBlock = {
   value: string;
   triggeredFrom?: string;
 };
+
+export type ConversationSummary = {
+  conversation_id: string;
+  last_message_timestamp: number;
+  message_count: number;
+  topic_summary: string;
+};

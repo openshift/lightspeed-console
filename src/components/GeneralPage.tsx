@@ -4,12 +4,22 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
-import { Alert, Badge, Button, ExpandableSection, Title, Tooltip } from '@patternfly/react-core';
+import {
+  Alert,
+  Badge,
+  Button,
+  DropdownItem,
+  DropdownList,
+  ExpandableSection,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core';
 import {
   CheckIcon,
   CompressIcon,
   ExpandIcon,
   ExternalLinkAltIcon,
+  OutlinedCommentsIcon,
   OutlinedCopyIcon,
   TrashIcon,
   WindowMinimizeIcon,
@@ -17,6 +27,7 @@ import {
 import {
   Chatbot,
   ChatbotContent,
+  ChatbotConversationHistoryNav,
   ChatbotDisplayMode,
   ChatbotFooter,
   ChatbotFootnote,
@@ -24,6 +35,7 @@ import {
   ChatbotHeaderActions,
   ChatbotHeaderMain,
   ChatbotHeaderTitle,
+  type Conversation,
   Message,
   MessageBox,
   type SourcesCardProps,
@@ -32,6 +44,13 @@ import {
 import { toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
 import { copyToClipboard } from '../clipboard';
+import {
+  deleteConversation,
+  fetchConversation,
+  fetchConversationsList,
+  setLastConversationId,
+  transformChatHistory,
+} from '../conversations';
 import { ErrorType, getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -40,13 +59,17 @@ import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import {
   attachmentsClear,
   chatHistoryClear,
+  chatHistoryPush,
+  removeConversation,
   setConversationID,
+  setConversations,
+  setIsConversationsLoading,
   userFeedbackClose,
   userFeedbackOpen,
   userFeedbackSetSentiment,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import { Attachment, ChatEntry, ConversationSummary, ReferencedDoc } from '../types';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
 import ImportAction from './ImportAction';
@@ -414,6 +437,50 @@ type GeneralPageProps = {
   onExpand?: () => void;
 };
 
+const groupConversationsByDate = (
+  conversations: ConversationSummary[],
+  t: (key: string) => string,
+): { [key: string]: Conversation[] } => {
+  const now = Date.now();
+  const oneDay = 86400000;
+  const sevenDays = 7 * oneDay;
+  const thirtyDays = 30 * oneDay;
+
+  const groups: { [key: string]: Conversation[] } = {};
+  const todayLabel = t('Today');
+  const last7Label = t('Previous 7 days');
+  const last30Label = t('Previous 30 days');
+  const olderLabel = t('Older');
+
+  const sorted = [...conversations].sort(
+    (a, b) => b.last_message_timestamp - a.last_message_timestamp,
+  );
+
+  for (const conv of sorted) {
+    const age = now - conv.last_message_timestamp * 1000;
+    let label: string;
+    if (age < oneDay) {
+      label = todayLabel;
+    } else if (age < sevenDays) {
+      label = last7Label;
+    } else if (age < thirtyDays) {
+      label = last30Label;
+    } else {
+      label = olderLabel;
+    }
+
+    if (!groups[label]) {
+      groups[label] = [];
+    }
+    groups[label].push({
+      id: conv.conversation_id,
+      text: conv.topic_summary || t('Conversation'),
+    });
+  }
+
+  return groups;
+};
+
 const GeneralPage: React.FC<GeneralPageProps> = ({
   ariaLabel,
   className,
@@ -431,13 +498,25 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
 
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
 
+  const conversations: ConversationSummary[] = useSelector((s: State) =>
+    s.plugins?.ols?.get('conversations'),
+  );
+
+  const isConversationsLoading: boolean = useSelector((s: State) =>
+    s.plugins?.ols?.get('isConversationsLoading'),
+  );
+
   const [authStatus] = useAuth();
   const [isFirstTimeUser] = useFirstTimeUser();
 
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
   const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
+  const [drawerFilter, setDrawerFilter] = React.useState('');
 
   const chatHistoryEndRef = React.useRef(null);
+
+  const displayMode = onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default;
 
   const scrollIntoView = React.useCallback((behavior = 'smooth') => {
     defer(() => {
@@ -451,16 +530,123 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadConversationsList = React.useCallback(() => {
+    dispatch(setIsConversationsLoading(true));
+    fetchConversationsList()
+      .then((response) => {
+        dispatch(setConversations(response.conversations || []));
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load conversations list:', err);
+      })
+      .finally(() => {
+        dispatch(setIsConversationsLoading(false));
+      });
+  }, [dispatch]);
+
   const clearChat = React.useCallback(() => {
     dispatch(setConversationID(null));
     dispatch(chatHistoryClear());
     dispatch(attachmentsClear());
+    setLastConversationId(null);
   }, [dispatch]);
+
+  const onNewChat = React.useCallback(() => {
+    clearChat();
+    setIsDrawerOpen(false);
+  }, [clearChat]);
 
   const onConfirmNewChat = React.useCallback(() => {
     clearChat();
     closeNewChatModal();
   }, [clearChat, closeNewChatModal]);
+
+  const loadConversation = React.useCallback(
+    (id: string) => {
+      dispatch(chatHistoryClear());
+      dispatch(attachmentsClear());
+      fetchConversation(id)
+        .then((detail) => {
+          const entries = transformChatHistory(detail);
+          dispatch(setConversationID(id));
+          setLastConversationId(id);
+          entries.forEach((entry: ChatEntry) => {
+            dispatch(chatHistoryPush(entry));
+          });
+        })
+        .catch((err) => {
+          // eslint-disable-next-line no-console
+          console.error('Failed to load conversation:', err);
+        });
+    },
+    [dispatch],
+  );
+
+  const onSelectConversation = React.useCallback(
+    (_event?: React.MouseEvent, itemId?: string | number) => {
+      if (itemId && itemId !== conversationID) {
+        loadConversation(String(itemId));
+      }
+      setIsDrawerOpen(false);
+    },
+    [conversationID, loadConversation],
+  );
+
+  const onDeleteConversation = React.useCallback(
+    (id: string) => {
+      deleteConversation(id)
+        .then(() => {
+          dispatch(removeConversation(id));
+          if (id === conversationID) {
+            clearChat();
+          }
+        })
+        .catch((err) => {
+          // eslint-disable-next-line no-console
+          console.error('Failed to delete conversation:', err);
+        });
+    },
+    [clearChat, conversationID, dispatch],
+  );
+
+  const onDrawerToggle = React.useCallback(() => {
+    const willOpen = !isDrawerOpen;
+    setIsDrawerOpen(willOpen);
+    if (willOpen) {
+      loadConversationsList();
+    }
+  }, [isDrawerOpen, loadConversationsList]);
+
+  const filteredConversations = React.useMemo(() => {
+    if (!drawerFilter) {
+      return conversations;
+    }
+    const lower = drawerFilter.toLowerCase();
+    return conversations.filter(
+      (c) =>
+        c.topic_summary?.toLowerCase().includes(lower) ||
+        c.conversation_id.toLowerCase().includes(lower),
+    );
+  }, [conversations, drawerFilter]);
+
+  const groupedConversations = React.useMemo(() => {
+    const groups = groupConversationsByDate(filteredConversations, t);
+    for (const key of Object.keys(groups)) {
+      groups[key] = groups[key].map((conv) => ({
+        ...conv,
+        menuItems: (
+          <DropdownList>
+            <DropdownItem key="delete" onClick={() => onDeleteConversation(conv.id)} value="delete">
+              {t('Delete')}
+            </DropdownItem>
+          </DropdownList>
+        ),
+        label: t('Conversation options'),
+      }));
+    }
+    return groups;
+  }, [filteredConversations, onDeleteConversation, t]);
 
   const copyConversation = React.useCallback(async () => {
     try {
@@ -489,13 +675,65 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
     }
   }, [chatHistory, setCopied, setNotCopied]);
 
+  const chatBodyContent = (
+    <>
+      {/* @ts-expect-error: TS2786 */}
+      <ChatbotContent aria-label={t('OpenShift Lightspeed chat history')}>
+        {/* @ts-expect-error: TS2786 */}
+        <MessageBox>
+          <div className="ols-plugin__welcome-logo"></div>
+          <Title className="ols-plugin__welcome-subheading" headingLevel="h5">
+            {t(
+              'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
+            )}
+          </Title>
+          <AuthAlert authStatus={authStatus} />
+          <PrivacyAlert />
+          {isFirstTimeUser && <WelcomeNotice />}
+          {chatHistory
+            .map((entry, i) => (
+              <ChatHistoryEntry
+                conversationID={conversationID}
+                entryIndex={i}
+                key={(entry.get('id') as string) ?? i}
+              />
+            ))
+            .toArray()}
+          <AttachmentsSizeAlert />
+          <ReadinessAlert />
+          <div ref={chatHistoryEndRef} />
+        </MessageBox>
+      </ChatbotContent>
+
+      {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
+        // @ts-expect-error: TS2786
+        <ChatbotFooter>
+          <Prompt scrollIntoView={scrollIntoView} />
+          {/* @ts-expect-error: TS2786 */}
+          <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
+          <div className="ols-plugin__footnote">
+            {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
+            <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
+              email the Red Hat team
+            </ExternalLink>
+          </div>
+          <NewChatModal
+            isOpen={isNewChatModalOpen}
+            onClose={closeNewChatModal}
+            onConfirm={onConfirmNewChat}
+          />
+        </ChatbotFooter>
+      )}
+    </>
+  );
+
   return (
     // @ts-expect-error: TS2786
     <Chatbot
       ariaLabel={ariaLabel}
       className={className}
       data-test="ols-plugin__popover"
-      displayMode={onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default}
+      displayMode={displayMode}
     >
       {/* @ts-expect-error: TS2786 */}
       <ChatbotHeader>
@@ -508,6 +746,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
         </ChatbotHeaderMain>
         {/* @ts-expect-error: TS2786 */}
         <ChatbotHeaderActions className="ols-plugin__header-actions">
+          <Tooltip content={t('Conversation history')}>
+            <Button
+              className="ols-plugin__popover-control"
+              data-test="ols-plugin__drawer-toggle"
+              icon={<OutlinedCommentsIcon />}
+              onClick={onDrawerToggle}
+              variant="plain"
+            />
+          </Tooltip>
           {chatHistory.size > 0 && (
             <>
               <Tooltip content={t('Clear chat')}>
@@ -565,52 +812,23 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
       </ChatbotHeader>
 
       {/* @ts-expect-error: TS2786 */}
-      <ChatbotContent aria-label={t('OpenShift Lightspeed chat history')}>
-        {/* @ts-expect-error: TS2786 */}
-        <MessageBox>
-          <div className="ols-plugin__welcome-logo"></div>
-          <Title className="ols-plugin__welcome-subheading" headingLevel="h5">
-            {t(
-              'Explore deeper insights, engage in meaningful discussions, and unlock new possibilities with Red Hat OpenShift Lightspeed. Answers are provided by generative AI technology, please use appropriate caution when following recommendations.',
-            )}
-          </Title>
-          <AuthAlert authStatus={authStatus} />
-          <PrivacyAlert />
-          {isFirstTimeUser && <WelcomeNotice />}
-          {chatHistory
-            .map((entry, i) => (
-              <ChatHistoryEntry
-                conversationID={conversationID}
-                entryIndex={i}
-                key={(entry.get('id') as string) ?? i}
-              />
-            ))
-            .toArray()}
-          <AttachmentsSizeAlert />
-          <ReadinessAlert />
-          <div ref={chatHistoryEndRef} />
-        </MessageBox>
-      </ChatbotContent>
-
-      {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-        // @ts-expect-error: TS2786
-        <ChatbotFooter>
-          <Prompt scrollIntoView={scrollIntoView} />
-          {/* @ts-expect-error: TS2786 */}
-          <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
-          <div className="ols-plugin__footnote">
-            {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
-            <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-              email the Red Hat team
-            </ExternalLink>
-          </div>
-          <NewChatModal
-            isOpen={isNewChatModalOpen}
-            onClose={closeNewChatModal}
-            onConfirm={onConfirmNewChat}
-          />
-        </ChatbotFooter>
-      )}
+      <ChatbotConversationHistoryNav
+        activeItemId={conversationID}
+        conversations={groupedConversations}
+        displayMode={displayMode}
+        drawerContent={chatBodyContent}
+        handleTextInputChange={setDrawerFilter}
+        isDrawerOpen={isDrawerOpen}
+        isLoading={isConversationsLoading}
+        newChatButtonText={t('New chat')}
+        onDrawerToggle={onDrawerToggle}
+        onNewChat={onNewChat}
+        onSelectActiveItem={onSelectConversation}
+        searchInputAriaLabel={t('Search conversations')}
+        searchInputPlaceholder={t('Search conversations...')}
+        setIsDrawerOpen={setIsDrawerOpen}
+        title={t('Conversations')}
+      />
     </Chatbot>
   );
 };
