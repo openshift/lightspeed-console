@@ -11,7 +11,11 @@
     },
     {
       "matchPackageNames": ["/^quay\\.io\\/konflux-ci\\//"],
-      "minimumReleaseAge": "0 days"
+      "minimumReleaseAge": "0 days",
+      "addLabels": [
+        "approved",
+        "lgtm"
+      ]
     },
     {
       "matchPackageNames": ["react", "react-dom", "react-i18next", "react-redux"],
