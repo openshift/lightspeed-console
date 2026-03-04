@@ -4,17 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
-import {
-  Alert,
-  Badge,
-  Button,
-  CodeBlock,
-  CodeBlockAction,
-  CodeBlockCode,
-  ExpandableSection,
-  Title,
-  Tooltip,
-} from '@patternfly/react-core';
+import { Alert, Badge, Button, ExpandableSection, Title, Tooltip } from '@patternfly/react-core';
 import {
   CheckIcon,
   CompressIcon,
@@ -59,7 +49,6 @@ import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
-import CopyAction from './CopyAction';
 import ImportAction from './ImportAction';
 import NewChatModal from './NewChatModal';
 import Prompt from './Prompt';
@@ -94,24 +83,27 @@ const isURL = (s: string): boolean => {
   }
 };
 
-const Code = ({ children }: { children?: React.ReactNode }) => {
-  if (!children || !String(children).includes('\n')) {
-    return <code>{children}</code>;
-  }
+const ImportCodeBlockAction: React.FC = () => {
+  const containerRef = React.useRef<HTMLSpanElement | null>(null);
+  const [value, setValue] = React.useState<string>('');
 
-  return (
-    <CodeBlock
-      actions={
-        <CodeBlockAction>
-          <CopyAction value={children.toString()} />
-          <ImportAction value={children.toString()} />
-        </CodeBlockAction>
-      }
-      className="ols-plugin__code-block"
-    >
-      <CodeBlockCode className="ols-plugin__code-block-code">{children}</CodeBlockCode>
-    </CodeBlock>
-  );
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) {
+      return;
+    }
+
+    const codeBlockEl = el.closest('.pf-v6-c-code-block');
+    const code = codeBlockEl?.querySelector('code')?.textContent;
+    const isYAML =
+      (codeBlockEl?.querySelector('.pf-chatbot__message-code-block-language') as HTMLElement | null)
+        ?.textContent === 'yaml';
+    if (isYAML && typeof code === 'string' && code.length > 0) {
+      setValue(code);
+    }
+  }, []);
+
+  return <span ref={containerRef}>{value ? <ImportAction value={value} /> : null}</span>;
 };
 
 const USER_FEEDBACK_ENDPOINT = getApiUrl('/v1/feedback');
@@ -245,6 +237,10 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
       <Message
         actions={actions}
         avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
+        codeBlockProps={{
+          customActions: entry.isStreaming ? undefined : <ImportCodeBlockAction />,
+          isExpandable: true,
+        }}
         content={entry.text}
         data-test="ols-plugin__chat-entry-ai"
         extraContent={{
@@ -299,7 +295,6 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
         isCompact
         isLoading={!entry.text && !entry.isCancelled && !entry.error}
         name="OpenShift Lightspeed"
-        reactMarkdownProps={{ components: { code: Code } }}
         role="bot"
         sources={sources}
         timestamp=" "
