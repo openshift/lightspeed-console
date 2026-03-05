@@ -3,12 +3,10 @@
   "schedule": ["* 6 * * *"],
   "timezone": "UTC",
   "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": false
+  },
   "packageRules": [
-     {
-      "lockFileMaintenance": {
-        "enabled": false
-      }
-    },
     {
       "matchUpdateTypes": ["major", "minor", "patch", "digest"],
       "minimumReleaseAge": "3 days",
