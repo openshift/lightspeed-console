@@ -229,6 +229,9 @@ spec:
 
       cy.visit('/');
       cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
+
+      // Wait 2 minutes for the page to reload so it doesn't happen during tests
+      cy.wait(120000);
     }
   });
 
