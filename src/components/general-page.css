@@ -124,3 +124,13 @@
   max-width: 30rem;
   text-align: center;
 }
+
+.ols-plugin__tool-metadata {
+  margin-bottom: var(--pf-t--global--spacer--md);
+  margin-top: var(--pf-t--global--spacer--md);
+}
+
+.ols-plugin__tool-section-title {
+  margin-bottom: var(--pf-t--global--spacer--sm);
+  margin-top: var(--pf-t--global--spacer--md);
+}
