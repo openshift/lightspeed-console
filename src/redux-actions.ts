@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { Attachment, ChatEntry, CodeBlock, Tool } from './types';
+import { Attachment, ChatEntry, CodeBlock, ConversationSummary, Tool } from './types';
 
 export enum ActionType {
   AddContextEvent = 'addContextEvent',
@@ -18,8 +18,11 @@ export enum ActionType {
   OpenOLS = 'openOLS',
   OpenToolClear = 'openToolClear',
   OpenToolSet = 'openToolSet',
+  RemoveConversation = 'removeConversation',
   SetConversationID = 'setConversationID',
+  SetConversations = 'setConversations',
   SetIsContextEventsLoading = 'setIsContextEventsLoading',
+  SetIsConversationsLoading = 'setIsConversationsLoading',
   SetQuery = 'setQuery',
   UserFeedbackClose = 'userFeedbackClose',
   UserFeedbackDisable = 'userFeedbackDisable',
@@ -82,7 +85,16 @@ export const openToolClear = () => action(ActionType.OpenToolClear);
 export const openToolSet = (chatEntryIndex: number, id: string) =>
   action(ActionType.OpenToolSet, { chatEntryIndex, id });
 
+export const removeConversation = (conversationID: string) =>
+  action(ActionType.RemoveConversation, { conversationID });
+
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
+
+export const setConversations = (conversations: ConversationSummary[]) =>
+  action(ActionType.SetConversations, { conversations });
+
+export const setIsConversationsLoading = (isLoading: boolean) =>
+  action(ActionType.SetIsConversationsLoading, { isLoading });
 
 export const setIsContextEventsLoading = (isLoading: boolean) =>
   action(ActionType.SetIsContextEventsLoading, { isLoading });
@@ -123,8 +135,11 @@ const actions = {
   openOLS,
   openToolClear,
   openToolSet,
+  removeConversation,
   setConversationID,
+  setConversations,
   setIsContextEventsLoading,
+  setIsConversationsLoading,
   setQuery,
   userFeedbackClose,
   userFeedbackDisable,

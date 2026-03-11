@@ -25,6 +25,7 @@ import { FileCodeIcon, FileUploadIcon, InfoCircleIcon, TaskIcon } from '@pattern
 
 import { AttachmentTypes, toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
+import { setLastConversationId } from '../conversations';
 import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -565,6 +566,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
             if (json && json.event && json.data) {
               if (json.event === 'start') {
                 dispatch(setConversationID(json.data.conversation_id));
+                setLastConversationId(json.data.conversation_id);
               } else if (json.event === 'token') {
                 responseText += json.data.token;
                 dispatchTokens();

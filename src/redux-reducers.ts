@@ -26,7 +26,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       contextEvents: [],
       conversationID: null,
+      conversations: [],
       isContextEventsLoading: false,
+      isConversationsLoading: false,
       isOpen: false,
       isUserFeedbackEnabled: true,
       openAttachment: null,
@@ -112,8 +114,24 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     case ActionType.SetIsContextEventsLoading:
       return state.set('isContextEventsLoading', action.payload.isLoading);
 
+    case ActionType.RemoveConversation:
+      return state.set(
+        'conversations',
+        state
+          .get('conversations')
+          .filter(
+            (c: { conversation_id: string }) => c.conversation_id !== action.payload.conversationID,
+          ),
+      );
+
     case ActionType.SetConversationID:
       return state.set('conversationID', action.payload.id);
+
+    case ActionType.SetConversations:
+      return state.set('conversations', action.payload.conversations);
+
+    case ActionType.SetIsConversationsLoading:
+      return state.set('isConversationsLoading', action.payload.isLoading);
 
     case ActionType.SetQuery:
       return state.set('query', action.payload.query);
