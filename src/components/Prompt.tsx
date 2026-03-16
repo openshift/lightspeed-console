@@ -632,8 +632,24 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   const { args, id, name: toolName } = json.data;
                   dispatch(chatHistoryUpdateTool(chatEntryID, id, { name: toolName, args }));
                 } else if (json.event === 'tool_result') {
-                  const { content, id, status } = json.data;
-                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { content, status }));
+                  const {
+                    content,
+                    id,
+                    status,
+                    server_name: serverName,
+                    structured_content: structuredContent,
+                    tool_meta: toolMeta,
+                  } = json.data;
+                  const uiResourceUri = toolMeta?.ui?.resourceUri as string | undefined;
+                  dispatch(
+                    chatHistoryUpdateTool(chatEntryID, id, {
+                      content,
+                      status,
+                      ...(uiResourceUri && { uiResourceUri }),
+                      ...(serverName && { serverName }),
+                      ...(structuredContent && { structuredContent }),
+                    }),
+                  );
                 } else if (json.event === 'error') {
                   dispatch(
                     chatHistoryUpdateByID(chatEntryID, {
