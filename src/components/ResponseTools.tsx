@@ -58,6 +58,12 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
 
   return (
     <>
+      {toolsWithUI
+        .keySeq()
+        .toArray()
+        .map((toolID) => (
+          <MCPApp entryIndex={entryIndex} key={`mcp-app-${toolID}`} toolID={toolID} />
+        ))}
       <LabelGroup numLabels={4}>
         {tools
           .keySeq()
@@ -66,12 +72,6 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
             <ToolLabel entryIndex={entryIndex} key={toolID} toolID={toolID} />
           ))}
       </LabelGroup>
-      {toolsWithUI
-        .keySeq()
-        .toArray()
-        .map((toolID) => (
-          <MCPApp entryIndex={entryIndex} key={`mcp-app-${toolID}`} toolID={toolID} />
-        ))}
     </>
   );
 };
