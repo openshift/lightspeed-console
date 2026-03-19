@@ -44,7 +44,7 @@
     "typescript": "^5.9.3",
     "undici": "^6.24.1",
     "webpack": "5.105.4",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^7.0.0"
   },
   "devDependencies": {
     "@cypress/grep": "^6.0.0",
