@@ -56,8 +56,6 @@ const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
 // Sanity check on the upload file size
 const MAX_FILE_SIZE_MB = 1;
 
-const SUBMIT_BUTTON_ELEMENT_CLASS = 'pf-chatbot__button--send';
-
 const FilteredYAMLInfo = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -655,19 +653,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     [dispatch, streamController, streamingResponseID],
   );
 
-  const onKeyPress = React.useCallback((e) => {
-    // Enter key alone submits the prompt, Shift+Enter inserts a newline
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      (
-        document.getElementsByClassName(SUBMIT_BUTTON_ELEMENT_CLASS)[0] as HTMLButtonElement
-      )?.click();
-    }
-  }, []);
-
-  // Prevent default keyboard submit event so we can handle it with onKeyPress
-  const onKeyDown = React.useCallback(() => {}, []);
-
   return (
     <div>
       {/* @ts-expect-error: TS2786 */}
@@ -688,8 +673,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         innerRef={textareaRef}
         isSendButtonDisabled={!query || query.trim().length === 0}
         onChange={(e) => onChange(e, e.target.value)}
-        onKeyDown={onKeyDown}
-        onKeyPress={onKeyPress}
         onSendMessage={onSubmit}
         placeholder={t('Send a message...')}
         validated={validated}
