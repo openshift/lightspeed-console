@@ -676,7 +676,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         attachMenuProps={{
           attachMenuItems,
           isAttachMenuOpen: isOpen,
-          onAttachMenuInputChange: () => {},
           onAttachMenuSelect,
           onAttachMenuToggleClick: () => setIsOpen(!isOpen),
           setIsAttachMenuOpen: setIsOpen,

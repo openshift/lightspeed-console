@@ -47,11 +47,6 @@
   font-weight: var(--pf-t--global--font--weight--body--default);
 }
 
-/* stylelint-disable-next-line selector-disallowed-list */
-.pf-chatbot__menu .pf-v6-c-menu__search {
-  display: none;
-}
-
 .ols-plugin__context-label {
   margin-right: var(--pf-t--global--spacer--sm);
   margin-top: var(--pf-t--global--spacer--sm);
