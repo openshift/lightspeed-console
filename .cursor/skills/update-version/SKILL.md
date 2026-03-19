@@ -1,7 +1,9 @@
 ---
 name: update-version
 description: >-
-  Update the project version number across all files that contain it.
+  Update the project version number across all files that contain it on the
+  current branch. Use when bumping the version on a single branch only. For a
+  full multi-branch release, use the release skill instead.
 ---
 
 # Update Version
