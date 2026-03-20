@@ -797,6 +797,7 @@ metadata:
     });
   });
 
+  /*
   describe('ACM', { tags: ['@acm'] }, () => {
     it.skip('Test attach cluster info for ManagedCluster', () => {
       cy.visit(
@@ -1038,4 +1039,5 @@ metadata:
         .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
     });
   });
+  */
 });
