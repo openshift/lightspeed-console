@@ -50,6 +50,7 @@ import {
   chatHistoryPush,
   chatHistoryUpdateByID,
   chatHistoryUpdateTool,
+  setAutoSubmit,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -493,6 +494,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const dispatch = useDispatch();
 
   const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+  const autoSubmit: boolean = useSelector((s: State) => s.plugins?.ols?.get('autoSubmit'));
   const chatHistory: ImmutableList<ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
@@ -517,8 +519,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const isStreaming = !!chatHistory.last()?.get('isStreaming');
 
   const onSubmit = React.useCallback(
-    (e) => {
-      e.preventDefault();
+    (e?) => {
+      e?.preventDefault();
 
       if (isStreaming) {
         return;
@@ -686,6 +688,13 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     },
     [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t],
   );
+
+  React.useEffect(() => {
+    if (autoSubmit) {
+      dispatch(setAutoSubmit(false));
+      onSubmit();
+    }
+  }, [autoSubmit, dispatch, onSubmit]);
 
   const streamingResponseID: string = isStreaming
     ? (chatHistory.last()?.get('id') as string)

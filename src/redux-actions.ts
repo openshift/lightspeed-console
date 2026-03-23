@@ -20,6 +20,7 @@ export enum ActionType {
   OpenToolSet = 'openToolSet',
   SetConversationID = 'setConversationID',
   SetIsContextEventsLoading = 'setIsContextEventsLoading',
+  SetAutoSubmit = 'setAutoSubmit',
   SetQuery = 'setQuery',
   UserFeedbackClose = 'userFeedbackClose',
   UserFeedbackDisable = 'userFeedbackDisable',
@@ -82,6 +83,9 @@ export const openToolClear = () => action(ActionType.OpenToolClear);
 export const openToolSet = (chatEntryIndex: number, id: string) =>
   action(ActionType.OpenToolSet, { chatEntryIndex, id });
 
+export const setAutoSubmit = (autoSubmit: boolean) =>
+  action(ActionType.SetAutoSubmit, { autoSubmit });
+
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
 
 export const setIsContextEventsLoading = (isLoading: boolean) =>
@@ -123,6 +127,7 @@ const actions = {
   openOLS,
   openToolClear,
   openToolSet,
+  setAutoSubmit,
   setConversationID,
   setIsContextEventsLoading,
   setQuery,
