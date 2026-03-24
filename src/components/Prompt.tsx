@@ -36,6 +36,7 @@ import {
   chatHistoryPush,
   chatHistoryUpdateByID,
   chatHistoryUpdateTool,
+  setAutoSubmit,
   setConversationID,
   setQuery,
 } from '../redux-actions';
@@ -84,6 +85,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const dispatch = useDispatch();
 
   const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+  const autoSubmit: boolean = useSelector((s: State) => s.plugins?.ols?.get('autoSubmit'));
   const chatHistory = useSelector((s: State) => s.plugins?.ols?.get('chatHistory'));
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const events = useSelector((s: State) => s.plugins?.ols?.get('contextEvents'));
@@ -632,6 +634,18 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     dispatch(attachmentsClear());
     textareaRef.current?.focus();
   }, [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t]);
+
+  React.useEffect(() => {
+    if (autoSubmit) {
+      dispatch(setAutoSubmit(false));
+      // Click send button so MessageBar handles both submission and clearing its internal state.
+      // Just calling onSubmit would not clear MessageBar's internal state.
+      textareaRef.current
+        ?.closest('.pf-chatbot__message-bar')
+        ?.querySelector<HTMLButtonElement>('.pf-chatbot__button--send')
+        ?.click();
+    }
+  }, [autoSubmit, dispatch]);
 
   const streamingResponseID: string = isStreaming
     ? (chatHistory.last()?.get('id') as string)

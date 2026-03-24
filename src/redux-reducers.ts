@@ -21,6 +21,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
     return ImmutableMap({
       attachments: ImmutableMap<string, Attachment>(),
+      autoSubmit: false,
       chatHistory: ImmutableList(),
       codeBlock: null,
       context: null,
@@ -100,6 +101,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.OpenOLS:
       return state.set('isOpen', true);
+
+    case ActionType.SetAutoSubmit:
+      return state.set('autoSubmit', action.payload.autoSubmit);
 
     case ActionType.OpenToolClear:
       return state.setIn(['openTool', 'chatEntryIndex'], null).setIn(['openTool', 'id'], null);
