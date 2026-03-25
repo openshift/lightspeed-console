@@ -28,7 +28,7 @@
     "@patternfly/react-icons": "5.4.2",
     "copy-webpack-plugin": "^14.0.0",
     "css-loader": "^7.1.4",
-    "immutable": "^3.8.3",
+    "immutable": "^5.1.5",
     "js-yaml": "^4.1.1",
     "lodash": "^4.17.23",
     "react": "17.0.2",
