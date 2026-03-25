@@ -21,6 +21,13 @@
       ]
     },
     {
+      "matchFileNames": ["rpms.in.yaml", "rpms.lock.yaml"],
+      "addLabels": [
+        "approved",
+        "lgtm"
+      ]
+    },
+    {
       "matchPackageNames": ["react", "react-dom", "react-i18next", "react-redux"],
       "enabled": false
     },
