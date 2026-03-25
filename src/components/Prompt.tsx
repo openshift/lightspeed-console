@@ -38,6 +38,7 @@ import {
   chatHistoryUpdateTool,
   setAutoSubmit,
   setConversationID,
+  setHidePrompt,
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -89,6 +90,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const chatHistory = useSelector((s: State) => s.plugins?.ols?.get('chatHistory'));
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
   const events = useSelector((s: State) => s.plugins?.ols?.get('contextEvents'));
+  const hidePrompt: boolean = useSelector((s: State) => s.plugins?.ols?.get('hidePrompt'));
   const isEventsLoading = useSelector((s: State) => s.plugins?.ols?.get('isContextEventsLoading'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
@@ -473,10 +475,16 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     dispatch(
       chatHistoryPush({
         attachments: attachments.map((a) => omit(a, 'originalValue')),
+        hidden: hidePrompt,
         text: query,
         who: 'user',
       }),
     );
+
+    // Reset hidePrompt after using it
+    if (hidePrompt) {
+      dispatch(setHidePrompt(false));
+    }
     const chatEntryID = uniqueId('ChatEntry_');
     dispatch(
       chatHistoryPush({
@@ -633,7 +641,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     dispatch(setQuery(''));
     dispatch(attachmentsClear());
     textareaRef.current?.focus();
-  }, [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t]);
+  }, [attachments, conversationID, dispatch, hidePrompt, isStreaming, query, scrollIntoView, t]);
 
   React.useEffect(() => {
     if (autoSubmit) {
@@ -706,9 +714,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         })}
       </div>
 
-      <AttachmentModal />
-      <ToolModal />
-
       <input
         accept=".yaml,.yml"
         data-test="ols-plugin__file-upload"
@@ -717,6 +722,9 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         style={{ display: 'none' }}
         type="file"
       />
+
+      <AttachmentModal />
+      <ToolModal />
 
       {showEvents && context.metadata?.uid && (
         <AttachEventsModal
