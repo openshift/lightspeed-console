@@ -57,22 +57,22 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
     [closeDropdown, setContainer],
   );
 
+  const toggle = React.useCallback(
+    (toggleRef) => (
+      <MenuToggle
+        icon={<ResourceIcon kind="Container" />}
+        isExpanded={isOpen}
+        onClick={toggleIsOpen}
+        ref={toggleRef}
+      >
+        {selectedContainer}
+      </MenuToggle>
+    ),
+    [isOpen, selectedContainer, toggleIsOpen],
+  );
+
   return (
-    <Dropdown
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      onSelect={onSelect}
-      toggle={(toggleRef) => (
-        <MenuToggle
-          icon={<ResourceIcon kind="Container" />}
-          isExpanded={isOpen}
-          onClick={toggleIsOpen}
-          ref={toggleRef}
-        >
-          {selectedContainer}
-        </MenuToggle>
-      )}
-    >
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
       <DropdownList>
         {containers.map((container) => (
           <DropdownItem key={container} value={container}>
@@ -149,17 +149,17 @@ const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => 
     [closeDropdown, setPod],
   );
 
+  const toggle = React.useCallback(
+    (toggleRef) => (
+      <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
+        <ResourceIcon kind="Pod" /> {selectedPod?.metadata?.name}
+      </MenuToggle>
+    ),
+    [isOpen, selectedPod, toggleIsOpen],
+  );
+
   return (
-    <Dropdown
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      onSelect={onSelect}
-      toggle={(toggleRef) => (
-        <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
-          <ResourceIcon kind="Pod" /> {selectedPod?.metadata?.name}
-        </MenuToggle>
-      )}
-    >
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
       <DropdownList>
         {pods.map((pod) => (
           <DropdownItem key={pod.metadata?.uid} value={pod}>
