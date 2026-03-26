@@ -9,8 +9,8 @@ export enum ActionType {
   AttachmentSet = 'attachmentSet',
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
-  chatHistoryUpdateByID = 'chatHistoryUpdateByID',
-  chatHistoryUpdateTool = 'chatHistoryUpdateTool',
+  ChatHistoryUpdateByID = 'chatHistoryUpdateByID',
+  ChatHistoryUpdateTool = 'chatHistoryUpdateTool',
   ClearContextEvents = 'clearContextEvents',
   CloseOLS = 'closeOLS',
   OpenAttachmentClear = 'openAttachmentClear',
@@ -62,10 +62,10 @@ export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 
 export const chatHistoryUpdateByID = (id: string, entry: Partial<ChatEntry>) =>
-  action(ActionType.chatHistoryUpdateByID, { entry, id });
+  action(ActionType.ChatHistoryUpdateByID, { entry, id });
 
 export const chatHistoryUpdateTool = (id: string, toolID: string, tool: Partial<Tool>) =>
-  action(ActionType.chatHistoryUpdateTool, { id, tool, toolID });
+  action(ActionType.ChatHistoryUpdateTool, { id, tool, toolID });
 
 export const clearContextEvents = () => action(ActionType.ClearContextEvents);
 
