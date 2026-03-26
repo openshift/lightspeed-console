@@ -56,6 +56,7 @@ rules:
   react/jsx-fragments: 'error'
   react/jsx-no-useless-fragment: 'error'
   react/jsx-sort-props: ['error', { ignoreCase: true }]
+  react/no-unstable-nested-components: 'error'
   react/self-closing-comp: ['error', { html: false }]
   require-atomic-updates: 'error'
   sort-imports: ['error', { ignoreCase: true, ignoreDeclarationSort: true }]
