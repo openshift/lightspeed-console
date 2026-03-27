@@ -131,7 +131,7 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
   const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
   );
-  const isFeedbackOpen: string = useSelector((s: State) =>
+  const isFeedbackOpen: boolean = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'isOpen']),
   );
   const query: string = useSelector((s: State) =>
