@@ -39,7 +39,7 @@ const DEFAULT_LOG_LINES = 25;
 type ContainerInputProps = {
   containers: string[];
   selectedContainer: string;
-  setContainer: (string) => void;
+  setContainer: (container: string) => void;
 };
 
 const ContainerDropdown: React.FC<ContainerInputProps> = ({
@@ -135,7 +135,7 @@ const ContainerInput: React.FC<ContainerInputProps> = ({
 type PodInputProps = {
   pods: K8sResourceKind[];
   selectedPod: K8sResourceKind;
-  setPod: (K8sResourceKind) => void;
+  setPod: (pod: K8sResourceKind) => void;
 };
 
 const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => {
