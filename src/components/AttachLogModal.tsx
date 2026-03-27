@@ -58,7 +58,7 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
   );
 
   const toggle = React.useCallback(
-    (toggleRef) => (
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
       <MenuToggle
         icon={<ResourceIcon kind="Container" />}
         isExpanded={isOpen}
@@ -150,7 +150,7 @@ const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => 
   );
 
   const toggle = React.useCallback(
-    (toggleRef) => (
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
       <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
         <ResourceIcon kind="Pod" /> {selectedPod?.metadata?.name}
       </MenuToggle>
@@ -352,7 +352,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   }, [container, loadPreview, lines, namespace, pod]);
 
   const onSubmit = React.useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
 
       const podName = pod?.metadata?.name;

@@ -509,7 +509,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const promptRef = React.useRef(null);
 
   const onChange = React.useCallback(
-    (_e, value) => {
+    (_e: React.SyntheticEvent, value: string) => {
       if (value.trim().length > 0) {
         setValidated('default');
       }
@@ -708,7 +708,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     ? (chatHistory.last()?.get('id') as string)
     : undefined;
   const onStreamCancel = React.useCallback(
-    (e) => {
+    (e: React.FormEvent) => {
       e.preventDefault();
       if (streamingResponseID) {
         streamController.abort();
