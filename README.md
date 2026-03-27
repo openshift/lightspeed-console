@@ -181,7 +181,7 @@ import { Attachment } from '../types';
 
 type OpenOLSHandlerProps = {
   contextId: string;
-  provider: () => (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean) => void;
+  provider: () => (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean, hidePrompt?: boolean) => void;
 };
 
 type OpenOLSHandlerExtension = ExtensionDeclaration<
@@ -196,7 +196,7 @@ const isOpenOLSHandlerExtension = (
   e.type === 'console.action/provider' &&
   e.properties?.contextId === 'ols-open-handler';
 
-const DemoContent: React.FC<{ useOpenOLS: () => (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean) => void }> = ({
+const DemoContent: React.FC<{ useOpenOLS: () => (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean, hidePrompt?: boolean) => void }> = ({
   useOpenOLS,
 }) => {
   const openOLS = useOpenOLS();
@@ -223,6 +223,9 @@ metadata:
       <Button onClick={() => openOLS('How do I scale my deployment?', [], true)}>
         Open OLS and submit immediately
       </Button>
+      <Button onClick={() => openOLS('How do I scale my deployment?', [], true, true)}>
+        Open OLS with immediate response (prompt hidden)
+      </Button>
     </>
   );
 };
@@ -232,7 +235,7 @@ const Demo: React.FC = () => {
 
   // Get the hook from the extension (should only be one)
   const useOpenOLS = (resolved ? extensions[0]?.properties?.provider : undefined) as
-    | (() => (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean) => void)
+    | (() => (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean, hidePrompt?: boolean) => void)
     | undefined;
 
   if (!useOpenOLS) {

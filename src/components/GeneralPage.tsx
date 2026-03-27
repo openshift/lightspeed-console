@@ -195,6 +195,10 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
     [conversationID, query, attachments, response, sentiment, t],
   );
 
+  if (entry.who === 'user' && entry.hidden) {
+    return null;
+  }
+
   if (entry.who === 'ai') {
     const thumbsUpTooltip = t('Good response');
     const thumbsDownTooltip = t('Bad response');
@@ -468,7 +472,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
       let conversationText = '';
 
       chatEntries.forEach((entry: ChatEntry) => {
-        if (entry.who === 'user') {
+        if (entry.who === 'user' && !entry.hidden) {
           conversationText += `You: ${entry.text}\n\n`;
         } else if (entry.who === 'ai' && entry.text && !entry.isStreaming) {
           conversationText += `OpenShift Lightspeed: ${entry.text}\n\n`;
