@@ -119,7 +119,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   );
 
   const onSubmit = React.useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       dispatch(attachmentSet(AttachmentTypes.Events, kind, name, undefined, namespace, yaml));
       onClose();

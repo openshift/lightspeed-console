@@ -441,7 +441,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
   const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
 
-  const chatHistoryEndRef = React.useRef(null);
+  const chatHistoryEndRef = React.useRef<HTMLDivElement | null>(null);
 
   const scrollIntoView = React.useCallback((behavior = 'smooth') => {
     defer(() => {
