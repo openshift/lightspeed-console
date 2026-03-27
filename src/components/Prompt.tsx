@@ -52,6 +52,7 @@ import {
   chatHistoryUpdateTool,
   setAutoSubmit,
   setConversationID,
+  setHidePrompt,
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -499,6 +500,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     s.plugins?.ols?.get('chatHistory'),
   );
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
+  const hidePrompt: boolean = useSelector((s: State) => s.plugins?.ols?.get('hidePrompt'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
@@ -534,10 +536,16 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       dispatch(
         chatHistoryPush({
           attachments: attachments.map((a) => omit(a, 'originalValue')),
+          hidden: hidePrompt,
           text: query,
           who: 'user',
         }),
       );
+
+      // Reset hidePrompt after using it
+      if (hidePrompt) {
+        dispatch(setHidePrompt(false));
+      }
       const chatEntryID = uniqueId('ChatEntry_');
       dispatch(
         chatHistoryPush({
@@ -686,7 +694,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t],
+    [attachments, conversationID, dispatch, hidePrompt, isStreaming, query, scrollIntoView, t],
   );
 
   React.useEffect(() => {
