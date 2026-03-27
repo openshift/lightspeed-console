@@ -43,7 +43,7 @@ type ChatEntryUser = {
   who: 'user';
 };
 
-export type UserFeedback = {
+type UserFeedback = {
   isOpen: boolean;
   sentiment?: number;
   text?: string;
