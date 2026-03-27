@@ -695,8 +695,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     : undefined;
 
   const onStreamCancel = React.useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
+    (e?: React.FormEvent) => {
+      e?.preventDefault();
       if (streamingResponseID) {
         streamController.abort();
         dispatch(
@@ -745,9 +745,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
           },
         }}
         className="ols-plugin__prompt"
-        handleStopButton={() => {
-          onStreamCancel({ preventDefault: () => {} } as unknown as React.FormEvent);
-        }}
+        handleStopButton={() => onStreamCancel()}
         hasStopButton={isStreaming}
         innerRef={textareaRef}
         isSendButtonDisabled={!query || query.trim().length === 0}
