@@ -38,6 +38,7 @@ export type Tool = {
 
 type ChatEntryUser = {
   attachments: { [key: string]: Attachment };
+  hidden?: boolean;
   text: string;
   who: 'user';
 };

@@ -27,6 +27,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       contextEvents: [],
       conversationID: null,
+      hidePrompt: false,
       isContextEventsLoading: false,
       isOpen: false,
       isUserFeedbackEnabled: true,
@@ -91,7 +92,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       return state.set('contextEvents', []);
 
     case ActionType.CloseOLS:
-      return state.set('isOpen', false);
+      return state.set('isOpen', false).set('hidePrompt', false);
 
     case ActionType.OpenAttachmentClear:
       return state.set('openAttachment', null);
@@ -104,6 +105,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.SetAutoSubmit:
       return state.set('autoSubmit', action.payload.autoSubmit);
+
+    case ActionType.SetHidePrompt:
+      return state.set('hidePrompt', action.payload.hidePrompt);
 
     case ActionType.OpenToolClear:
       return state.setIn(['openTool', 'chatEntryIndex'], null).setIn(['openTool', 'id'], null);

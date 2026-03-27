@@ -147,6 +147,10 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
     s.plugins?.ols?.get('isUserFeedbackEnabled'),
   );
 
+  if (entry.who === 'user' && entry.hidden) {
+    return null;
+  }
+
   if (entry.who === 'ai') {
     return (
       <div
@@ -349,7 +353,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       let conversationText = '';
 
       chatEntries.forEach((entry: ChatEntry) => {
-        if (entry.who === 'user') {
+        if (entry.who === 'user' && !entry.hidden) {
           conversationText += `You: ${entry.text}\n\n`;
         } else if (entry.who === 'ai' && entry.text && !entry.isStreaming) {
           conversationText += `OpenShift Lightspeed: ${entry.text}\n\n`;
