@@ -25,11 +25,22 @@ _intent_. Express that intent using the target branch's patterns and components.
 
 ## Workflow
 
-1. Read the source commit (`git show <commit>`) to understand the intent.
-2. Resolve conflicts by adapting incoming changes to the target branch's code
-   structure — search the target branch for equivalents when needed.
-3. Verify no conflict markers remain.
-4. Run the following **in order**, fixing any errors before moving on:
+1. Create a branch off `pattern-fly-5` prefixed with `pf5-` (e.g.
+   `pf5-<source-branch>`).
+2. Read the source commit (`git show <commit>`) to understand the intent.
+3. Attempt `git cherry-pick <commit>`. If conflicts are trivial, resolve them.
+   If the cherry-pick fails badly, abort (`git cherry-pick --abort`) and
+   manually apply the changes instead.
+4. Adapt incoming changes to the target branch's code structure — search the
+   target branch for equivalents when needed.
+5. Verify no conflict markers remain.
+6. Run the following **in order**, fixing any errors _you introduced_ before
+   moving on (ignore pre-existing build failures):
    1. `npm run lint-fix`
    2. `npm run i18n`
    3. `npm run build`
+7. Ensure the final commit title is prefixed with "PF5: ":
+   - If cherry-pick succeeded: amend the commit message title (e.g.
+     `git commit --amend`).
+   - If changes were applied manually: create a new commit with the original
+     message, prefixed with "PF5: ".
