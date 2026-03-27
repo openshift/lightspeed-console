@@ -43,6 +43,12 @@ type ChatEntryUser = {
   who: 'user';
 };
 
+export type UserFeedback = {
+  isOpen: boolean;
+  sentiment?: number;
+  text?: string;
+};
+
 type ChatEntryAI = {
   error?: ErrorType;
   id: string;
@@ -52,7 +58,7 @@ type ChatEntryAI = {
   references?: Array<ReferencedDoc>;
   text?: string;
   tools?: ImmutableMap<string, Tool>;
-  userFeedback?: ImmutableMap<string, object>;
+  userFeedback?: ImmutableMap<keyof UserFeedback, UserFeedback[keyof UserFeedback]>;
   who: 'ai';
 };
 
