@@ -58,6 +58,22 @@ const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
 // Sanity check on the upload file size
 const MAX_FILE_SIZE_MB = 1;
 
+const WORKLOAD_KINDS = [
+  'CronJob',
+  'DaemonSet',
+  'Deployment',
+  'DeploymentConfig',
+  'HorizontalPodAutoscaler',
+  'Job',
+  'kubevirt.io~v1~VirtualMachine',
+  'kubevirt.io~v1~VirtualMachineInstance',
+  'Pod',
+  'PodDisruptionBudget',
+  'ReplicaSet',
+  'ReplicationController',
+  'StatefulSet',
+];
+
 const FilteredYAMLInfo = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
@@ -162,41 +178,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     [dispatch, setError, t],
   );
 
-  const showEvents =
-    !isEmpty(context) &&
-    [
-      'CronJob',
-      'DaemonSet',
-      'Deployment',
-      'DeploymentConfig',
-      'HorizontalPodAutoscaler',
-      'Job',
-      'kubevirt.io~v1~VirtualMachine',
-      'kubevirt.io~v1~VirtualMachineInstance',
-      'Pod',
-      'PodDisruptionBudget',
-      'ReplicaSet',
-      'ReplicationController',
-      'StatefulSet',
-    ].includes(kind);
-
-  const showLogs =
-    !isEmpty(context) &&
-    [
-      'CronJob',
-      'DaemonSet',
-      'Deployment',
-      'DeploymentConfig',
-      'HorizontalPodAutoscaler',
-      'Job',
-      'kubevirt.io~v1~VirtualMachine',
-      'kubevirt.io~v1~VirtualMachineInstance',
-      'Pod',
-      'PodDisruptionBudget',
-      'ReplicaSet',
-      'ReplicationController',
-      'StatefulSet',
-    ].includes(kind);
+  const showEvents = !isEmpty(context) && WORKLOAD_KINDS.includes(kind);
+  const showLogs = !isEmpty(context) && WORKLOAD_KINDS.includes(kind);
 
   const isResourceContext = !isEmpty(context) && !!kind && !!name;
 
