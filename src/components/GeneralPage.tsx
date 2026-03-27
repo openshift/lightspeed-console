@@ -342,7 +342,7 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
                   onToggle={toggleContextExpanded}
                   toggleContent={
                     <>
-                      Context <Badge>{Object.keys(entry.attachments).length}</Badge>
+                      {t('Context')} <Badge>{Object.keys(entry.attachments).length}</Badge>
                     </>
                   }
                 >
@@ -605,7 +605,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
           <div className="ols-plugin__footnote">
             {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
             <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-              email the Red Hat team
+              {t('email the Red Hat team')}
             </ExternalLink>
           </div>
           <NewChatModal
