@@ -14,6 +14,7 @@ import { MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
   AlertActionCloseButton,
+  Divider,
   DropdownItem,
   DropdownList,
   Label,
@@ -21,7 +22,15 @@ import {
   Title,
   Tooltip,
 } from '@patternfly/react-core';
-import { FileCodeIcon, FileUploadIcon, InfoCircleIcon, TaskIcon } from '@patternfly/react-icons';
+import {
+  FileCodeIcon,
+  FileUploadIcon,
+  InfoCircleIcon,
+  OutlinedQuestionCircleIcon,
+  PlusIcon,
+  TaskIcon,
+  WrenchIcon,
+} from '@patternfly/react-icons';
 
 import { AttachmentTypes, toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
@@ -115,6 +124,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
   const [isLoading, , setLoading, setLoaded] = useBoolean(false);
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
+  const [isTroubleshooting, setIsTroubleshooting] = React.useState(false);
   const [streamController, setStreamController] = React.useState(new AbortController());
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
 
@@ -273,6 +283,26 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         <DropdownItem icon={<FileUploadIcon />} key="upload" value={AttachmentTypes.YAMLUpload}>
           {t('Upload from computer')}
         </DropdownItem>
+        <Divider key="divider-1" />
+        {isTroubleshooting ? (
+          <DropdownItem
+            description={t('Expert guidance and clear answers')}
+            icon={<OutlinedQuestionCircleIcon />}
+            id="ask"
+            value="ask"
+          >
+            {t('Ask')}
+          </DropdownItem>
+        ) : (
+          <DropdownItem
+            description={t('Diagnosing issues and finding solutions')}
+            icon={<WrenchIcon />}
+            id="troubleshooting"
+            value="troubleshooting"
+          >
+            {t('Troubleshooting')}
+          </DropdownItem>
+        )}
       </DropdownList>,
     ],
     [
@@ -280,6 +310,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       isEventsLoading,
       isLoading,
       isResourceContext,
+      isTroubleshooting,
       kind,
       name,
       namespace,
@@ -293,7 +324,17 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     (_ev: React.MouseEvent, attachmentType: string | number) => {
       setIsOpen(false);
 
-      if (attachmentType === AttachmentTypes.Events) {
+      if (attachmentType === 'ask') {
+        // Delay update until menu fade out is complete
+        requestAnimationFrame(() => {
+          setTimeout(() => setIsTroubleshooting(false), 0);
+        });
+      } else if (attachmentType === 'troubleshooting') {
+        // Delay update until menu fade out is complete
+        requestAnimationFrame(() => {
+          setTimeout(() => setIsTroubleshooting(true), 0);
+        });
+      } else if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
       } else if (attachmentType === AttachmentTypes.Log) {
         openLogModal();
@@ -489,6 +530,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       conversation_id: conversationID,
       // eslint-disable-next-line camelcase
       media_type: 'application/json',
+      mode: isTroubleshooting ? 'troubleshooting' : 'ask',
       query,
     };
 
@@ -624,7 +666,17 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     dispatch(setQuery(''));
     dispatch(attachmentsClear());
     textareaRef.current?.focus();
-  }, [attachments, conversationID, dispatch, hidePrompt, isStreaming, query, scrollIntoView, t]);
+  }, [
+    attachments,
+    conversationID,
+    dispatch,
+    hidePrompt,
+    isStreaming,
+    isTroubleshooting,
+    query,
+    scrollIntoView,
+    t,
+  ]);
 
   React.useEffect(() => {
     if (autoSubmit) {
@@ -662,13 +714,35 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     <div>
       {/* @ts-expect-error: TS2786 */}
       <MessageBar
+        additionalActions={
+          isTroubleshooting ? (
+            <Label
+              closeBtnAriaLabel={t('Remove Troubleshooting mode')}
+              onClose={() => setIsTroubleshooting(false)}
+            >
+              {t('Troubleshooting')}
+            </Label>
+          ) : (
+            // TODO: Workaround for PatternFly bug that causes attach menu to move. Remove once
+            // issue is addressed in PatternFly.
+            <div></div>
+          )
+        }
         alwayShowSendButton
+        attachButtonPosition="start"
         attachMenuProps={{
           attachMenuItems,
           isAttachMenuOpen: isOpen,
           onAttachMenuSelect,
           onAttachMenuToggleClick: () => setIsOpen(!isOpen),
           setIsAttachMenuOpen: setIsOpen,
+        }}
+        buttonProps={{
+          attach: {
+            icon: <PlusIcon />,
+            tooltipContent: t('Message actions'),
+            'aria-label': t('Message actions'),
+          },
         }}
         className="ols-plugin__prompt"
         handleStopButton={() => {
