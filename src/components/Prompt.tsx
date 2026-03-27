@@ -453,7 +453,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   );
 
   const onChange = React.useCallback(
-    (_e, value) => {
+    (_e: React.SyntheticEvent, value: string) => {
       if (value.trim().length > 0) {
         setValidated('default');
       }
@@ -660,7 +660,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     : undefined;
 
   const onStreamCancel = React.useCallback(
-    (e) => {
+    (e: React.FormEvent) => {
       e.preventDefault();
       if (streamingResponseID) {
         streamController.abort();
