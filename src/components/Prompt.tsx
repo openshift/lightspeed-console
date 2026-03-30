@@ -425,10 +425,10 @@ const AttachMenu: React.FC = () => {
                 {isResourceContext && (
                   <>
                     <SelectOption value={AttachmentTypes.YAML}>
-                      <FileCodeIcon /> Full YAML file
+                      <FileCodeIcon /> {t('Full YAML file')}
                     </SelectOption>
                     <SelectOption value={AttachmentTypes.YAMLFiltered}>
-                      <FileCodeIcon /> Filtered YAML <FilteredYAMLInfo />
+                      <FileCodeIcon /> {t('Filtered YAML')} <FilteredYAMLInfo />
                     </SelectOption>
                   </>
                 )}

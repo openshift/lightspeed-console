@@ -14,6 +14,7 @@ parserOptions:
   ecmaVersion: 2018
   sourceType: module
 plugins:
+  - i18next
   - prettier
   - react
   - '@typescript-eslint'
@@ -29,6 +30,21 @@ rules:
   dot-notation: 'error'
   eqeqeq: 'error'
   guard-for-in: 'error'
+  i18next/no-literal-string:
+    - 'error'
+    - markupOnly: false
+      onlyAttribute:
+        - alt
+        - aria-label
+        - aria-placeholder
+        - aria-roledescription
+        - aria-valuetext
+        - closeBtnAriaLabel
+        - description
+        - label
+        - placeholder
+        - title
+        - tooltipContent
   no-alert: 'error'
   no-caller: 'error'
   no-console: 'error'
