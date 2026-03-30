@@ -157,7 +157,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         className="ols-plugin__chat-entry ols-plugin__chat-entry--ai"
         data-test="ols-plugin__chat-entry-ai"
       >
-        <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+        <div className="ols-plugin__chat-entry-name">{t('OpenShift Lightspeed')}</div>
         <Markdown components={{ code: Code }} remarkPlugins={[remarkGfm]}>
           {entry.text}
         </Markdown>
@@ -210,7 +210,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         className="ols-plugin__chat-entry ols-plugin__chat-entry--user"
         data-test="ols-plugin__chat-entry-user"
       >
-        <div className="ols-plugin__chat-entry-name">You</div>
+        <div className="ols-plugin__chat-entry-name">{t('You')}</div>
         <div className="ols-plugin__chat-entry-text">{entry.text}</div>
         {entry.attachments && Object.keys(entry.attachments).length > 0 && (
           <ExpandableSection
@@ -220,7 +220,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             onToggle={toggleContextExpanded}
             toggleContent={
               <>
-                Context <Badge>{Object.keys(entry.attachments).length}</Badge>
+                {t('Context')} <Badge>{Object.keys(entry.attachments).length}</Badge>
               </>
             }
           >
@@ -485,7 +485,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
               {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
               <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-                email the Red Hat team
+                {t('email the Red Hat team')}
               </ExternalLink>
             </HelperTextItem>
           </HelperText>
