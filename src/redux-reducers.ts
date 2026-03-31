@@ -30,6 +30,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       hidePrompt: false,
       isContextEventsLoading: false,
       isOpen: false,
+      isTroubleshooting: false,
       isUserFeedbackEnabled: true,
       openAttachment: null,
       openTool: ImmutableMap({ chatEntryIndex: null, id: null }),
@@ -119,6 +120,9 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.SetIsContextEventsLoading:
       return state.set('isContextEventsLoading', action.payload.isLoading);
+
+    case ActionType.SetIsTroubleshooting:
+      return state.set('isTroubleshooting', action.payload.isTroubleshooting);
 
     case ActionType.SetConversationID:
       return state.set('conversationID', action.payload.id);
