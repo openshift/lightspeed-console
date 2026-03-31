@@ -9,7 +9,7 @@
   "packageRules": [
     {
       "matchUpdateTypes": ["major", "minor", "patch"],
-      "minimumReleaseAge": "3 days",
+      "minimumReleaseAge": "7 days",
       "schedule": ["* * * * *"]
     },
     {
