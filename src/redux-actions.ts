@@ -20,6 +20,7 @@ export enum ActionType {
   OpenToolSet = 'openToolSet',
   SetConversationID = 'setConversationID',
   SetIsContextEventsLoading = 'setIsContextEventsLoading',
+  SetIsTroubleshooting = 'setIsTroubleshooting',
   SetAutoSubmit = 'setAutoSubmit',
   SetHidePrompt = 'setHidePrompt',
   SetQuery = 'setQuery',
@@ -95,6 +96,9 @@ export const setConversationID = (id: string) => action(ActionType.SetConversati
 export const setIsContextEventsLoading = (isLoading: boolean) =>
   action(ActionType.SetIsContextEventsLoading, { isLoading });
 
+export const setIsTroubleshooting = (isTroubleshooting: boolean) =>
+  action(ActionType.SetIsTroubleshooting, { isTroubleshooting });
+
 export const setQuery = (query: string) => action(ActionType.SetQuery, { query });
 
 export const userFeedbackClose = (entryIndex: number) =>
@@ -135,6 +139,7 @@ const actions = {
   setHidePrompt,
   setConversationID,
   setIsContextEventsLoading,
+  setIsTroubleshooting,
   setQuery,
   userFeedbackClose,
   userFeedbackDisable,

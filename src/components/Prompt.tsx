@@ -48,6 +48,7 @@ import {
   setAutoSubmit,
   setConversationID,
   setHidePrompt,
+  setIsTroubleshooting,
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -117,6 +118,9 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const events = useSelector((s: State) => s.plugins?.ols?.get('contextEvents'));
   const hidePrompt: boolean = useSelector((s: State) => s.plugins?.ols?.get('hidePrompt'));
   const isEventsLoading = useSelector((s: State) => s.plugins?.ols?.get('isContextEventsLoading'));
+  const isTroubleshooting: boolean = useSelector((s: State) =>
+    s.plugins?.ols?.get('isTroubleshooting'),
+  );
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
   const [error, setError] = React.useState<string>();
@@ -124,7 +128,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
   const [isLoading, , setLoading, setLoaded] = useBoolean(false);
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
-  const [isTroubleshooting, setIsTroubleshooting] = React.useState(false);
   const [streamController, setStreamController] = React.useState(new AbortController());
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
 
@@ -327,12 +330,12 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       if (attachmentType === 'ask') {
         // Delay update until menu fade out is complete
         requestAnimationFrame(() => {
-          setTimeout(() => setIsTroubleshooting(false), 0);
+          setTimeout(() => dispatch(setIsTroubleshooting(false)), 0);
         });
       } else if (attachmentType === 'troubleshooting') {
         // Delay update until menu fade out is complete
         requestAnimationFrame(() => {
-          setTimeout(() => setIsTroubleshooting(true), 0);
+          setTimeout(() => dispatch(setIsTroubleshooting(true)), 0);
         });
       } else if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
@@ -718,7 +721,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
           isTroubleshooting ? (
             <Label
               closeBtnAriaLabel={t('Remove Troubleshooting mode')}
-              onClose={() => setIsTroubleshooting(false)}
+              onClose={() => dispatch(setIsTroubleshooting(false))}
             >
               {t('Troubleshooting')}
             </Label>

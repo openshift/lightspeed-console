@@ -37,6 +37,7 @@ const modal = '.ols-plugin__modal';
 const promptArea = `${popover} .ols-plugin__prompt`;
 const attachButton = `${promptArea} .pf-chatbot__button--attach`;
 const promptInput = `${promptArea} textarea`;
+const troubleshootingLabel = `${popover} [aria-label="Remove Troubleshooting mode"]`;
 
 const podNamePrefix = 'console';
 
@@ -358,6 +359,36 @@ spec:
       cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
       cy.get(aiChatEntry).should('exist');
       cy.get(promptInput).should('contain', PROMPT_NOT_SUBMITTED);
+    });
+
+    it('Test Troubleshooting mode label persists after reopening the UI', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
+
+      cy.get(troubleshootingLabel).should('not.exist');
+      cy.get(attachButton).click();
+      cy.get(attachMenu).find('button').contains('Troubleshooting').click();
+      cy.get(troubleshootingLabel).should('exist');
+      cy.get(popover).should('include.text', 'Troubleshooting');
+
+      cy.get(minimizeButton).click();
+      cy.get(popover).should('not.exist');
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
+      cy.get(troubleshootingLabel).should('exist');
+      cy.get(popover).should('include.text', 'Troubleshooting');
+
+      cy.get(attachButton).click();
+      cy.get(attachMenu).find('button').contains('Ask').click();
+      cy.get(troubleshootingLabel).should('not.exist');
+
+      cy.get(minimizeButton).click();
+      cy.get(popover).should('not.exist');
+      cy.get(mainButton).click();
+      cy.get(popover).should('exist');
+      cy.get(troubleshootingLabel).should('not.exist');
     });
 
     describe('Streamed response', { tags: ['@response'] }, () => {
