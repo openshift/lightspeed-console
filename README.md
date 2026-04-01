@@ -256,10 +256,8 @@ In order to do so, they need to:
 
 ``` json
 "_meta": {
-  "additionalFields": {
-    "olsUi": {
-      "id": "my-mcp/my-tool"
-    }
+  "olsUi": {
+    "id": "my-mcp/my-tool"
   }
 }
 ```
