@@ -8,6 +8,7 @@ import { openToolSet } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Tool } from '../types';
 import MCPApp from './MCPApp';
+import OlsToolUIs from './OlsToolUIs';
 
 type ToolProps = {
   entryIndex: number;
@@ -66,6 +67,7 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
             <MCPApp entryIndex={entryIndex} key={`mcp-app-${toolID}`} toolID={toolID} />
           ))}
       </div>
+      <OlsToolUIs entryIndex={entryIndex} />
       <div className="ols-plugin__references">
         <LabelGroup numLabels={4}>
           {tools
