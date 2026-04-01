@@ -8,6 +8,7 @@ import { openToolSet } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Tool } from '../types';
 import MCPApp from './MCPApp';
+import OlsToolUIs from './OlsToolUIs';
 
 type ToolProps = {
   entryIndex: number;
@@ -64,6 +65,7 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
         .map((toolID) => (
           <MCPApp entryIndex={entryIndex} key={`mcp-app-${toolID}`} toolID={toolID} />
         ))}
+      <OlsToolUIs entryIndex={entryIndex} />
       <LabelGroup numLabels={4}>
         {tools
           .keySeq()

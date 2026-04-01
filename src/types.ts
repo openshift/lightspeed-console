@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Map as ImmutableMap } from 'immutable';
 
 import { ErrorType } from './error';
@@ -27,14 +28,17 @@ export type ReferencedDoc = {
 };
 
 export type Tool = {
-  args: { [key: string]: Array<string> };
+  args: { [key: string]: unknown };
   content: string;
   name: string;
   status: 'error' | 'success' | 'truncated';
   uiResourceUri?: string;
   serverName?: string;
   structuredContent?: Record<string, unknown>;
+  olsToolUiID?: string;
 };
+
+export type OlsToolUIComponent = React.ComponentType<{ tool: Tool }>;
 
 type ChatEntryUser = {
   attachments: { [key: string]: Attachment };
