@@ -108,7 +108,7 @@ const ToolModal: React.FC = () => {
           <DescriptionListTerm>{t('Status')}</DescriptionListTerm>
           <DescriptionListDescription>
             <Label color={status === 'error' ? 'red' : status === 'success' ? 'green' : 'yellow'}>
-              {status}
+              {status ?? t('pending')}
             </Label>
           </DescriptionListDescription>
         </DescriptionListGroup>
@@ -148,12 +148,14 @@ const ToolModal: React.FC = () => {
           </CodeBlock>
         </>
       ) : (
-        <Alert
-          className="ols-plugin__alert"
-          isInline
-          title={t('No output returned')}
-          variant="info"
-        />
+        status && (
+          <Alert
+            className="ols-plugin__alert"
+            isInline
+            title={t('No output returned')}
+            variant="info"
+          />
+        )
       )}
 
       {structuredContentFormatted && (

@@ -47,7 +47,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import { Attachment, ChatEntry, ReferencedDoc, Tool } from '../types';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
 import ImportAction from './ImportAction';
@@ -55,6 +55,7 @@ import NewChatModal from './NewChatModal';
 import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
 import ResponseTools from './ResponseTools';
+import ToolApproval from './ToolApproval';
 import WelcomeNotice from './WelcomeNotice';
 
 import './general-page.css';
@@ -244,6 +245,13 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
         };
       }
     }
+
+    const pendingApprovalTools = entry.tools
+      ? Object.entries(entry.tools as unknown as { [key: string]: Tool }).filter(
+          ([, tool]) => tool.isUserApproval && !tool.isApproved && !tool.isDenied,
+        )
+      : [];
+
     return (
       // @ts-expect-error: TS2786
       <Message
@@ -286,6 +294,9 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
                   variant="info"
                 />
               )}
+              {pendingApprovalTools.map(([toolID, tool]) => (
+                <ToolApproval chatEntryID={entry.id} key={toolID} tool={tool} toolID={toolID} />
+              ))}
               {entry.tools && <ResponseTools entryIndex={entryIndex} />}
             </>
           ),
