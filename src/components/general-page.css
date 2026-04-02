@@ -120,6 +120,34 @@
   text-align: center;
 }
 
+.ols-plugin__tool-call {
+  background-color: var(--pf-t--color--yellow--10);
+  margin-bottom: var(--pf-t--global--spacer--md);
+}
+
+.ols-plugin__popover--dark .ols-plugin__tool-call {
+  background-color: var(--pf-t--color--yellow--70);
+}
+
+.ols-plugin__tool-call-args {
+  margin-left: var(--pf-t--global--spacer--xl);
+}
+
+.ols-plugin__tool-call-description {
+  margin-bottom: var(--pf-t--global--spacer--sm);
+  margin-top: var(--pf-t--global--spacer--sm);
+}
+
+.ols-plugin__tool-call-header {
+  align-items: center;
+  display: flex;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.ols-plugin__tool-call-icon {
+  color: var(--pf-t--global--icon--color--status--warning--default);
+}
+
 .ols-plugin__tool-metadata {
   margin-bottom: var(--pf-t--global--spacer--md);
   margin-top: var(--pf-t--global--spacer--md);

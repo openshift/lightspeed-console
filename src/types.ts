@@ -28,8 +28,13 @@ export type ReferencedDoc = {
 };
 
 export type Tool = {
+  approvalID?: string;
   args: { [key: string]: unknown };
   content: string;
+  description?: string;
+  isApproved?: boolean;
+  isDenied?: boolean;
+  isUserApproval?: boolean;
   name: string;
   status: 'error' | 'success' | 'truncated';
   uiResourceUri?: string;
