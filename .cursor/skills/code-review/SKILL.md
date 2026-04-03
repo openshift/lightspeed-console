@@ -41,7 +41,7 @@ git diff upstream/main...pr-<number>
 ### C) Branch name
 
 The branch already exists locally. Determine its base branch (`main` or
-`pattern-fly-5`) using the same heuristic as the rebase skill:
+`pattern-fly-5`):
 
 ```sh
 mb_main=$(git merge-base <branch> main)
@@ -49,6 +49,9 @@ mb_pf5=$(git merge-base <branch> pattern-fly-5)
 count_main=$(git rev-list --count "$mb_main"..<branch>)
 count_pf5=$(git rev-list --count "$mb_pf5"..<branch>)
 ```
+
+If `count_pf5 < count_main`, the base branch is **pattern-fly-5**. Otherwise the
+base branch is **main**.
 
 Then diff against the detected base:
 
