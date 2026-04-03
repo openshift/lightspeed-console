@@ -11,7 +11,7 @@ type OlsToolUIProps = {
   toolUIComponent: OlsToolUIComponent;
 };
 
-export const OlsToolUI: React.FC<OlsToolUIProps> = ({ tool, toolUIComponent: ToolComponent }) => (
+const OlsToolUI: React.FC<OlsToolUIProps> = ({ tool, toolUIComponent: ToolComponent }) => (
   <ErrorBoundary>
     <ToolComponent tool={tool} />
   </ErrorBoundary>
@@ -21,7 +21,7 @@ type OlsToolUIsProps = {
   entryIndex: number;
 };
 
-export const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
+const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
   const [toolUIMapping] = useToolUIMapping();
 
   const toolsData: ImmutableMap<string, ImmutableMap<string, unknown>> = useSelector((s: State) =>
