@@ -44,6 +44,7 @@ import {
   userFeedbackClose,
   userFeedbackOpen,
   userFeedbackSetSentiment,
+  userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, ReferencedDoc } from '../types';
@@ -147,6 +148,9 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
   const sentiment: number = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
   );
+  const feedbackText: string = useSelector((s: State) =>
+    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'text']),
+  );
 
   const [isDarkTheme] = useIsDarkTheme();
 
@@ -166,34 +170,38 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
     dispatch(userFeedbackClose(entryIndex));
   }, [dispatch, entryIndex]);
 
-  const onFeedbackSubmit = React.useCallback(
-    (_quickResponse, additionalFeedback) => {
-      const userQuestion = attachments
-        ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
-        : query;
-
-      /* eslint-disable camelcase */
-      const requestJSON = {
-        conversation_id: conversationID,
-        llm_response: response,
-        sentiment,
-        user_feedback: additionalFeedback,
-        user_question: userQuestion,
-      };
-      /* eslint-enable camelcase */
-
-      consoleFetchJSON
-        .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
-        .then(() => {
-          setFeedbackSubmitted(true);
-        })
-        .catch((err) => {
-          setFeedbackError(getFetchErrorMessage(err, t));
-          setFeedbackSubmitted(false);
-        });
+  const onFeedbackTextChange = React.useCallback(
+    (_event: React.ChangeEvent<HTMLTextAreaElement>, value: string) => {
+      dispatch(userFeedbackSetText(entryIndex, value));
     },
-    [conversationID, query, attachments, response, sentiment, t],
+    [dispatch, entryIndex],
   );
+
+  const onFeedbackSubmit = React.useCallback(() => {
+    const userQuestion = attachments
+      ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
+      : query;
+
+    /* eslint-disable camelcase */
+    const requestJSON = {
+      conversation_id: conversationID,
+      llm_response: response,
+      sentiment,
+      user_feedback: feedbackText ?? '',
+      user_question: userQuestion,
+    };
+    /* eslint-enable camelcase */
+
+    consoleFetchJSON
+      .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+      .then(() => {
+        setFeedbackSubmitted(true);
+      })
+      .catch((err) => {
+        setFeedbackError(getFetchErrorMessage(err, t));
+        setFeedbackSubmitted(false);
+      });
+  }, [conversationID, query, attachments, response, sentiment, feedbackText, t]);
 
   if (entry.who === 'user' && entry.hidden) {
     return null;
@@ -313,7 +321,9 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
                 headingLevel: 'h6',
                 onClose: onFeedbackClose,
                 onSubmit: onFeedbackSubmit,
+                onTextAreaChange: onFeedbackTextChange,
                 submitWord: t('Submit'),
+                textAreaProps: { value: feedbackText ?? '' },
                 title: t(
                   "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
                 ),
