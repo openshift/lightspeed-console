@@ -248,14 +248,14 @@ const Demo: React.FC = () => {
 
 ## Detecting whether OpenShift Lightspeed is running (PatternFly 6 version only)
 
-This plugin sets a `LIGHTSPEED_CONSOLE` feature flag via the `console.flag`
+This plugin sets a `LIGHTSPEED_PLUGIN` feature flag via the `console.flag`
 extension. This allows other OpenShift console plugins to check if the OpenShift
 Lightspeed plugin is running:
 
 ```typescript
 import { useFlag } from '@openshift-console/dynamic-plugin-sdk';
 
-const isLightspeedRunning = useFlag('LIGHTSPEED_CONSOLE');
+const isLightspeedRunning = useFlag('LIGHTSPEED_PLUGIN');
 ```
 
 ## Providing tool visualization from an external plugin
@@ -266,7 +266,7 @@ In order to do so, they need to:
 
 1. annotate the particular MCP tool inside the MCP server:
 
-``` json
+```json
 "_meta": {
   "olsUi": {
     "id": "my-mcp/my-tool"
@@ -274,10 +274,10 @@ In order to do so, they need to:
 }
 ```
 
-2. define an extension of type `ols.tool-ui` inside the plugin, connecting the tool (using the annotated id)
-with the particular component:
+2. define an extension of type `ols.tool-ui` inside the plugin, connecting the
+   tool (using the annotated id) with the particular component:
 
-``` json
+```json
 {
   "type": "ols.tool-ui",
   "properties": {
@@ -289,21 +289,22 @@ with the particular component:
 }
 ```
 
-This needs to follow the standard `openshift-console/dynamic-plugin-sdk` practices
-of exporting the referenced component.
+This needs to follow the standard `openshift-console/dynamic-plugin-sdk`
+practices of exporting the referenced component.
 
-3. Once the MCP tool gets called, OLS passes the tool details to the ToolUI component in the `tool` argument:
+3. Once the MCP tool gets called, OLS passes the tool details to the ToolUI
+   component in the `tool` argument:
 
-``` typescript
+```typescript
 type MyTool = {
   name: 'my-tool';
-  args: object,
+  args: object;
   // ...
 };
 
 export const MyToolUI: React.FC<{ tool: MyTool }> = ({ tool }) => {
   // component implementation
-}
+};
 ```
 
 ## References
