@@ -18,7 +18,7 @@ type ToolUIExtension = ExtensionDeclaration<'ols.tool-ui', ToolUIExtensionProper
 
 const isToolUIExtension = (e: Extension): e is ToolUIExtension => e.type === 'ols.tool-ui';
 
-export const useToolUIExtensions = () => useResolvedExtensions(isToolUIExtension);
+const useToolUIExtensions = () => useResolvedExtensions(isToolUIExtension);
 
 export const useToolUIMapping = (): [Record<string, OlsToolUIComponent>, boolean] => {
   const [extensions, resolved] = useToolUIExtensions();
