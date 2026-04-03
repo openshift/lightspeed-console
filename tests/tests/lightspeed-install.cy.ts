@@ -843,7 +843,7 @@ metadata:
         },
       ).as('getManagedCluster');
 
-      // Mock the API call ManagedClusterInfo
+      // Mock the API call for ManagedClusterInfo
       cy.intercept(
         'GET',
         '/api/kubernetes/apis/internal.open-cluster-management.io/v1beta1/namespaces/test-cluster/managedclusterinfos/test-cluster',
