@@ -400,7 +400,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
         {!scaleTargetError && (
           <>
             {showPodInput && (
-              <FormGroup label="Pod">
+              <FormGroup label={t('Pod')}>
                 {podsError && <Error title={t('Failed to load pods')}>{podsError.message}</Error>}
                 {jobsError && isCronJob && (
                   <Error title={t('Failed to load jobs')}>{jobsError.message}</Error>
@@ -425,7 +425,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
             )}
             {(!showPodInput || (podsLoaded && pods && pods.length > 0)) && (
               <>
-                <FormGroup label="Container">
+                <FormGroup label={t('Container')}>
                   <ContainerInput
                     containers={containers}
                     selectedContainer={container}
