@@ -32,19 +32,19 @@ rules:
   guard-for-in: 'error'
   i18next/no-literal-string:
     - 'error'
-    - markupOnly: false
-      onlyAttribute:
-        - alt
-        - aria-label
-        - aria-placeholder
-        - aria-roledescription
-        - aria-valuetext
-        - closeBtnAriaLabel
-        - description
-        - label
-        - placeholder
-        - title
-        - tooltipContent
+    - framework: react
+      mode: jsx-only
+      jsx-attributes:
+        include:
+          - alt
+          - 'aria-.+'
+          - closeBtnAriaLabel
+          - description
+          - label
+          - placeholder
+          - title
+          - toggleText
+          - tooltipContent
   no-alert: 'error'
   no-caller: 'error'
   no-console: 'error'
