@@ -20,7 +20,6 @@ const ConfirmationModal: React.FC<Props> = ({ handleRedirect }) => {
           {t('Stay')}
         </Button>,
       ]}
-      aria-describedby="modal-title-icon-description"
       className="redirect-modal"
       isOpen={true}
       showClose={false}
