@@ -56,6 +56,9 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
   );
 
   const toolsWithUI = tools.filter((tool) => !!tool.get('uiResourceUri'));
+  const completedTools = tools.filter(
+    (tool) => !tool.get('isUserApproval') || !!tool.get('isApproved') || !!tool.get('isDenied'),
+  );
 
   return (
     <>
@@ -67,7 +70,7 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
         ))}
       <OlsToolUIs entryIndex={entryIndex} />
       <LabelGroup numLabels={4}>
-        {tools
+        {completedTools
           .keySeq()
           .toArray()
           .map((toolID) => (
