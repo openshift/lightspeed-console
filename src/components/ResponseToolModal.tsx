@@ -96,27 +96,27 @@ const ToolModal: React.FC = () => {
       <p>
         {isDenied ? (
           argsFormatted ? (
-            <Trans>
-              The tool <span className="ols-plugin__code-inline">{{ name }}</span> was requested
-              with arguments <span className="ols-plugin__code-inline">{{ argsFormatted }}</span>{' '}
+            <Trans values={{ name, argsFormatted }}>
+              The tool <span className="ols-plugin__code-inline">{'{{name}}'}</span> was requested
+              with arguments <span className="ols-plugin__code-inline">{'{{argsFormatted}}'}</span>{' '}
               but was rejected.
             </Trans>
           ) : (
-            <Trans>
-              The tool <span className="ols-plugin__code-inline">{{ name }}</span> was requested
+            <Trans values={{ name }}>
+              The tool <span className="ols-plugin__code-inline">{'{{name}}'}</span> was requested
               with no arguments but was rejected.
             </Trans>
           )
         ) : argsFormatted ? (
-          <Trans>
+          <Trans values={{ name, argsFormatted }}>
             The following output was generated when running{' '}
-            <span className="ols-plugin__code-inline">{{ name }}</span> with arguments{' '}
-            <span className="ols-plugin__code-inline">{{ argsFormatted }}</span>.
+            <span className="ols-plugin__code-inline">{'{{name}}'}</span> with arguments{' '}
+            <span className="ols-plugin__code-inline">{'{{argsFormatted}}'}</span>.
           </Trans>
         ) : (
-          <Trans>
+          <Trans values={{ name }}>
             The following output was generated when running{' '}
-            <span className="ols-plugin__code-inline">{{ name }}</span> with no arguments.
+            <span className="ols-plugin__code-inline">{'{{name}}'}</span> with no arguments.
           </Trans>
         )}
       </p>

@@ -757,7 +757,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
   return (
     <div>
-      {/* @ts-expect-error: TS2786 */}
       <MessageBar
         additionalActions={
           isTroubleshooting ? (

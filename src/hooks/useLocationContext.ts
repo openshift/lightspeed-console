@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useLocation } from 'react-router-dom-v5-compat';
+import { useLocation } from 'react-router';
 import { useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 
 export const useLocationContext = () => {
@@ -10,10 +10,17 @@ export const useLocationContext = () => {
   const location = useLocation();
   const path = location?.pathname;
 
-  const [models, inFlight] = useK8sModels();
+  const [k8sModels, inFlight] = useK8sModels();
+
+  // Use a ref to avoid putting an unstable reference in the useEffect dependency array
+  const modelsRef = React.useRef(k8sModels);
+  React.useEffect(() => {
+    modelsRef.current = k8sModels;
+  });
 
   React.useEffect(() => {
     if (path) {
+      const models = modelsRef.current;
       const ns = `[a-z0-9-]+`;
       const resourceName = '[a-z0-9-.]+';
 
@@ -150,7 +157,7 @@ export const useLocationContext = () => {
       setName(undefined);
       setNamespace(undefined);
     }
-  }, [inFlight, location.search, models, path]);
+  }, [inFlight, location.search, path]);
 
   return [kind, name, namespace];
 };
