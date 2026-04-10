@@ -8,23 +8,22 @@ description: >-
 
 # Rebase
 
-Rebase the current branch onto either `main` or `pattern-fly-5`, whichever it
-was originally based on. This skill assumes the local repo is already up to
-date (no fetch/pull needed).
+Rebase the current branch onto its base branch. This skill assumes the local
+repo is already up to date (no fetch/pull needed).
 
 ## Step 1 — Determine the base branch
 
-Run:
+Read [release-branches.md](../release/release-branches.md) to get the list of
+branches. For each branch, compute the merge-base with HEAD and count the
+commits between them:
 
 ```sh
-mb_main=$(git merge-base HEAD main)
-mb_pf5=$(git merge-base HEAD pattern-fly-5)
-count_main=$(git rev-list --count "$mb_main"..HEAD)
-count_pf5=$(git rev-list --count "$mb_pf5"..HEAD)
+mb=$(git merge-base HEAD <branch>)
+git rev-list --count "$mb"..HEAD
 ```
 
-- If `count_pf5 < count_main`, the base branch is **pattern-fly-5**.
-- Otherwise the base branch is **main**.
+The base branch is whichever has the **lowest** commit count (fewest commits
+between the merge-base and HEAD). If counts are tied, prefer `main`.
 
 Tell the user which base branch was detected before proceeding.
 
