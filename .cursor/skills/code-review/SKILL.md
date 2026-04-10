@@ -40,18 +40,18 @@ git diff upstream/main...pr-<number>
 
 ### C) Branch name
 
-The branch already exists locally. Determine its base branch (`main` or
-`pattern-fly-5`):
+The branch already exists locally. Determine its base branch by reading
+[release-branches.md](../release/release-branches.md) for the list of branches.
+For each branch, compute the merge-base and count the commits between them:
 
 ```sh
-mb_main=$(git merge-base <branch> main)
-mb_pf5=$(git merge-base <branch> pattern-fly-5)
-count_main=$(git rev-list --count "$mb_main"..<branch>)
-count_pf5=$(git rev-list --count "$mb_pf5"..<branch>)
+mb=$(git merge-base <branch> <candidate>)
+git rev-list --count "$mb"..<branch>
 ```
 
-If `count_pf5 < count_main`, the base branch is **pattern-fly-5**. Otherwise the
-base branch is **main**.
+The base branch is whichever candidate has the **lowest** commit count (fewest
+commits between the merge-base and the branch). If counts are tied, prefer
+`main`.
 
 Then diff against the detected base:
 
