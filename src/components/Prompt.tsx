@@ -663,6 +663,20 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                     ...(olsToolUiID && { olsToolUiID }),
                   }),
                 );
+              } else if (json.event === 'history_compression_start') {
+                dispatch(
+                  chatHistoryUpdateByID(chatEntryID, {
+                    historyCompression: { status: 'compressing' },
+                  }),
+                );
+              } else if (json.event === 'history_compression_end') {
+                const rawDuration = Number(json.data?.duration_ms);
+                const durationMs = Number.isFinite(rawDuration) ? rawDuration : undefined;
+                dispatch(
+                  chatHistoryUpdateByID(chatEntryID, {
+                    historyCompression: { durationMs, status: 'done' },
+                  }),
+                );
               } else if (json.event === 'error') {
                 dispatchTokens.flush();
                 dispatch(
