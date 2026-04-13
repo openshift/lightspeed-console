@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { BlueInfoCircleIcon } from '@openshift-console/dynamic-plugin-sdk';
 import { CodeEditor, Language } from '@patternfly/react-code-editor';
 import {
   ActionGroup,
@@ -12,6 +11,9 @@ import {
   Content,
   ContentVariants,
   Form,
+  Modal,
+  ModalBody,
+  ModalHeader,
   Split,
   SplitItem,
 } from '@patternfly/react-core';
@@ -24,7 +26,6 @@ import { attachmentSet, openAttachmentClear, openAttachmentSet } from '../redux-
 import { State } from '../redux-reducers';
 import { Attachment } from '../types';
 import CopyAction from './CopyAction';
-import Modal from './Modal';
 import ResourceIcon from './ResourceIcon';
 
 const ResourceHeader: React.FC = () => {
@@ -159,54 +160,53 @@ const AttachmentModal: React.FC = () => {
       className="ols-plugin__attachment-modal"
       isOpen={!!attachment}
       onClose={onClose}
-      title={
-        <>
-          <BlueInfoCircleIcon /> {t('Preview attachment')}
-        </>
-      }
+      variant="medium"
     >
-      <p>
-        {t(
-          'You can preview and optionally edit the code displayed in the modal before attaching it to your prompt.',
-        )}
-      </p>
-      {isEditing ? <Editor onChange={setEditorValue} /> : <Viewer />}
-      <Form>
-        {isEditing ? (
-          <ActionGroup>
-            <Button onClick={onSave} type="button" variant="primary">
-              {t('Save')}
-            </Button>
-            <Button onClick={setNotEditing} variant="link">
-              {t('Cancel')}
-            </Button>
-          </ActionGroup>
-        ) : (
-          <Split>
-            <SplitItem isFilled>
-              <ActionGroup>
-                {attachment?.isEditable && (
-                  <Button onClick={setEditing} type="button" variant="primary">
-                    {t('Edit')}
-                  </Button>
-                )}
-                <Button onClick={onClose} variant="link">
-                  {t('Dismiss')}
-                </Button>
-              </ActionGroup>
-            </SplitItem>
-            {attachment?.originalValue && attachment.originalValue !== attachment.value && (
-              <SplitItem>
+      <ModalHeader title={t('Preview attachment')} titleIconVariant="info" />
+      <ModalBody>
+        <Content component="p">
+          {t(
+            'You can preview and optionally edit the code displayed in the modal before attaching it to your prompt.',
+          )}
+        </Content>
+        {isEditing ? <Editor onChange={setEditorValue} /> : <Viewer />}
+        <Form>
+          {isEditing ? (
+            <ActionGroup>
+              <Button onClick={onSave} type="button" variant="primary">
+                {t('Save')}
+              </Button>
+              <Button onClick={setNotEditing} variant="link">
+                {t('Cancel')}
+              </Button>
+            </ActionGroup>
+          ) : (
+            <Split>
+              <SplitItem isFilled>
                 <ActionGroup>
-                  <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
-                    {t('Revert to original')}
+                  {attachment?.isEditable && (
+                    <Button onClick={setEditing} type="button" variant="primary">
+                      {t('Edit')}
+                    </Button>
+                  )}
+                  <Button onClick={onClose} variant="link">
+                    {t('Dismiss')}
                   </Button>
                 </ActionGroup>
               </SplitItem>
-            )}
-          </Split>
-        )}
-      </Form>
+              {attachment?.originalValue && attachment.originalValue !== attachment.value && (
+                <SplitItem>
+                  <ActionGroup>
+                    <Button icon={<UndoIcon />} isDanger onClick={onRevert} variant="link">
+                      {t('Revert to original')}
+                    </Button>
+                  </ActionGroup>
+                </SplitItem>
+              )}
+            </Split>
+          )}
+        </Form>
+      </ModalBody>
     </Modal>
   );
 };

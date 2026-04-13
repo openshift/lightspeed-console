@@ -14,6 +14,9 @@ import {
   FormGroup,
   HelperText,
   HelperTextItem,
+  Modal,
+  ModalBody,
+  ModalHeader,
   Slider,
   SliderOnChangeEvent,
   Spinner,
@@ -28,7 +31,6 @@ import {
 } from '../redux-actions';
 import { State } from '../redux-reducers';
 import CopyAction from './CopyAction';
-import Modal from './Modal';
 
 const DEFAULT_MAX_EVENTS = 10;
 
@@ -128,60 +130,63 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('Configure events attachment')}>
-      <Content component="p">
-        {t(
-          'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
-        )}
-      </Content>
-      <Form>
-        {isLoading && <Spinner size="md" />}
-        {!isLoading &&
-          (events.length === 0 ? (
-            <HelperText>
-              <HelperTextItem>{t('No events')}</HelperTextItem>
-            </HelperText>
-          ) : (
-            <>
-              <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
-                <Slider
-                  max={events.length}
-                  min={1}
-                  onChange={onInputNumEventsChange}
-                  showTicks={events.length <= 40}
-                  value={numEvents}
-                />
-              </FormGroup>
-              <CodeBlock
-                actions={
-                  <>
-                    <CodeBlockAction />
-                    <CodeBlockAction>
-                      <CopyAction value={yaml} />
-                    </CodeBlockAction>
-                  </>
-                }
-                className="ols-plugin__code-block ols-plugin__code-block--preview"
-              >
-                <CodeBlockCode
-                  className="ols-plugin__code-block-code"
-                  style={{ whiteSpace: 'pre' }}
+    <Modal isOpen={isOpen} onClose={onClose} variant="small">
+      <ModalHeader title={t('Configure events attachment')} />
+      <ModalBody>
+        <Content component="p">
+          {t(
+            'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
+          )}
+        </Content>
+        <Form>
+          {isLoading && <Spinner size="md" />}
+          {!isLoading &&
+            (events.length === 0 ? (
+              <HelperText>
+                <HelperTextItem>{t('No events')}</HelperTextItem>
+              </HelperText>
+            ) : (
+              <>
+                <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
+                  <Slider
+                    max={events.length}
+                    min={1}
+                    onChange={onInputNumEventsChange}
+                    showTicks={events.length <= 40}
+                    value={numEvents}
+                  />
+                </FormGroup>
+                <CodeBlock
+                  actions={
+                    <>
+                      <CodeBlockAction />
+                      <CodeBlockAction>
+                        <CopyAction value={yaml} />
+                      </CodeBlockAction>
+                    </>
+                  }
+                  className="ols-plugin__code-block ols-plugin__code-block--preview"
                 >
-                  {yaml}
-                </CodeBlockCode>
-              </CodeBlock>
-            </>
-          ))}
-        {error && <Error title={t('Failed to load events')}>{error}</Error>}
-        <ActionGroup>
-          <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
-            {t('Attach')}
-          </Button>
-          <Button onClick={onClose} type="button" variant="link">
-            {t('Cancel')}
-          </Button>
-        </ActionGroup>
-      </Form>
+                  <CodeBlockCode
+                    className="ols-plugin__code-block-code"
+                    style={{ whiteSpace: 'pre' }}
+                  >
+                    {yaml}
+                  </CodeBlockCode>
+                </CodeBlock>
+              </>
+            ))}
+          {error && <Error title={t('Failed to load events')}>{error}</Error>}
+          <ActionGroup>
+            <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
+              {t('Attach')}
+            </Button>
+            <Button onClick={onClose} type="button" variant="link">
+              {t('Cancel')}
+            </Button>
+          </ActionGroup>
+        </Form>
+      </ModalBody>
     </Modal>
   );
 };
