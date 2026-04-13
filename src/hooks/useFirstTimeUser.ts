@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
+import { useUserPreference } from '@openshift-console/dynamic-plugin-sdk';
 
 /**
  * Simple hook to manage first-time user experience for OpenShift Lightspeed.
@@ -15,7 +15,7 @@ import { useUserSettings } from '@openshift-console/dynamic-plugin-sdk';
  */
 export const useFirstTimeUser = (): [boolean, () => void, boolean] => {
   // Track if user has ever closed the chat window
-  const [hasClosedChatBefore, setHasClosedChatBefore, isLoaded] = useUserSettings(
+  const [hasClosedChatBefore, setHasClosedChatBefore, isLoaded] = useUserPreference(
     'lightspeed.hasClosedChat',
     false, // Default: user hasn't closed chat yet (first-time user)
     true, // Sync across namespaces
