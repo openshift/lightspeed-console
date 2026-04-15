@@ -480,7 +480,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
           >
             {t('Attach')}
           </Button>
-          <Button onClick={onClose} type="submit" variant="link">
+          <Button onClick={onClose} type="button" variant="link">
             {t('Cancel')}
           </Button>
         </ActionGroup>
