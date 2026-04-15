@@ -4,7 +4,15 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
-import { Alert, Badge, Button, ExpandableSection, Title, Tooltip } from '@patternfly/react-core';
+import {
+  Alert,
+  Badge,
+  Button,
+  ExpandableSection,
+  Spinner,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core';
 import {
   CheckIcon,
   CompressIcon,
@@ -252,6 +260,17 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
         )
       : [];
 
+    const historyCompressedAlert = (
+      <Alert
+        className="ols-plugin__history-compressed"
+        customIcon={<CheckIcon />}
+        isInline
+        isPlain
+        title={t('History compressed')}
+        variant="success"
+      />
+    );
+
     return (
       // @ts-expect-error: TS2786
       <Message
@@ -280,6 +299,27 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
                   {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
                 </Alert>
               )}
+              {entry.historyCompression?.status === 'compressing' && (
+                <Alert
+                  customIcon={<Spinner isInline size="md" />}
+                  isInline
+                  isPlain
+                  title={t('Compressing history...')}
+                  variant="info"
+                />
+              )}
+              {entry.historyCompression?.status === 'done' &&
+                (entry.historyCompression.durationMs === undefined ? (
+                  historyCompressedAlert
+                ) : (
+                  <Tooltip
+                    content={t('Compressed in {{seconds}} seconds', {
+                      seconds: (entry.historyCompression.durationMs / 1000).toFixed(2),
+                    })}
+                  >
+                    {historyCompressedAlert}
+                  </Tooltip>
+                ))}
               {entry.isTruncated && (
                 <Alert isInline title={t('History truncated')} variant="warning">
                   {t('Conversation history has been truncated to fit within context window.')}
