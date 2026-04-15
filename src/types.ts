@@ -40,6 +40,11 @@ export type Tool = {
 
 export type OlsToolUIComponent = React.ComponentType<{ tool: Tool }>;
 
+export type HistoryCompression = {
+  durationMs?: number;
+  status: 'compressing' | 'done';
+};
+
 type ChatEntryUser = {
   attachments: { [key: string]: Attachment };
   hidden?: boolean;
@@ -55,6 +60,7 @@ type UserFeedback = {
 
 type ChatEntryAI = {
   error?: ErrorType;
+  historyCompression?: HistoryCompression;
   id: string;
   isCancelled: boolean;
   isStreaming: boolean;

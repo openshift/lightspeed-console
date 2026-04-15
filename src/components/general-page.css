@@ -217,6 +217,10 @@
   text-align: center;
 }
 
+.ols-plugin__history-compressed {
+  width: fit-content;
+}
+
 .ols-plugin__header {
   --logo-size: var(--pf-v5-global--spacer--2xl);
   --logo-spacer-left: var(--pf-v5-global--spacer--lg);
