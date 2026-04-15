@@ -2,4 +2,4 @@ reviews:
   auto_review:
     base_branches:
       - 'pattern-fly-5'
-      - '^release-4\.19$'
+      - 'release-4.19'
