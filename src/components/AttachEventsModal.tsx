@@ -177,7 +177,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
           <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
             {t('Attach')}
           </Button>
-          <Button onClick={onClose} type="submit" variant="link">
+          <Button onClick={onClose} type="button" variant="link">
             {t('Cancel')}
           </Button>
         </ActionGroup>
