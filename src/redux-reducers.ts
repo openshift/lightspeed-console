@@ -4,7 +4,7 @@ import { ActionType, OLSAction } from './redux-actions';
 import { Attachment } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OLSState = ImmutableMap<string, any>;
+type OLSState = ImmutableMap<string, any>;
 
 export type State = {
   plugins: {
