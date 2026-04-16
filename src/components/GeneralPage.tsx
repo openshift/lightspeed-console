@@ -299,7 +299,7 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
                   {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
                 </Alert>
               )}
-              {entry.historyCompression?.status === 'compressing' && (
+              {entry.historyCompression?.status === 'compressing' && !entry.isCancelled && (
                 <Alert
                   customIcon={<Spinner isInline size="md" />}
                   isInline
