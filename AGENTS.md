@@ -34,14 +34,15 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 
 ### Code structure
 
-- Frontend React code lives under `src/` (TypeScript/React)
+- Frontend React code lives in `src/` (TypeScript/React)
   - React components in `src/components/`
   - React hooks in `src/hooks/`
   - Redux code in `src/`
 - Put images and other assets in `src/assets/`
 - Modules and extensions exposed by the plugin are added to
   `console-extensions.json`
-- Test-related code lives under `tests/` and `cypress/`
+- End-to-end tests live in `tests/` and `cypress/`
+- Unit tests live in `unit-tests/`
 
 ### Coding style
 
@@ -94,12 +95,17 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
   - The `start-console.sh` script includes a proxy configuration that routes
     requests through the console, avoiding CORS issues
 
-### Tests (Cypress)
+### End-to-end tests (Cypress)
 
 - To run all tests: `npm run test-headless`
 - To run just some tests filtered by tag:
   `npm run test-headless -- --expose grepTags="@attach"`
 - See `tests/README.md` for full details and environment variables
+
+### Unit tests
+
+- Unit tests live in `unit-tests/` and use Node's built-in test runner
+- To run: `npm run test:unit`
 
 ### Do not commit
 
@@ -112,4 +118,5 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 - Apply lint rules: `npm run lint-fix`
 - Update i18n strings: `npm run i18n`
 - Ensure build works: `npm run build`
+- Ensure unit tests pass: `npm run test:unit`
 - Ensure tests pass: `npm run test-headless`
