@@ -182,6 +182,39 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
           </Alert>
         )}
+        {entry.historyCompression?.status === 'compressing' && !entry.isCancelled && (
+          <Alert
+            customIcon={<Spinner isInline size="md" />}
+            isInline
+            isPlain
+            title={t('Compressing history...')}
+            variant="info"
+          />
+        )}
+        {entry.historyCompression?.status === 'done' &&
+          (() => {
+            const historyCompressedAlert = (
+              <Alert
+                className="ols-plugin__history-compressed"
+                customIcon={<CheckIcon />}
+                isInline
+                isPlain
+                title={t('History compressed')}
+                variant="success"
+              />
+            );
+            return entry.historyCompression.durationMs === undefined ? (
+              historyCompressedAlert
+            ) : (
+              <Tooltip
+                content={t('Compressed in {{seconds}} seconds', {
+                  seconds: (entry.historyCompression.durationMs / 1000).toFixed(2),
+                })}
+              >
+                {historyCompressedAlert}
+              </Tooltip>
+            );
+          })()}
         {entry.isTruncated && (
           <Alert isInline title={t('History truncated')} variant="warning">
             {t('Conversation history has been truncated to fit within context window.')}
