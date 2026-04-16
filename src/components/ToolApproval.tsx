@@ -103,12 +103,12 @@ const ToolApproval: React.FC<ToolApprovalCardProps> = ({ chatEntryID, tool, tool
           <ActionListGroup>
             <ActionListItem>
               <Button onClick={onDeny} variant="secondary">
-                {t('Cancel')}
+                {t('Reject')}
               </Button>
             </ActionListItem>
             <ActionListItem>
               <Button onClick={onApprove} variant="warning">
-                {t('Apply')}
+                {t('Approve')}
               </Button>
             </ActionListItem>
           </ActionListGroup>
