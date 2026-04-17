@@ -2,7 +2,7 @@ import { Map as ImmutableMap } from 'immutable';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Label, LabelGroup } from '@patternfly/react-core';
-import { CodeIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons';
+import { BanIcon, CodeIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons';
 
 import { openToolSet } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -35,12 +35,33 @@ const ToolLabel: React.FC<ToolProps> = ({ entryIndex, toolID }) => {
   const isTruncated = tool.status === 'truncated';
   const hasUI = !!tool.uiResourceUri;
 
-  const color = isError ? 'red' : isTruncated ? 'yellow' : hasUI ? 'blue' : undefined;
-  const icon =
-    isError || isTruncated ? <InfoCircleIcon /> : hasUI ? <ExternalLinkAltIcon /> : <CodeIcon />;
+  let color: React.ComponentProps<typeof Label>['color'];
+  let icon: React.ReactNode;
+
+  if (tool.isDenied) {
+    color = 'grey';
+    icon = <BanIcon />;
+  } else if (isError) {
+    color = 'red';
+    icon = <InfoCircleIcon />;
+  } else if (isTruncated) {
+    color = 'yellow';
+    icon = <InfoCircleIcon />;
+  } else if (hasUI) {
+    color = 'blue';
+    icon = <ExternalLinkAltIcon />;
+  } else {
+    icon = <CodeIcon />;
+  }
 
   return (
-    <Label color={color} icon={icon} onClick={onClick} textMaxWidth="16ch">
+    <Label
+      color={color}
+      icon={icon}
+      onClick={onClick}
+      textMaxWidth="16ch"
+      variant={tool.isDenied ? undefined : 'outline'}
+    >
       {tool.name}
     </Label>
   );

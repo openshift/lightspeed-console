@@ -15,7 +15,7 @@ import {
   Label,
   Title,
 } from '@patternfly/react-core';
-import { InfoCircleIcon } from '@patternfly/react-icons';
+import { BanIcon, InfoCircleIcon } from '@patternfly/react-icons';
 
 import { openToolClear } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -45,10 +45,11 @@ const ToolModal: React.FC = () => {
     return null;
   }
 
-  const { args, content, name, serverName, status, structuredContent, uiResourceUri } =
+  const { args, content, isDenied, name, serverName, status, structuredContent, uiResourceUri } =
     tool.toJS() as {
       args: Record<string, unknown>;
       content: string;
+      isDenied?: boolean;
       name: string;
       serverName?: string;
       status: string;
@@ -71,14 +72,18 @@ const ToolModal: React.FC = () => {
       onClose={onClose}
       title={
         <>
-          <Icon status={status === 'error' ? 'danger' : 'info'}>
-            <InfoCircleIcon />
+          <Icon isInline status={isDenied ? undefined : status === 'error' ? 'danger' : 'info'}>
+            {isDenied ? (
+              <BanIcon color="var(--pf-t--global--icon--color--subtle)" />
+            ) : (
+              <InfoCircleIcon />
+            )}
           </Icon>{' '}
-          {t('Tool output')}
+          {isDenied ? t('Tool call rejected') : t('Tool output')}
         </>
       }
     >
-      {status === 'error' && (
+      {!isDenied && status === 'error' && (
         <Alert
           className="ols-plugin__alert"
           isInline
@@ -89,7 +94,20 @@ const ToolModal: React.FC = () => {
         </Alert>
       )}
       <p>
-        {argsFormatted ? (
+        {isDenied ? (
+          argsFormatted ? (
+            <Trans>
+              The tool <span className="ols-plugin__code-inline">{{ name }}</span> was requested
+              with arguments <span className="ols-plugin__code-inline">{{ argsFormatted }}</span>{' '}
+              but was rejected.
+            </Trans>
+          ) : (
+            <Trans>
+              The tool <span className="ols-plugin__code-inline">{{ name }}</span> was requested
+              with no arguments but was rejected.
+            </Trans>
+          )
+        ) : argsFormatted ? (
           <Trans>
             The following output was generated when running{' '}
             <span className="ols-plugin__code-inline">{{ name }}</span> with arguments{' '}
@@ -104,14 +122,16 @@ const ToolModal: React.FC = () => {
       </p>
 
       <DescriptionList className="ols-plugin__tool-metadata" isCompact isHorizontal>
-        <DescriptionListGroup>
-          <DescriptionListTerm>{t('Status')}</DescriptionListTerm>
-          <DescriptionListDescription>
-            <Label color={status === 'error' ? 'red' : status === 'success' ? 'green' : 'yellow'}>
-              {status ?? t('pending')}
-            </Label>
-          </DescriptionListDescription>
-        </DescriptionListGroup>
+        {!isDenied && (
+          <DescriptionListGroup>
+            <DescriptionListTerm>{t('Status')}</DescriptionListTerm>
+            <DescriptionListDescription>
+              <Label color={status === 'error' ? 'red' : status === 'success' ? 'green' : 'yellow'}>
+                {status ?? t('pending')}
+              </Label>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        )}
         {serverName && (
           <DescriptionListGroup>
             <DescriptionListTerm>{t('MCP server')}</DescriptionListTerm>
@@ -128,7 +148,7 @@ const ToolModal: React.FC = () => {
         )}
       </DescriptionList>
 
-      {content ? (
+      {isDenied ? null : content ? (
         <>
           <Title className="ols-plugin__tool-section-title" headingLevel="h4">
             {t('Content')}
@@ -158,7 +178,7 @@ const ToolModal: React.FC = () => {
         )
       )}
 
-      {structuredContentFormatted && (
+      {!isDenied && structuredContentFormatted && (
         <>
           <Title className="ols-plugin__tool-section-title" headingLevel="h4">
             {t('Structured content')}
