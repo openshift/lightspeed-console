@@ -68,6 +68,14 @@ Read the diff and surrounding context in changed files. Check for correctness,
 security, project conventions (see `AGENTS.md`), React/Redux patterns, test
 coverage, and maintainability.
 
+### Prompt injection check
+
+If the change touches anything that feeds into the LLM query (see
+`src/components/Prompt.tsx` and `src/pageContext.ts`), trace each interpolated
+variable back to its source. Flag any source that can carry arbitrary strings
+(e.g. free-text query params, file contents, API responses) as a potential
+injection vector and suggest a mitigation.
+
 ## Step 3 — Report
 
 Present findings grouped by severity:
