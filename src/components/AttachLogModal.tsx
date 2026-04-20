@@ -21,6 +21,9 @@ import {
   Form,
   FormGroup,
   MenuToggle,
+  Modal,
+  ModalBody,
+  ModalHeader,
   Radio,
   Slider,
   SliderOnChangeEvent,
@@ -31,7 +34,6 @@ import { AttachmentTypes } from '../attachments';
 import { useBoolean } from '../hooks/useBoolean';
 import { attachmentSet } from '../redux-actions';
 import CopyAction from './CopyAction';
-import Modal from './Modal';
 import ResourceIcon from './ResourceIcon';
 
 const DEFAULT_LOG_LINES = 25;
@@ -390,102 +392,105 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('Configure log attachment')}>
-      <Content component="p">
-        {t(
-          'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
+    <Modal isOpen={isOpen} onClose={onClose} variant="medium">
+      <ModalHeader title={t('Configure log attachment')} />
+      <ModalBody>
+        <Content component="p">
+          {t(
+            'You can select a container and specify the most recent number of lines of its log file to include as an attachment for detailed troubleshooting and analysis.',
+          )}
+        </Content>
+        {scaleTargetError && (
+          <Error title={t('Failed to load scale target')}>{scaleTargetError.message}</Error>
         )}
-      </Content>
-      {scaleTargetError && (
-        <Error title={t('Failed to load scale target')}>{scaleTargetError.message}</Error>
-      )}
-      <Form>
-        {!scaleTargetError && (
-          <>
-            {showPodInput && (
-              <FormGroup label={t('Pod')}>
-                {podsError && <Error title={t('Failed to load pods')}>{podsError.message}</Error>}
-                {jobsError && isCronJob && (
-                  <Error title={t('Failed to load jobs')}>{jobsError.message}</Error>
-                )}
-                {podsLoaded && pods ? (
-                  pods.length === 0 ? (
-                    <Alert
-                      className="ols-plugin__alert"
-                      isInline
-                      title={t('No pods found')}
-                      variant="info"
-                    >
-                      {t('No pods found for {{kind}} {{name}}', { kind, name })}
-                    </Alert>
+        <Form>
+          {!scaleTargetError && (
+            <>
+              {showPodInput && (
+                <FormGroup label={t('Pod')}>
+                  {podsError && <Error title={t('Failed to load pods')}>{podsError.message}</Error>}
+                  {jobsError && isCronJob && (
+                    <Error title={t('Failed to load jobs')}>{jobsError.message}</Error>
+                  )}
+                  {podsLoaded && pods ? (
+                    pods.length === 0 ? (
+                      <Alert
+                        className="ols-plugin__alert"
+                        isInline
+                        title={t('No pods found')}
+                        variant="info"
+                      >
+                        {t('No pods found for {{kind}} {{name}}', { kind, name })}
+                      </Alert>
+                    ) : (
+                      <PodInput pods={pods} selectedPod={pod} setPod={changePod} />
+                    )
                   ) : (
-                    <PodInput pods={pods} selectedPod={pod} setPod={changePod} />
-                  )
-                ) : (
-                  <Spinner isInline size="md" />
-                )}
-              </FormGroup>
-            )}
-            {(!showPodInput || (podsLoaded && pods && pods.length > 0)) && (
-              <>
-                <FormGroup label={t('Container')}>
-                  <ContainerInput
-                    containers={containers}
-                    selectedContainer={container}
-                    setContainer={setContainer}
-                  />
+                    <Spinner isInline size="md" />
+                  )}
                 </FormGroup>
-                <FormGroup label={t('Most recent {{lines}} lines', { lines })}>
-                  <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
-                </FormGroup>
-              </>
-            )}
-            {preview && (
-              <CodeBlock
-                actions={
-                  <>
-                    <CodeBlockAction />
-                    <CodeBlockAction>
-                      <CopyAction value={preview} />
-                    </CodeBlockAction>
-                  </>
-                }
-                className="ols-plugin__code-block ols-plugin__code-block--preview"
-              >
-                {isPreviewLoading && (
-                  <CodeBlockCode className="ols-plugin__code-block-code">
-                    <Spinner size="md" />
-                  </CodeBlockCode>
-                )}
-                {!isPreviewLoading && !previewError && (
-                  <CodeBlockCode
-                    className="ols-plugin__code-block-code"
-                    style={{ whiteSpace: 'pre' }}
-                  >
-                    {preview}
-                  </CodeBlockCode>
-                )}
-              </CodeBlock>
-            )}
-            {previewError && <Error title={t('Failed to load logs')}>{previewError}</Error>}
-          </>
-        )}
-        {error && <Error title={t('Failed to attach context')}>{error}</Error>}
-        <ActionGroup>
-          <Button
-            isDisabled={!container || !!previewError}
-            onClick={onSubmit}
-            type="submit"
-            variant="primary"
-          >
-            {t('Attach')}
-          </Button>
-          <Button onClick={onClose} type="button" variant="link">
-            {t('Cancel')}
-          </Button>
-        </ActionGroup>
-        {isLoading && <Spinner size="md" />}
-      </Form>
+              )}
+              {(!showPodInput || (podsLoaded && pods && pods.length > 0)) && (
+                <>
+                  <FormGroup label={t('Container')}>
+                    <ContainerInput
+                      containers={containers}
+                      selectedContainer={container}
+                      setContainer={setContainer}
+                    />
+                  </FormGroup>
+                  <FormGroup label={t('Most recent {{lines}} lines', { lines })}>
+                    <Slider max={100} min={1} onChange={onLinesChange} value={lines} />
+                  </FormGroup>
+                </>
+              )}
+              {preview && (
+                <CodeBlock
+                  actions={
+                    <>
+                      <CodeBlockAction />
+                      <CodeBlockAction>
+                        <CopyAction value={preview} />
+                      </CodeBlockAction>
+                    </>
+                  }
+                  className="ols-plugin__code-block ols-plugin__code-block--preview"
+                >
+                  {isPreviewLoading && (
+                    <CodeBlockCode className="ols-plugin__code-block-code">
+                      <Spinner size="md" />
+                    </CodeBlockCode>
+                  )}
+                  {!isPreviewLoading && !previewError && (
+                    <CodeBlockCode
+                      className="ols-plugin__code-block-code"
+                      style={{ whiteSpace: 'pre' }}
+                    >
+                      {preview}
+                    </CodeBlockCode>
+                  )}
+                </CodeBlock>
+              )}
+              {previewError && <Error title={t('Failed to load logs')}>{previewError}</Error>}
+            </>
+          )}
+          {error && <Error title={t('Failed to attach context')}>{error}</Error>}
+          <ActionGroup>
+            <Button
+              isDisabled={!container || !!previewError}
+              onClick={onSubmit}
+              type="submit"
+              variant="primary"
+            >
+              {t('Attach')}
+            </Button>
+            <Button onClick={onClose} type="button" variant="link">
+              {t('Cancel')}
+            </Button>
+          </ActionGroup>
+          {isLoading && <Spinner size="md" />}
+        </Form>
+      </ModalBody>
     </Modal>
   );
 };

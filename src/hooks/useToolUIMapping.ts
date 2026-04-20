@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk';
-import type {
-  CodeRef,
-  Extension,
-  ExtensionDeclaration,
-} from '@openshift-console/dynamic-plugin-sdk/lib/types';
+import type { CodeRef, Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types';
 import type { OlsToolUIComponent } from '../types';
 
 type ToolUIExtensionProperties = {
@@ -14,7 +10,7 @@ type ToolUIExtensionProperties = {
   component: CodeRef<OlsToolUIComponent>;
 };
 
-type ToolUIExtension = ExtensionDeclaration<'ols.tool-ui', ToolUIExtensionProperties>;
+type ToolUIExtension = Extension<'ols.tool-ui', ToolUIExtensionProperties>;
 
 const isToolUIExtension = (e: Extension): e is ToolUIExtension => e.type === 'ols.tool-ui';
 

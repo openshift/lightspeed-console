@@ -272,7 +272,6 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
     );
 
     return (
-      // @ts-expect-error: TS2786
       <Message
         actions={actions}
         avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
@@ -387,7 +386,6 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
 
   if (entry.who === 'user') {
     return (
-      // @ts-expect-error: TS2786
       <Message
         avatar={userAvatar}
         avatarProps={{ className: 'ols-plugin__avatar', isBordered: true }}
@@ -504,7 +502,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
 
   const chatHistoryEndRef = React.useRef<HTMLDivElement | null>(null);
 
-  const scrollIntoView = React.useCallback((behavior = 'smooth') => {
+  const scrollIntoView = React.useCallback((behavior: ScrollBehavior = 'smooth') => {
     defer(() => {
       chatHistoryEndRef?.current?.scrollIntoView({ behavior });
     });
@@ -555,23 +553,18 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
   }, [chatHistory, setCopied, setNotCopied]);
 
   return (
-    // @ts-expect-error: TS2786
     <Chatbot
       ariaLabel={ariaLabel}
       className={className}
       data-test="ols-plugin__popover"
       displayMode={onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default}
     >
-      {/* @ts-expect-error: TS2786 */}
       <ChatbotHeader>
-        {/* @ts-expect-error: TS2786 */}
         <ChatbotHeaderMain>
-          {/* @ts-expect-error: TS2786 */}
           <ChatbotHeaderTitle className="ols-plugin__header-title">
             <Title headingLevel="h1">{t('Red Hat OpenShift Lightspeed')}</Title>
           </ChatbotHeaderTitle>
         </ChatbotHeaderMain>
-        {/* @ts-expect-error: TS2786 */}
         <ChatbotHeaderActions className="ols-plugin__header-actions">
           {chatHistory.size > 0 && (
             <>
@@ -629,9 +622,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
         </ChatbotHeaderActions>
       </ChatbotHeader>
 
-      {/* @ts-expect-error: TS2786 */}
       <ChatbotContent aria-label={t('OpenShift Lightspeed chat history')}>
-        {/* @ts-expect-error: TS2786 */}
         <MessageBox>
           <div className="ols-plugin__welcome-logo"></div>
           <Title className="ols-plugin__welcome-subheading" headingLevel="h5">
@@ -658,10 +649,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
       </ChatbotContent>
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-        // @ts-expect-error: TS2786
         <ChatbotFooter>
           <Prompt scrollIntoView={scrollIntoView} />
-          {/* @ts-expect-error: TS2786 */}
           <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
           <div className="ols-plugin__footnote">
             {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
