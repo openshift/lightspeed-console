@@ -37,7 +37,7 @@ const modal = '.ols-plugin__modal';
 const promptArea = `${popover} .ols-plugin__prompt`;
 const attachButton = `${promptArea} .pf-chatbot__button--attach`;
 const promptInput = `${promptArea} textarea`;
-const troubleshootingLabel = `${popover} [aria-label="Remove Troubleshooting mode"]`;
+const modeToggle = `${popover} [data-test="ols-plugin__mode-toggle"]`;
 
 const podNamePrefix = 'console';
 
@@ -361,34 +361,32 @@ spec:
       cy.get(promptInput).should('contain', PROMPT_NOT_SUBMITTED);
     });
 
-    it('Test Troubleshooting mode label persists after reopening the UI', () => {
+    it('Test Troubleshooting mode persists after reopening the UI', () => {
       cy.visit('/search/all-namespaces');
       cy.get('h1').contains('Search').should('exist');
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      cy.get(troubleshootingLabel).should('not.exist');
-      cy.get(attachButton).click();
-      cy.get(attachMenu).find('button').contains('Troubleshooting').click();
-      cy.get(troubleshootingLabel).should('exist');
-      cy.get(popover).should('include.text', 'Troubleshooting');
+      cy.get(modeToggle).should('include.text', 'Ask');
+      cy.get(modeToggle).click();
+      cy.contains('[role="option"]', 'Troubleshooting').click();
+      cy.get(modeToggle).should('include.text', 'Troubleshooting');
 
       cy.get(minimizeButton).click();
       cy.get(popover).should('not.exist');
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
-      cy.get(troubleshootingLabel).should('exist');
-      cy.get(popover).should('include.text', 'Troubleshooting');
+      cy.get(modeToggle).should('include.text', 'Troubleshooting');
 
-      cy.get(attachButton).click();
-      cy.get(attachMenu).find('button').contains('Ask').click();
-      cy.get(troubleshootingLabel).should('not.exist');
+      cy.get(modeToggle).click();
+      cy.contains('[role="option"]', 'Ask').click();
+      cy.get(modeToggle).should('include.text', 'Ask');
 
       cy.get(minimizeButton).click();
       cy.get(popover).should('not.exist');
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
-      cy.get(troubleshootingLabel).should('not.exist');
+      cy.get(modeToggle).should('include.text', 'Ask');
     });
 
     describe('Streamed response', { tags: ['@response'] }, () => {
