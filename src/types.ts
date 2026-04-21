@@ -13,6 +13,7 @@ declare global {
 
 export type Attachment = {
   attachmentType: string;
+  id?: string;
   isEditable?: boolean;
   kind: string;
   name: string;

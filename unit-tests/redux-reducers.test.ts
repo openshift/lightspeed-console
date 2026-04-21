@@ -129,6 +129,68 @@ describe('attachments', () => {
     state = dispatch(state, ActionType.AttachmentsClear);
     strictEqual(state.get('attachments').size, 0);
   });
+
+  it('AttachmentSet with explicit id updates in place on save (no duplicate)', () => {
+    const alertId = 'YAML_Alert_alertname=HighMemory,severity=warning';
+    const alertAttachment = {
+      attachmentType: 'YAML',
+      kind: 'Alert',
+      name: 'HighMemory',
+      namespace: '',
+      value: 'original yaml',
+      id: alertId,
+    };
+
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, alertAttachment);
+    strictEqual(state.get('attachments').size, 1);
+    strictEqual(state.getIn(['attachments', alertId]).value, 'original yaml');
+
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...alertAttachment,
+      value: 'edited yaml',
+      originalValue: 'original yaml',
+      id: alertId,
+    });
+    strictEqual(state.get('attachments').size, 1);
+    strictEqual(state.get('attachments').has(alertId), true);
+    strictEqual(state.getIn(['attachments', alertId]).value, 'edited yaml');
+    strictEqual(state.getIn(['attachments', alertId]).originalValue, 'original yaml');
+  });
+
+  it('AttachmentSet with explicit id updates in place on revert (no duplicate)', () => {
+    const alertId = 'YAML_Alert_alertname=HighMemory,severity=warning';
+    const alertAttachment = {
+      attachmentType: 'YAML',
+      kind: 'Alert',
+      name: 'HighMemory',
+      namespace: '',
+      value: 'original yaml',
+      id: alertId,
+    };
+
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, alertAttachment);
+
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...alertAttachment,
+      value: 'edited yaml',
+      originalValue: 'original yaml',
+      id: alertId,
+    });
+    strictEqual(state.get('attachments').size, 1);
+
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...alertAttachment,
+      value: 'original yaml',
+      originalValue: undefined,
+      id: alertId,
+    });
+    strictEqual(state.get('attachments').size, 1);
+    strictEqual(state.get('attachments').has(alertId), true);
+    strictEqual(state.getIn(['attachments', alertId]).value, 'original yaml');
+    strictEqual(state.getIn(['attachments', alertId]).originalValue, undefined);
+  });
 });
 
 describe('chat history', () => {
