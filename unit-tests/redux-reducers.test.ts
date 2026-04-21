@@ -158,7 +158,7 @@ describe('attachments', () => {
     strictEqual(state.getIn(['attachments', alertId]).originalValue, 'original yaml');
   });
 
-  it('AttachmentSet with explicit id updates in place on revert (no duplicate)', () => {
+  it('AttachmentSet with explicit id preserves edits on re-select (no duplicate)', () => {
     const alertId = 'YAML_Alert_alertname=HighMemory,severity=warning';
     const alertAttachment = {
       attachmentType: 'YAML',
@@ -188,8 +188,73 @@ describe('attachments', () => {
     });
     strictEqual(state.get('attachments').size, 1);
     strictEqual(state.get('attachments').has(alertId), true);
-    strictEqual(state.getIn(['attachments', alertId]).value, 'original yaml');
-    strictEqual(state.getIn(['attachments', alertId]).originalValue, undefined);
+    strictEqual(state.getIn(['attachments', alertId]).value, 'edited yaml');
+    strictEqual(state.getIn(['attachments', alertId]).originalValue, 'original yaml');
+  });
+
+  it('AttachmentSet overwrites unedited attachment with same id', () => {
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, { ...attachment, id: 'a' });
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'updated yaml',
+    });
+    strictEqual(state.getIn(['attachments', 'a']).value, 'updated yaml');
+    strictEqual(state.getIn(['attachments', 'a']).originalValue, undefined);
+  });
+
+  it('AttachmentSet preserves user edits when re-selecting same attachment', () => {
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'edited yaml',
+      originalValue: 'apiVersion: v1',
+    });
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'fresh yaml from server',
+    });
+    strictEqual(state.getIn(['attachments', 'a']).value, 'edited yaml');
+    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'fresh yaml from server');
+  });
+
+  it('AttachmentSet allows explicit save with originalValue on edited attachment', () => {
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'first edit',
+      originalValue: 'apiVersion: v1',
+    });
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'second edit',
+      originalValue: 'apiVersion: v1',
+    });
+    strictEqual(state.getIn(['attachments', 'a']).value, 'second edit');
+    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
+  });
+
+  it('AttachmentSet respects empty-string originalValue as explicit', () => {
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'first edit',
+      originalValue: '',
+    });
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'second edit',
+      originalValue: '',
+    });
+    strictEqual(state.getIn(['attachments', 'a']).value, 'second edit');
+    strictEqual(state.getIn(['attachments', 'a']).originalValue, '');
   });
 });
 
