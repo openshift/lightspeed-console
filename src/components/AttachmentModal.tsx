@@ -130,6 +130,7 @@ const AttachmentModal: React.FC = () => {
           attachment.namespace,
           editorValue,
           originalValue,
+          attachment.id,
         ),
       );
     }
@@ -149,6 +150,7 @@ const AttachmentModal: React.FC = () => {
         attachment.namespace,
         value,
         undefined,
+        attachment.id,
       ),
     );
     setEditorValue(value);
