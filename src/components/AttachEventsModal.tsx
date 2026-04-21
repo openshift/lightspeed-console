@@ -130,9 +130,11 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('Configure events attachment')}>
       <Text>
-        {t(
-          'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
-        )}
+        {events.length === 1
+          ? t('Only one event available for this resource.')
+          : t(
+              'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
+            )}
       </Text>
       <Form>
         {isLoading && <Spinner size="md" />}
@@ -143,15 +145,17 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
             </HelperText>
           ) : (
             <>
-              <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
-                <Slider
-                  max={events.length}
-                  min={1}
-                  onChange={onInputNumEventsChange}
-                  showTicks={events.length <= 40}
-                  value={numEvents}
-                />
-              </FormGroup>
+              {events.length > 1 && (
+                <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
+                  <Slider
+                    max={events.length}
+                    min={1}
+                    onChange={onInputNumEventsChange}
+                    showTicks={events.length <= 40}
+                    value={numEvents}
+                  />
+                </FormGroup>
+              )}
               <CodeBlock
                 actions={
                   <>
