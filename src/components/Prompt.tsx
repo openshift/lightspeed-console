@@ -31,6 +31,7 @@ import {
   TaskIcon,
   WrenchIcon,
 } from '@patternfly/react-icons';
+import { useLocation } from 'react-router-dom-v5-compat';
 
 import { AttachmentTypes, toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
@@ -38,6 +39,7 @@ import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
+import { buildPageContext } from '../pageContext';
 import {
   attachmentDelete,
   attachmentsClear,
@@ -134,7 +136,13 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
+  const location = useLocation();
   const [kind, name, namespace] = useLocationContext();
+
+  const pageContext = React.useMemo(
+    () => buildPageContext(kind, name, namespace),
+    [kind, name, namespace],
+  );
 
   const k8sContext = useK8sWatchResource<K8sResourceKind>(
     kind && kind !== 'Alert' && name ? { isList: false, kind, name, namespace } : null,
@@ -468,6 +476,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       context,
       dispatch,
       kind,
+      location.search,
       name,
       namespace,
       openEventsModal,
@@ -534,7 +543,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       // eslint-disable-next-line camelcase
       media_type: 'application/json',
       mode: isTroubleshooting ? 'troubleshooting' : 'ask',
-      query,
+      query: pageContext ? `Context: ${pageContext}\n\n${query}` : query,
     };
 
     const streamResponse = async () => {
@@ -718,6 +727,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     hidePrompt,
     isStreaming,
     isTroubleshooting,
+    pageContext,
     query,
     scrollIntoView,
     t,
