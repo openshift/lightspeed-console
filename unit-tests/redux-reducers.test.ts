@@ -239,6 +239,27 @@ describe('attachments', () => {
     strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
   });
 
+  it('AttachmentSet revert clears changed state when originalValue equals value', () => {
+    let state = initState();
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'edited yaml',
+      originalValue: 'apiVersion: v1',
+    });
+    strictEqual(state.getIn(['attachments', 'a']).value, 'edited yaml');
+    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
+
+    state = dispatch(state, ActionType.AttachmentSet, {
+      ...attachment,
+      id: 'a',
+      value: 'apiVersion: v1',
+      originalValue: 'apiVersion: v1',
+    });
+    strictEqual(state.getIn(['attachments', 'a']).value, 'apiVersion: v1');
+    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
+  });
+
   it('AttachmentSet respects empty-string originalValue as explicit', () => {
     let state = initState();
     state = dispatch(state, ActionType.AttachmentSet, {
