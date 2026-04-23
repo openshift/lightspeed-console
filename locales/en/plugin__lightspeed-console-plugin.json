@@ -84,6 +84,7 @@
   "No pods found for {{kind}} {{name}}": "No pods found for {{kind}} {{name}}",
   "Not authenticated": "Not authenticated",
   "Not authorized": "Not authorized",
+  "Only one event available for this resource.": "Only one event available for this resource.",
   "OpenShift Lightspeed": "OpenShift Lightspeed",
   "OpenShift Lightspeed authentication failed. Contact your system administrator for more information.": "OpenShift Lightspeed authentication failed. Contact your system administrator for more information.",
   "OpenShift Lightspeed chat history": "OpenShift Lightspeed chat history",
