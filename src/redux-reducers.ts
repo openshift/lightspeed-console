@@ -1,6 +1,7 @@
 import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 
 import { ActionType, OLSAction } from './redux-actions';
+import { isAttachmentChanged } from './attachments';
 import { Attachment } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +61,14 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       const id =
         action.payload.id ??
         `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}_${action.payload.ownerName ?? 'NO-OWNER'}`;
-      return state.setIn(['attachments', id], action.payload);
+      const existing: Attachment | undefined = state.getIn(['attachments', id]);
+      // Preserve user edits when re-selecting the same resource from the attach menu (no
+      // originalValue). Explicit saves from the editor pass originalValue and bypass this guard.
+      const newAttachment =
+        existing && isAttachmentChanged(existing) && action.payload.originalValue === undefined
+          ? { ...existing, originalValue: action.payload.value }
+          : action.payload;
+      return state.setIn(['attachments', id], newAttachment);
     }
 
     case ActionType.ChatHistoryClear:
