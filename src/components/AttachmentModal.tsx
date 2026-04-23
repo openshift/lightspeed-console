@@ -149,7 +149,7 @@ const AttachmentModal: React.FC = () => {
         attachment.ownerName,
         attachment.namespace,
         value,
-        undefined,
+        value,
         attachment.id,
       ),
     );
