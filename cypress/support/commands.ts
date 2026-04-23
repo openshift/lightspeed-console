@@ -152,7 +152,7 @@ Cypress.Commands.add(
     cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
       expect(request.body.media_type).to.equal('application/json');
       expect(request.body.conversation_id).to.equal(conversationId);
-      expect(request.body.query).to.equal(query);
+      expect(request.body.query).to.include(query);
 
       expect(request.body.attachments).to.have.lengthOf(attachments.length);
       attachments.forEach((a, i) => {
@@ -182,7 +182,7 @@ Cypress.Commands.add(
   'interceptQueryWithError',
   (alias: string, query: string, errorMessage: string) => {
     cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
-      expect(request.body.query).to.equal(query);
+      expect(request.body.query).to.include(query);
       const responseBody = MOCK_STREAMED_RESPONSE_WITH_ERROR_BODY.replace(
         'MOCK_ERROR_MESSAGE',
         errorMessage,

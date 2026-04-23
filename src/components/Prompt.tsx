@@ -44,6 +44,7 @@ import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
+import { buildPageContext } from '../pageContext';
 import {
   attachmentsClear,
   attachmentSet,
@@ -491,6 +492,13 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
   const promptRef = React.useRef(null);
 
+  const [kind, name, namespace] = useLocationContext();
+
+  const pageContext = React.useMemo(
+    () => buildPageContext(kind, name, namespace),
+    [kind, name, namespace],
+  );
+
   const onChange = React.useCallback(
     (_e: React.SyntheticEvent, value: string) => {
       if (value.trim().length > 0) {
@@ -550,7 +558,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         conversation_id: conversationID,
         // eslint-disable-next-line camelcase
         media_type: 'application/json',
-        query,
+        query: pageContext ? `Context: ${pageContext}\n\n${query}` : query,
       };
 
       const streamResponse = async () => {
@@ -693,7 +701,17 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [attachments, conversationID, dispatch, hidePrompt, isStreaming, query, scrollIntoView, t],
+    [
+      attachments,
+      conversationID,
+      dispatch,
+      hidePrompt,
+      isStreaming,
+      pageContext,
+      query,
+      scrollIntoView,
+      t,
+    ],
   );
 
   React.useEffect(() => {
