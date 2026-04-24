@@ -173,8 +173,8 @@ describe('OLS UI', () => {
               const args =
                 csv.spec.install.spec.deployments[0].spec.template.spec.containers[0].args.map(
                   (arg) =>
-                    arg.startsWith('--console-image-pf5=')
-                      ? `--console-image-pf5=${Cypress.env('CONSOLE_IMAGE')}`
+                    arg.startsWith('--console-image')
+                      ? arg.replace(/=.*/, `=${Cypress.env('CONSOLE_IMAGE')}`)
                       : arg,
                 );
 
