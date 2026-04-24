@@ -14,10 +14,13 @@ import { MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
   AlertActionCloseButton,
-  Divider,
   DropdownItem,
   DropdownList,
   Label,
+  MenuToggle,
+  Select,
+  SelectList,
+  SelectOption,
   Spinner,
   Title,
   Tooltip,
@@ -26,7 +29,7 @@ import {
   FileCodeIcon,
   FileUploadIcon,
   InfoCircleIcon,
-  OutlinedQuestionCircleIcon,
+  OutlinedCommentIcon,
   PlusIcon,
   TaskIcon,
   WrenchIcon,
@@ -130,6 +133,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const [isLogModalOpen, , openLogModal, closeLogModal] = useBoolean(false);
   const [isLoading, , setLoading, setLoaded] = useBoolean(false);
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
+  const [isModeMenuOpen, setIsModeMenuOpen] = React.useState<boolean>(false);
   const [streamController, setStreamController] = React.useState(new AbortController());
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
 
@@ -294,26 +298,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         <DropdownItem icon={<FileUploadIcon />} key="upload" value={AttachmentTypes.YAMLUpload}>
           {t('Upload from computer')}
         </DropdownItem>
-        <Divider key="divider-1" />
-        {isTroubleshooting ? (
-          <DropdownItem
-            description={t('Expert guidance and clear answers')}
-            icon={<OutlinedQuestionCircleIcon />}
-            id="ask"
-            value="ask"
-          >
-            {t('Ask')}
-          </DropdownItem>
-        ) : (
-          <DropdownItem
-            description={t('Diagnosing issues and finding solutions')}
-            icon={<WrenchIcon />}
-            id="troubleshooting"
-            value="troubleshooting"
-          >
-            {t('Troubleshooting')}
-          </DropdownItem>
-        )}
       </DropdownList>,
     ],
     [
@@ -321,7 +305,6 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       isEventsLoading,
       isLoading,
       isResourceContext,
-      isTroubleshooting,
       kind,
       name,
       namespace,
@@ -335,17 +318,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     (_ev: React.MouseEvent, attachmentType: string | number) => {
       setIsOpen(false);
 
-      if (attachmentType === 'ask') {
-        // Delay update until menu fade out is complete
-        requestAnimationFrame(() => {
-          setTimeout(() => dispatch(setIsTroubleshooting(false)), 0);
-        });
-      } else if (attachmentType === 'troubleshooting') {
-        // Delay update until menu fade out is complete
-        requestAnimationFrame(() => {
-          setTimeout(() => dispatch(setIsTroubleshooting(true)), 0);
-        });
-      } else if (attachmentType === AttachmentTypes.Events) {
+      if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
       } else if (attachmentType === AttachmentTypes.Log) {
         openLogModal();
@@ -765,23 +738,61 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     [dispatch, streamController, streamingResponseID],
   );
 
+  const modeMenuToggle = React.useCallback(
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
+      <MenuToggle
+        data-test="ols-plugin__mode-toggle"
+        icon={isTroubleshooting ? <WrenchIcon /> : <OutlinedCommentIcon />}
+        isExpanded={isModeMenuOpen}
+        onClick={() => setIsModeMenuOpen(!isModeMenuOpen)}
+        ref={toggleRef}
+        variant="plainText"
+      >
+        {isTroubleshooting ? t('Troubleshooting') : t('Ask')}
+      </MenuToggle>
+    ),
+    [isModeMenuOpen, isTroubleshooting, t],
+  );
+
+  const onModeMenuSelect = React.useCallback(
+    (_ev: React.MouseEvent, value: string | number) => {
+      dispatch(setIsTroubleshooting(value === 'troubleshooting'));
+      setIsModeMenuOpen(false);
+    },
+    [dispatch],
+  );
+
   return (
     <div>
       {/* @ts-expect-error: TS2786 */}
       <MessageBar
         additionalActions={
-          isTroubleshooting ? (
-            <Label
-              closeBtnAriaLabel={t('Remove Troubleshooting mode')}
-              onClose={() => dispatch(setIsTroubleshooting(false))}
-            >
-              {t('Troubleshooting')}
-            </Label>
-          ) : (
-            // TODO: Workaround for PatternFly bug that causes attach menu to move. Remove once
-            // issue is addressed in PatternFly.
-            <div></div>
-          )
+          <Select
+            isOpen={isModeMenuOpen}
+            onOpenChange={setIsModeMenuOpen}
+            onSelect={onModeMenuSelect}
+            selected={isTroubleshooting ? 'troubleshooting' : 'ask'}
+            toggle={modeMenuToggle}
+          >
+            <SelectList>
+              <SelectOption
+                description={t('Expert guidance and clear answers')}
+                icon={<OutlinedCommentIcon />}
+                isSelected={!isTroubleshooting}
+                value="ask"
+              >
+                {t('Ask')}
+              </SelectOption>
+              <SelectOption
+                description={t('Diagnosing issues and finding solutions')}
+                icon={<WrenchIcon />}
+                isSelected={isTroubleshooting}
+                value="troubleshooting"
+              >
+                {t('Troubleshooting')}
+              </SelectOption>
+            </SelectList>
+          </Select>
         }
         alwayShowSendButton
         attachButtonPosition="start"
@@ -806,7 +817,11 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         isSendButtonDisabled={!query || query.trim().length === 0}
         onChange={(e) => onChange(e, e.target.value)}
         onSendMessage={onSubmit}
-        placeholder={t('Send a message...')}
+        placeholder={
+          isTroubleshooting
+            ? t("Describe the issue you're troubleshooting...")
+            : t('Ask a question...')
+        }
         validated={validated}
         value={query}
       />
