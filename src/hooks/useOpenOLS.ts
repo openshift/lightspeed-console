@@ -7,7 +7,7 @@ import { Attachment } from '../types';
 // Hook that provides a callback function to open the OpenShift Lightspeed UI with an optional
 // initial prompt. Exposed as a console extension so other console pages and plugins can discover
 // and invoke it.
-export const useOpenOLS = (): ((
+const useOpenOLS = (): ((
   // Optional initial prompt text to populate the input field
   prompt?: string,
   // Optional array of attachments to include with the prompt

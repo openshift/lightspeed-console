@@ -46,7 +46,7 @@ export type Tool = {
 
 export type OlsToolUIComponent = React.ComponentType<{ tool: Tool }>;
 
-export type HistoryCompression = {
+type HistoryCompression = {
   durationMs?: number;
   status: 'compressing' | 'done';
 };

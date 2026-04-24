@@ -6,7 +6,7 @@ export type ErrorType = {
   response?: Response;
 };
 
-export type FetchError = {
+type FetchError = {
   json?: {
     detail?: string | { response?: string; cause?: string };
     message?: string;
