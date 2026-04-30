@@ -3,6 +3,12 @@ import { useLocation } from 'react-router-dom-v5-compat';
 import { useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 
 import { resolveModelKey } from '../pageContext';
+import {
+  isValidAlertName,
+  isValidKindName,
+  isValidNamespaceName,
+  isValidResourceName,
+} from '../validation';
 
 export const useLocationContext = () => {
   const [kind, setKind] = React.useState<string>();
@@ -69,17 +75,23 @@ export const useLocationContext = () => {
         // ACM search resources page
         if (path.startsWith('/multicloud/search/resources')) {
           const key = params.get('kind');
-          if (key && params.get('name')) {
+          const searchName = params.get('name');
+          const searchNamespace = params.get('namespace');
+          if (
+            isValidKindName(key) &&
+            isValidResourceName(searchName) &&
+            (searchNamespace === null || isValidNamespaceName(searchNamespace))
+          ) {
             if (key === 'VirtualMachine') {
               // ACM VirtualMachine details page
               setKind('kubevirt.io~v1~VirtualMachine');
-              setName(params.get('name'));
-              setNamespace(params.get('namespace') || undefined);
+              setName(searchName);
+              setNamespace(searchNamespace ?? undefined);
               return;
             } else if (models[key]) {
               setKind(key);
-              setName(params.get('name'));
-              setNamespace(params.get('namespace') || undefined);
+              setName(searchName);
+              setNamespace(searchNamespace ?? undefined);
               return;
             }
           }
@@ -154,10 +166,15 @@ export const useLocationContext = () => {
 
       // Alert details page
       if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
-        if (params.has('alertname')) {
+        const alertname = params.get('alertname');
+        const alertNamespace = params.get('namespace');
+        if (
+          isValidAlertName(alertname) &&
+          (alertNamespace === null || isValidNamespaceName(alertNamespace))
+        ) {
           setKind('Alert');
-          setName(params.get('alertname'));
-          setNamespace(params.get('namespace'));
+          setName(alertname);
+          setNamespace(alertNamespace ?? undefined);
           return;
         }
       }
