@@ -198,7 +198,7 @@ const AttachMenu: React.FC = () => {
   const [context] = kind === 'Alert' && name ? [] : k8sContext;
 
   const onSelect = React.useCallback(
-    (_ev: React.MouseEvent, attachmentType: string) => {
+    (_ev: React.MouseEvent<Element, MouseEvent>, attachmentType: string | number) => {
       if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
         closeMenu();

@@ -50,9 +50,9 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
   const [isOpen, toggleIsOpen, , closeDropdown, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
-    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string) => {
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string | number) => {
       closeDropdown();
-      setContainer(newValue);
+      setContainer(String(newValue));
     },
     [closeDropdown, setContainer],
   );
@@ -142,11 +142,14 @@ const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => 
   const [isOpen, toggleIsOpen, , closeDropdown, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
-    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newPod: K8sResourceKind) => {
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, podUID: string | number) => {
       closeDropdown();
-      setPod(newPod);
+      const newPod = pods.find((p: K8sResourceKind) => p.metadata?.uid === podUID);
+      if (newPod) {
+        setPod(newPod);
+      }
     },
-    [closeDropdown, setPod],
+    [closeDropdown, pods, setPod],
   );
 
   const toggle = React.useCallback(
@@ -162,7 +165,7 @@ const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => 
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
       <DropdownList>
         {pods.map((pod) => (
-          <DropdownItem key={pod.metadata?.uid} value={pod}>
+          <DropdownItem key={pod.metadata?.uid} value={pod.metadata?.uid}>
             <ResourceIcon kind="Pod" /> {pod.metadata?.name}
           </DropdownItem>
         ))}
