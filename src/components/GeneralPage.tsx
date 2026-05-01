@@ -43,7 +43,7 @@ import {
   setConversationID,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import { Attachment, ChatEntry, ReferencedDoc, Tool } from '../types';
 import AttachmentModal from './AttachmentModal';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
@@ -55,6 +55,7 @@ import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
 import ResponseTools from './ResponseTools';
 import ToolModal from './ResponseToolModal';
+import ToolApproval from './ToolApproval';
 import WelcomeNotice from './WelcomeNotice';
 
 import './general-page.css';
@@ -152,6 +153,12 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
   }
 
   if (entry.who === 'ai') {
+    const pendingApprovalTools = entry.tools
+      ? Object.entries(entry.tools as unknown as { [key: string]: Tool }).filter(
+          ([, tool]) => tool.isUserApproval && !tool.isApproved && !tool.isDenied,
+        )
+      : [];
+
     return (
       <div
         className="ols-plugin__chat-entry ols-plugin__chat-entry--ai"
@@ -229,6 +236,9 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             variant="info"
           />
         )}
+        {pendingApprovalTools.map(([toolID, tool]) => (
+          <ToolApproval chatEntryID={entry.id} key={toolID} tool={tool} toolID={toolID} />
+        ))}
         {entry.tools && <ResponseTools entryIndex={entryIndex} />}
         <ReferenceDocs references={entry.references} />
         {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
