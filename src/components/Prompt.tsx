@@ -590,6 +590,12 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         // Use buffer because long strings (e.g. tool call output) may be split into multiple chunks
         let buffer = '';
 
+        // OLS does not yet provide an ID to link approval_required to tool_call/tool_result, so for
+        // now we use a combination of tool name + arguments, which should be equivalent in practice
+        const toolKeyToID = new Map<string, string>();
+        const makeToolKey = (toolName: string, args: unknown) =>
+          `${toolName}:${JSON.stringify(args)}`;
+
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const { value, done } = await reader.read();
@@ -631,7 +637,28 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   );
                 } else if (json.event === 'tool_call') {
                   const { args, id, name: toolName } = json.data;
-                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { name: toolName, args }));
+                  toolKeyToID.set(makeToolKey(toolName, args), id);
+                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { args, name: toolName }));
+                } else if (json.event === 'approval_required') {
+                  /* eslint-disable camelcase */
+                  const {
+                    approval_id: approvalID,
+                    tool_args: args,
+                    tool_description: description,
+                    tool_name: toolName,
+                  } = json.data;
+                  /* eslint-enable camelcase */
+                  const toolCallID = toolKeyToID.get(makeToolKey(toolName, args));
+                  if (toolCallID) {
+                    dispatch(
+                      chatHistoryUpdateTool(chatEntryID, toolCallID, {
+                        approvalID,
+                        args,
+                        description,
+                        isUserApproval: true,
+                      }),
+                    );
+                  }
                 } else if (json.event === 'tool_result') {
                   const {
                     content,
@@ -646,6 +673,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   dispatch(
                     chatHistoryUpdateTool(chatEntryID, id, {
                       content,
+                      isUserApproval: false,
                       status,
                       ...(uiResourceUri && { uiResourceUri }),
                       ...(serverName && { serverName }),
