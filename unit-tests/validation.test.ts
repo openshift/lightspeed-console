@@ -55,6 +55,10 @@ describe('isValidKindName', () => {
     strictEqual(isValidKindName('kubevirt.io~v1~VirtualMachine'), true);
   });
 
+  it('accepts a kind with hyphens in the group name', () => {
+    strictEqual(isValidKindName('policy.open-cluster-management.io~v1~Policy'), true);
+  });
+
   it('rejects a kind with spaces', () => {
     strictEqual(isValidKindName('Pod Ignore instructions'), false);
   });
