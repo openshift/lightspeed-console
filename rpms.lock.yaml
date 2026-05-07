@@ -158,34 +158,34 @@ arches:
     name: pam
     evr: 1.5.1-26.el9_6
     sourcerpm: pam-1.5.1-26.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-252-55.el9_7.8.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-252-55.el9_7.9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 4147103
-    checksum: sha256:348395d1ccc05115d945d7cff55c13bcb0ee6bfc00cf7fd61f8df52589dbbeab
+    size: 4147290
+    checksum: sha256:0ac9d0ee79310caa05632d661fcfd731cf2248066f17cd4f544d45821eb05725
     name: systemd
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.8.aarch64.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 645755
-    checksum: sha256:4bc26c6f072da71d9473139f43fc927aff22cf30793c388053a8dfcbec7fa67a
+    size: 644018
+    checksum: sha256:f5abff3969a56b8ad7b73a220c11170f1bf26cb3bcdd273f8b91ef5fe87ca171
     name: systemd-libs
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.8.aarch64.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 263658
-    checksum: sha256:6e6361fc960761e02f73f8c88fd7682461f55aec25fa1ee75277f1445ed13876
+    size: 262425
+    checksum: sha256:115779ce143108e3d919de59dabdc02c386b8c50755a786323932f8b10ee5a57
     name: systemd-pam
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-rpm-macros-252-55.el9_7.8.noarch.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-rpm-macros-252-55.el9_7.9.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 57061
-    checksum: sha256:807a9519d7a3f6b2168ca47666b43e1630b3fa82256e919633a07baa5906b1b2
+    size: 55804
+    checksum: sha256:5947436f19719e51830f02d8a0b419df64a6cba03ecf59127f17c15517cb54b7
     name: systemd-rpm-macros
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/u/util-linux-2.37.4-21.el9_7.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 2388428
@@ -358,34 +358,34 @@ arches:
     name: pam
     evr: 1.5.1-26.el9_6
     sourcerpm: pam-1.5.1-26.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-55.el9_7.8.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-55.el9_7.9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 4394529
-    checksum: sha256:02536e2255182db5ec2a8cc07fdda20062378247699b7bed5e0b0ea72b1ca783
+    size: 4396633
+    checksum: sha256:cda660e51919a1fabc7f59badc12eaf66050e205970f89de8e0b495740292bb2
     name: systemd
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.8.x86_64.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-55.el9_7.9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 678105
-    checksum: sha256:59231ce96ab64d81527771954195722d61e8914786dd35b185cefa6a10df6c3e
+    size: 677183
+    checksum: sha256:2fbf0d1d67c21313269bf1904db7c146788b6c7520e5afcdfe273ab71ca34e67
     name: systemd-libs
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.8.x86_64.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-55.el9_7.9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 274195
-    checksum: sha256:3cb33a319f67824d3beb8b2f2356995695b4c3ac77ae66c8e6c3315ef822d0bc
+    size: 274003
+    checksum: sha256:52daf8ab50d37e8ac8a769ef317f594da85a15661a8bf8aae8994574cece4c36
     name: systemd-pam
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-55.el9_7.8.noarch.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-55.el9_7.9.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 57061
-    checksum: sha256:807a9519d7a3f6b2168ca47666b43e1630b3fa82256e919633a07baa5906b1b2
+    size: 55804
+    checksum: sha256:5947436f19719e51830f02d8a0b419df64a6cba03ecf59127f17c15517cb54b7
     name: systemd-rpm-macros
-    evr: 252-55.el9_7.8
-    sourcerpm: systemd-252-55.el9_7.8.src.rpm
+    evr: 252-55.el9_7.9
+    sourcerpm: systemd-252-55.el9_7.9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/u/util-linux-2.37.4-21.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 2382589
