@@ -35,6 +35,8 @@ const userFeedbackInput = `${userFeedback} textarea`;
 const userFeedbackSubmit = `${userFeedback} button.pf-m-primary`;
 const modal = '.ols-plugin__modal';
 const tooltip = '.pf-v5-c-tooltip';
+const toolApprovalCard = `${popover} .ols-plugin__tool-call`;
+const toolLabel = `${popover} .pf-v5-c-label`;
 
 const podNamePrefix = 'console';
 
@@ -418,6 +420,65 @@ spec:
         .should('exist')
         .should('contain', MOCK_ERROR_MESSAGE);
       cy.get(aiChatEntry).find('.ols-plugin__references').should('contain', 'ABC');
+    });
+  });
+
+  describe('Tool approval (HITL)', { tags: ['@hitl'] }, () => {
+    it('Test approval card is shown and tool can be approved', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
+
+      cy.interceptQueryWithApproval('queryWithApproval', PROMPT_SUBMITTED);
+      cy.interceptToolApproval('approvalStub', true);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryWithApproval');
+
+      cy.get(toolApprovalCard).should('exist');
+      cy.get(toolApprovalCard).should('contain', 'Review required');
+      cy.get(toolApprovalCard).should('contain', 'This action will list pods in the cluster.');
+      cy.get(toolApprovalCard).find('button').contains('Approve').should('exist');
+      cy.get(toolApprovalCard).find('button').contains('Reject').should('exist');
+
+      cy.get(toolApprovalCard).contains('View action details').click();
+      cy.get(toolApprovalCard).should('contain', 'mock_tool');
+      cy.get(toolApprovalCard).should('contain', 'namespace');
+
+      cy.get(toolApprovalCard).find('button').contains('Approve').click();
+      cy.wait('@approvalStub');
+      cy.get(toolApprovalCard).should('not.exist');
+      cy.get(toolLabel).should('contain', 'mock_tool');
+
+      cy.get(toolLabel).contains('mock_tool').click();
+      cy.get(modal).should('contain', 'Tool output');
+      cy.get(modal).should('contain', 'mock_tool');
+      cy.get(modal).should('contain', 'Status');
+      cy.get(modal).should('contain', 'pending');
+      cy.get(modal).should('not.contain', 'Tool call rejected');
+      cy.get(modal).find('button[title="Close"]').click();
+    });
+
+    it('Test tool can be rejected', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
+
+      cy.interceptQueryWithApproval('queryWithApproval', PROMPT_SUBMITTED);
+      cy.interceptToolApproval('denialStub', false);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryWithApproval');
+
+      cy.get(toolApprovalCard).should('exist');
+      cy.get(toolApprovalCard).find('button').contains('Reject').click();
+      cy.wait('@denialStub');
+      cy.get(toolApprovalCard).should('not.exist');
+      cy.get(toolLabel).should('contain', 'mock_tool');
+      cy.get(toolLabel).contains('mock_tool').click();
+      cy.get(modal).should('contain', 'Tool call rejected');
+      cy.get(modal).should('contain', 'mock_tool');
+      cy.get(modal).should('not.contain', 'Status');
+      cy.get(modal).should('not.contain', 'Content');
+      cy.get(modal).find('button[title="Close"]').click();
     });
   });
 
