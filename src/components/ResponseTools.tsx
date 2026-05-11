@@ -2,12 +2,13 @@ import { Map as ImmutableMap } from 'immutable';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Label, LabelGroup } from '@patternfly/react-core';
-import { CodeIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons';
+import { BanIcon, CodeIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons';
 
 import { openToolSet } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { Tool } from '../types';
 import MCPApp from './MCPApp';
+import OlsToolUIs from './OlsToolUIs';
 
 type ToolProps = {
   entryIndex: number;
@@ -34,12 +35,28 @@ const ToolLabel: React.FC<ToolProps> = ({ entryIndex, toolID }) => {
   const isTruncated = tool.status === 'truncated';
   const hasUI = !!tool.uiResourceUri;
 
-  const color = isError ? 'red' : isTruncated ? 'gold' : hasUI ? 'blue' : undefined;
-  const icon =
-    isError || isTruncated ? <InfoCircleIcon /> : hasUI ? <ExternalLinkAltIcon /> : <CodeIcon />;
+  let color: React.ComponentProps<typeof Label>['color'];
+  let icon: React.ReactNode;
+  let variant: React.ComponentProps<typeof Label>['variant'] = undefined;
+
+  if (tool.isDenied) {
+    icon = <BanIcon />;
+  } else if (isError) {
+    color = 'red';
+    icon = <InfoCircleIcon />;
+  } else if (isTruncated) {
+    color = 'gold';
+    icon = <InfoCircleIcon />;
+  } else if (hasUI) {
+    color = 'blue';
+    icon = <ExternalLinkAltIcon />;
+  } else {
+    variant = 'outline';
+    icon = <CodeIcon />;
+  }
 
   return (
-    <Label color={color} icon={icon} onClick={onClick} textMaxWidth="16ch">
+    <Label color={color} icon={icon} onClick={onClick} textMaxWidth="16ch" variant={variant}>
       {tool.name}
     </Label>
   );
@@ -55,6 +72,9 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
   );
 
   const toolsWithUI = tools.filter((tool) => !!tool.get('uiResourceUri'));
+  const completedTools = tools.filter(
+    (tool) => !tool.get('isUserApproval') || !!tool.get('isApproved') || !!tool.get('isDenied'),
+  );
 
   return (
     <>
@@ -66,9 +86,10 @@ const ResponseTools: React.FC<ResponseToolsProps> = ({ entryIndex }) => {
             <MCPApp entryIndex={entryIndex} key={`mcp-app-${toolID}`} toolID={toolID} />
           ))}
       </div>
+      <OlsToolUIs entryIndex={entryIndex} />
       <div className="ols-plugin__references">
         <LabelGroup numLabels={4}>
-          {tools
+          {completedTools
             .keySeq()
             .toArray()
             .map((toolID) => (

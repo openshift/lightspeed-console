@@ -42,6 +42,8 @@ declare global {
         query: string,
         errorMessage: string,
       ): Chainable<Element>;
+      interceptQueryWithApproval(alias: string, query: string): Chainable<Element>;
+      interceptToolApproval(alias: string, approved: boolean): Chainable<Element>;
     }
   }
 }
@@ -152,7 +154,7 @@ Cypress.Commands.add(
     cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
       expect(request.body.media_type).to.equal('application/json');
       expect(request.body.conversation_id).to.equal(conversationId);
-      expect(request.body.query).to.equal(query);
+      expect(request.body.query).to.include(query);
 
       expect(request.body.attachments).to.have.lengthOf(attachments.length);
       attachments.forEach((a, i) => {
@@ -182,7 +184,7 @@ Cypress.Commands.add(
   'interceptQueryWithError',
   (alias: string, query: string, errorMessage: string) => {
     cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
-      expect(request.body.query).to.equal(query);
+      expect(request.body.query).to.include(query);
       const responseBody = MOCK_STREAMED_RESPONSE_WITH_ERROR_BODY.replace(
         'MOCK_ERROR_MESSAGE',
         errorMessage,
@@ -191,6 +193,37 @@ Cypress.Commands.add(
     }).as(alias);
   },
 );
+
+/* eslint-disable camelcase */
+const MOCK_STREAMED_RESPONSE_WITH_APPROVAL_BODY = `data: {"event": "start", "data": {"conversation_id": "5f424596-a4f9-4a3a-932b-46a768de3e7c"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " response"}}
+
+data: {"event": "tool_call", "data": {"id": "tool-123", "name": "mock_tool", "args": {"namespace": "default"}}}
+
+data: {"event": "approval_required", "data": {"approval_id": "abc", "tool_name": "mock_tool", "tool_description": "This action will list pods in the cluster.", "tool_args": {"namespace": "default"}}}
+
+data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
+`;
+/* eslint-enable camelcase */
+
+Cypress.Commands.add('interceptQueryWithApproval', (alias: string, query: string) => {
+  cy.intercept('POST', getApiUrl('/v1/streaming_query'), (request) => {
+    expect(request.body.media_type).to.equal('application/json');
+    expect(request.body.query).to.include(query);
+    request.reply({ body: MOCK_STREAMED_RESPONSE_WITH_APPROVAL_BODY, delay: 500 });
+  }).as(alias);
+});
+
+Cypress.Commands.add('interceptToolApproval', (alias: string, approved: boolean) => {
+  cy.intercept('POST', getApiUrl('/v1/tool-approvals/decision'), (request) => {
+    expect(request.body.approval_id).to.equal('abc');
+    expect(request.body.approved).to.equal(approved);
+    request.reply({ statusCode: 200, body: {} });
+  }).as(alias);
+});
 
 const USER_FEEDBACK_MOCK_RESPONSE = { body: { message: 'Feedback received' } };
 

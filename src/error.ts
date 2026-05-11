@@ -6,15 +6,29 @@ export type ErrorType = {
   response?: Response;
 };
 
+export type FetchError = {
+  json?: {
+    detail?: string | { response?: string; cause?: string };
+    message?: string;
+  };
+  message?: string;
+  response?: Response;
+};
+
 // Extracts the error message from a Fetch error
-export const getFetchErrorMessage = (error, t: TFunction): ErrorType => {
+export const getFetchErrorMessage = (error: FetchError, t: TFunction): ErrorType => {
   // For OpenShift Lightspeed API errors, the `detail` field will either be a single string or
   // an object containing `response` and `cause` strings
   const detail = error.json?.detail;
   if (detail && typeof detail === 'string') {
     return { message: detail };
   }
-  if (detail && typeof detail.response === 'string' && typeof detail.cause === 'string') {
+  if (
+    detail &&
+    typeof detail === 'object' &&
+    typeof detail.response === 'string' &&
+    typeof detail.cause === 'string'
+  ) {
     return { message: detail.response, moreInfo: detail.cause };
   }
   return {
