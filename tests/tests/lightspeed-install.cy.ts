@@ -1,4 +1,4 @@
-import '../../cypress/support/commands';
+import { CONVERSATION_ID } from '../../cypress/support/commands';
 import { operatorHubPage } from '../views/operator-hub-page';
 import { listPage, pages } from '../views/pages';
 
@@ -11,6 +11,25 @@ const OLS = {
     name: 'cluster',
   },
 };
+
+const OLS_CONFIG_YAML = `apiVersion: ols.openshift.io/v1alpha1
+kind: ${OLS.config.kind}
+metadata:
+  name: ${OLS.config.name}
+spec:
+  llm:
+    providers:
+      - type: openai
+        name: openai
+        credentialsSecretRef:
+          name: openai-api-keys
+        url: https://api.openai.com/v1
+        models:
+          - name: gpt-4o-mini
+  ols:
+    defaultModel: gpt-4o-mini
+    defaultProvider: openai
+    logLevel: INFO`;
 
 const popover = '[data-test="ols-plugin__popover"]';
 const mainButton = '[data-test="ols-plugin__popover-button"]';
@@ -41,8 +60,6 @@ const toolLabel = `${popover} .pf-v5-c-label`;
 const podNamePrefix = 'console';
 
 const MINUTE = 60 * 1000;
-
-const CONVERSATION_ID = '5f424596-a4f9-4a3a-932b-46a768de3e7c';
 
 const PROMPT_SUBMITTED = 'What is OpenShift?';
 const PROMPT_NOT_SUBMITTED = 'Test prompt that should not be submitted';
@@ -86,6 +103,11 @@ describe('OLS UI', () => {
         `oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
       );
 
+      // Grant OLS query access permissions
+      cy.adminCLI(
+        `oc adm policy add-cluster-role-to-user lightspeed-operator-query-access ${Cypress.env('LOGIN_USERNAME')}`,
+      );
+
       // Get OAuth URL for HyperShift cluster login
       cy.exec(
         `oc get oauthclient openshift-browser-client -o go-template --template="{{index .redirectURIs 0}}" --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
@@ -111,123 +133,202 @@ describe('OLS UI', () => {
         );
       });
 
-      // If UI_INSTALL exists, install via UI
-      // If running in nudges or pre-release, install with BUNDLE_IMAGE
-      // Otherwise install the latest operator
-      if (Cypress.env('UI_INSTALL')) {
-        operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
-        cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * MINUTE }).should(
-          'include.text',
-          'ready for use',
-        );
-      } else {
-        cy.exec(
-          `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-        );
-        cy.exec(
-          `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-        );
-        const bundleImage =
-          Cypress.env('BUNDLE_IMAGE') ||
-          'quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest';
-        cy.exec(
-          `operator-sdk run bundle --timeout=10m --namespace ${OLS.namespace} ${bundleImage} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-          { failOnNonZeroExit: false, timeout: 12 * MINUTE },
-        ).then((result) => {
-          cy.task('log', `\n"operator-sdk run bundle" stdout:\n${result.stdout}\n`)
-            .task('log', `"operator-sdk run bundle" stderr:\n${result.stderr}\n`)
-            .then(() => {
-              if (result.exitCode !== 0) {
-                throw new Error(
-                  `"operator-sdk run bundle" failed with exit code ${result.exitCode}`,
-                );
-              }
-            });
-        });
-      }
+      // Check if operator is already installed by verifying csv exists
+      // We check any csv in the namespace and not by name due to csv being suffixed with version
+      cy.exec(
+        `oc get csv --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        { failOnNonZeroExit: false },
+      ).then((subscriptionCheck) => {
+        cy.task('log', `CSV check exit code: ${subscriptionCheck.exitCode}`);
+        cy.task('log', `CSV check stdout: ${subscriptionCheck.stdout}`);
+        cy.task('log', `CSV check stderr: ${subscriptionCheck.stderr}`);
 
-      // If the console image exists, replace image in CSV and restart operator
-      // Console pod will restart automatically.
-      if (Cypress.env('CONSOLE_IMAGE')) {
-        cy.exec(
-          `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-        ).then((result) => {
-          if (result.stderr === '') {
-            const csvName = result.stdout;
-            // If console image exists, replace it in CSV
+        const operatorAlreadyInstalled =
+          subscriptionCheck.exitCode === 0 &&
+          subscriptionCheck.stdout.trim() !== '' &&
+          !subscriptionCheck.stdout.toLowerCase().includes('no resources found');
+
+        if (operatorAlreadyInstalled) {
+          cy.task(
+            'log',
+            `Operator subscription already exists in ${OLS.namespace} namespace. Skipping installation and image substitution.`,
+          );
+        } else {
+          cy.task('log', 'Operator not found. Proceeding with installation.');
+
+          // If UI_INSTALL exists, install via UI
+          // If running in nudges or pre-release, install with BUNDLE_IMAGE
+          // Otherwise install the latest operator
+          if (Cypress.env('UI_INSTALL')) {
+            operatorHubPage.installOperator(OLS.packageName, 'redhat-operators');
+            cy.get('.co-clusterserviceversion-install__heading', { timeout: 5 * MINUTE }).should(
+              'include.text',
+              'ready for use',
+            );
+          } else {
             cy.exec(
-              `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              `oc get ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} || oc create ns ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
             );
             cy.exec(
-              `oc patch ${csvName} --namespace=${OLS.namespace} --type='json' -p='[{"op": "replace", "path": "/spec/relatedImages/1/image", "value":"${Cypress.env('CONSOLE_IMAGE')}"}]' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              `oc label namespaces ${OLS.namespace} openshift.io/cluster-monitoring=true --overwrite=true --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
             );
+            const bundleImage =
+              Cypress.env('BUNDLE_IMAGE') ||
+              'quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest';
             cy.exec(
-              `oc get ${csvName} --namespace=${OLS.namespace} -o json --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-            ).then((csvResult) => {
-              if (csvResult.stderr !== '') {
-                throw new Error(`Getting csv failed
+              `operator-sdk run bundle --timeout=10m --namespace ${OLS.namespace} ${bundleImage} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              { failOnNonZeroExit: false, timeout: 12 * MINUTE },
+            ).then((result) => {
+              cy.task('log', `\n"operator-sdk run bundle" stdout:\n${result.stdout}\n`)
+                .task('log', `"operator-sdk run bundle" stderr:\n${result.stderr}\n`)
+                .then(() => {
+                  if (result.exitCode !== 0) {
+                    throw new Error(
+                      `"operator-sdk run bundle" failed with exit code ${result.exitCode}`,
+                    );
+                  }
+                });
+            });
+          }
+
+          // If the console image exists, replace image in CSV and restart operator
+          // Console pod will restart automatically.
+          if (Cypress.env('CONSOLE_IMAGE')) {
+            cy.exec(
+              `oc get clusterserviceversion --namespace=${OLS.namespace} -o name --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+            ).then((result) => {
+              if (result.stderr === '') {
+                const csvName = result.stdout.trim().split('\n').filter(Boolean)[0];
+                // Fetch the CSV, discover the relatedImages index for the
+                // console image dynamically, then apply a single atomic patch
+                // that updates both relatedImages and the console-image arg.
+                cy.exec(
+                  `oc scale --replicas=0 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+                );
+                cy.exec(
+                  `oc get ${csvName} --namespace=${OLS.namespace} -o json --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+                ).then((csvResult) => {
+                  if (csvResult.stderr !== '') {
+                    throw new Error(`Getting csv failed
                   Exit code: ${csvResult.exitCode}
                   Stdout:\n${csvResult.stdout}
                   Stderr:\n${csvResult.stderr}`);
-              }
+                  }
 
-              const csv = JSON.parse(csvResult.stdout);
-              const args =
-                csv.spec.install.spec.deployments[0].spec.template.spec.containers[0].args.map(
-                  (arg) =>
+                  const csv = JSON.parse(csvResult.stdout);
+
+                  // Map --console-image* arg prefixes to their relatedImages names
+                  const argToRelatedImage: Record<string, string> = {
+                    '--console-image-pf5': 'lightspeed-console-plugin-pf5',
+                    '--console-image-4-19': 'lightspeed-console-plugin-4-19',
+                    '--console-image=': 'lightspeed-console-plugin',
+                  };
+
+                  const args =
+                    csv.spec.install.spec.deployments[0].spec.template.spec.containers[0].args;
+                  const relatedImages = csv.spec.relatedImages;
+
+                  // Collect relatedImages indices that match any console-image arg
+                  const relatedImageOps: { op: string; path: string; value: string }[] = [];
+                  for (const arg of args) {
+                    for (const [prefix, riName] of Object.entries(argToRelatedImage)) {
+                      if (arg.startsWith(prefix)) {
+                        const idx = relatedImages.findIndex(
+                          (ri: { name: string }) => ri.name === riName,
+                        );
+                        if (idx !== -1) {
+                          relatedImageOps.push({
+                            op: 'replace',
+                            path: `/spec/relatedImages/${idx}/image`,
+                            value: Cypress.env('CONSOLE_IMAGE'),
+                          });
+                        }
+                      }
+                    }
+                  }
+
+                  const updatedArgs = args.map((arg: string) =>
                     arg.startsWith('--console-image')
                       ? arg.replace(/=.*/, `=${Cypress.env('CONSOLE_IMAGE')}`)
                       : arg,
-                );
+                  );
 
-              const patch = JSON.stringify([
-                {
-                  op: 'replace',
-                  path: '/spec/install/spec/deployments/0/spec/template/spec/containers/0/args',
-                  value: args,
-                },
-              ]);
-              cy.exec(
-                `oc patch ${csvName} --namespace=${OLS.namespace} --type='json' -p='${patch}' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-              );
+                  const patch = JSON.stringify([
+                    ...relatedImageOps,
+                    {
+                      op: 'replace',
+                      path: '/spec/install/spec/deployments/0/spec/template/spec/containers/0/args',
+                      value: updatedArgs,
+                    },
+                  ]);
+                  cy.exec(
+                    `oc patch ${csvName} --namespace=${OLS.namespace} --type='json' -p='${patch}' --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+                  );
 
-              cy.exec(
-                `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-              );
-            });
-          } else {
-            throw new Error(`Getting CSV name failed
+                  cy.exec(
+                    `oc scale --replicas=1 deployment/lightspeed-operator-controller-manager --namespace=${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+                  );
+                });
+              } else {
+                throw new Error(`Getting CSV name failed
               Exit code: ${result.exitCode}
               Stdout:\n${result.stdout}
               Stderr:\n${result.stderr}`);
+              }
+            });
           }
-        });
-      }
+        }
+      });
 
-      const config = `apiVersion: ols.openshift.io/v1alpha1
-kind: ${OLS.config.kind}
-metadata:
-  name: ${OLS.config.name}
-spec:
-  llm:
-    providers:
-      - type: openai
-        name: openai
-        credentialsSecretRef:
-          name: openai-api-keys
-        url: https://api.openai.com/v1
-        models:
-          - name: gpt-4o-mini
-  ols:
-    defaultModel: gpt-4o-mini
-    defaultProvider: openai
-    logLevel: INFO`;
-      cy.exec(`echo '${config}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`);
-
-      // Create empty secret
+      // Check if OLSConfig exists and handle accordingly
       cy.exec(
-        `oc create secret generic openai-api-keys --from-literal=apitoken=empty -n openshift-lightspeed --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-      );
+        `oc get ${OLS.config.kind} ${OLS.config.name} -o json --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        { failOnNonZeroExit: false },
+      ).then((configCheck) => {
+        if (configCheck.exitCode === 0) {
+          // OLSConfig exists, check if it's being deleted
+          const existingConfig = JSON.parse(configCheck.stdout);
+          if (existingConfig.metadata.deletionTimestamp) {
+            cy.task(
+              'log',
+              `OLSConfig is being deleted. Waiting for deletion to complete before recreating...`,
+            );
+            // Wait for deletion to complete (check every 5 seconds for up to 3 minutes)
+            cy.exec(
+              `timeout 180 bash -c 'until ! oc get ${OLS.config.kind} ${OLS.config.name} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')} 2>/dev/null; do echo "Waiting for deletion..."; sleep 5; done'`,
+              { timeout: 4 * MINUTE },
+            ).then(() => {
+              cy.task('log', 'OLSConfig deleted. Creating new OLSConfig...');
+              cy.exec(
+                `echo '${OLS_CONFIG_YAML}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+              );
+            });
+          } else {
+            cy.task('log', `OLSConfig already exists and is not deleting. Using existing config.`);
+          }
+        } else {
+          // OLSConfig doesn't exist, create it
+          cy.task('log', 'OLSConfig not found. Creating new OLSConfig...');
+          cy.exec(
+            `echo '${OLS_CONFIG_YAML}' | oc create -f - --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          );
+        }
+      });
+
+      // Create secret if it doesn't exist
+      cy.exec(
+        `oc get secret openai-api-keys -n ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        { failOnNonZeroExit: false },
+      ).then((secretCheck) => {
+        if (secretCheck.exitCode === 0) {
+          cy.task('log', 'Secret openai-api-keys already exists. Skipping creation.');
+        } else {
+          cy.task('log', 'Creating secret openai-api-keys...');
+          cy.exec(
+            `oc create secret generic openai-api-keys --from-literal=apitoken=empty -n ${OLS.namespace} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+          );
+        }
+      });
 
       cy.visit('/');
       cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
@@ -238,20 +339,25 @@ spec:
     if (Cypress.env('SKIP_OLS_SETUP')) {
       cy.task('log', 'Skip OLS uninstall because CYPRESS_SKIP_OLS_SETUP is true');
     } else {
+      // Delete config first, making sure the Cypress timeout is longer than the oc --timeout
+      cy.exec(
+        `oc delete --timeout=2m ${OLS.config.kind} ${OLS.config.name} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
+        { failOnNonZeroExit: false, timeout: 3 * MINUTE },
+      );
+
       // Delete entire namespace to delete operator and ensure everything else is cleaned up
       cy.adminCLI(`oc delete namespace ${OLS.namespace}`, {
         failOnNonZeroExit: false,
         timeout: 5 * MINUTE,
       });
 
-      // Delete config, making sure the Cypress timeout is longer than the oc --timeout
-      cy.exec(
-        `oc delete --timeout=2m ${OLS.config.kind} ${OLS.config.name} --kubeconfig ${Cypress.env('KUBECONFIG_PATH')}`,
-        { failOnNonZeroExit: false, timeout: 3 * MINUTE },
-      );
-
       cy.adminCLI(
         `oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`,
+      );
+
+      // Remove OLS query access permissions
+      cy.adminCLI(
+        `oc adm policy remove-cluster-role-from-user lightspeed-operator-query-access ${Cypress.env('LOGIN_USERNAME')}`,
       );
     }
   });
@@ -1097,6 +1203,193 @@ metadata:
         .should('include.text', 'Events')
         .should('include.text', 'Logs')
         .should('not.include.text', ACM_ATTACH_CLUSTER_TEXT);
+    });
+  });
+
+  describe('MCP Iframe Rendering', { tags: ['@mcp', '@mcp-mocked', '@iframe'] }, () => {
+    const mcpAppIframe = '.ols-plugin__mcp-app-iframe';
+    const mcpAppCard = '.ols-plugin__mcp-app';
+    const mcpAppLoading = `${mcpAppCard} .pf-v5-c-spinner`;
+    const mcpAppError = '.ols-plugin__alert';
+
+    const MCP_PROMPT = 'Show me the dashboard';
+    const MCP_TOOL_NAME = 'dashboard';
+    const MCP_UI_RESOURCE_URI = 'mcp://test-server/resources/dashboard';
+
+    const SAMPLE_MCP_HTML = `<!DOCTYPE html>
+<html>
+  <body>
+    <h1>MCP Dashboard</h1>
+    <h2>Resource Dashboard</h2>
+    <p>CPU Usage</p>
+    <p>45%</p>
+  </body>
+</html>`;
+
+    beforeEach(() => {
+      // Mock readiness endpoint to prevent polling delays
+      cy.intercept('GET', '/api/proxy/plugin/lightspeed-console-plugin/ols/readiness', {
+        statusCode: 200,
+        body: { ready: true },
+      });
+
+      // Mock authorization endpoint for clean test runs
+      cy.intercept('POST', '/api/proxy/plugin/lightspeed-console-plugin/ols/authorized', {
+        statusCode: 200,
+        /* eslint-disable camelcase */
+        body: { user_id: 'test-user-id', username: 'test-user', skip_user_id_check: false },
+        /* eslint-enable camelcase */
+      });
+
+      cy.visit('/');
+      cy.get(mainButton).click();
+      cy.get(popover).should('be.visible');
+      // Wait for authorization to complete and prompt to be ready
+      cy.get(promptInput, { timeout: 10000 }).should('be.visible').should('be.enabled');
+    });
+
+    it('renders iframe when MCP response includes uiResourceUri', { tags: ['@core'] }, () => {
+      cy.interceptMCPQuery('mcpQuery', MCP_PROMPT, MCP_TOOL_NAME, MCP_UI_RESOURCE_URI);
+      cy.interceptMCPResources('mcpResources', SAMPLE_MCP_HTML, 'test-server', MCP_UI_RESOURCE_URI);
+
+      cy.get(promptInput).type(`${MCP_PROMPT}{enter}`);
+
+      cy.wait('@mcpQuery', { timeout: 3 * MINUTE });
+      cy.wait('@mcpResources', { timeout: 3 * MINUTE });
+
+      cy.get(mcpAppIframe, { timeout: 10000 })
+        .should('exist')
+        .scrollIntoView()
+        .should('be.visible');
+      cy.get(mcpAppIframe).should('have.attr', 'sandbox', 'allow-scripts');
+      cy.get(mcpAppCard).should('exist');
+    });
+
+    it('iframe srcDoc contains expected HTML content', { tags: ['@core'] }, () => {
+      cy.interceptMCPQuery('mcpQuery', MCP_PROMPT, MCP_TOOL_NAME, MCP_UI_RESOURCE_URI);
+      cy.interceptMCPResources('mcpResources', SAMPLE_MCP_HTML, 'test-server', MCP_UI_RESOURCE_URI);
+
+      cy.get(promptInput).type(`${MCP_PROMPT}{enter}`);
+
+      cy.wait('@mcpQuery', { timeout: 3 * MINUTE });
+      cy.wait('@mcpResources', { timeout: 3 * MINUTE });
+
+      cy.get(mcpAppIframe, { timeout: 10000 }).should(($iframe) => {
+        const srcDoc = $iframe.attr('srcDoc');
+        expect(srcDoc).to.exist;
+        expect(srcDoc).to.contain('MCP Dashboard');
+        expect(srcDoc).to.contain('Resource Dashboard');
+        expect(srcDoc).to.contain('CPU Usage');
+        expect(srcDoc).to.contain('45%');
+        expect(srcDoc).to.contain('data-theme=');
+      });
+    });
+
+    it('displays loading state while fetching MCP resources', () => {
+      cy.interceptMCPQuery('mcpQuery', MCP_PROMPT, MCP_TOOL_NAME, MCP_UI_RESOURCE_URI);
+      cy.intercept('POST', '**/v1/mcp-apps/resources', (request) => {
+        request.reply({ body: { content: SAMPLE_MCP_HTML }, delay: 2000 });
+      }).as('mcpResourcesDelayed');
+
+      cy.get(promptInput).type(`${MCP_PROMPT}{enter}`);
+
+      cy.wait('@mcpQuery', { timeout: 3 * MINUTE });
+
+      cy.get(mcpAppLoading, { timeout: 5000 }).should('exist');
+
+      cy.wait('@mcpResourcesDelayed', { timeout: 5000 });
+
+      cy.get(mcpAppLoading).should('not.exist');
+      cy.get(mcpAppIframe).should('exist').scrollIntoView().should('be.visible');
+    });
+
+    it('displays error when resource fetch fails', () => {
+      cy.interceptMCPQuery('mcpQuery', MCP_PROMPT, MCP_TOOL_NAME, MCP_UI_RESOURCE_URI);
+
+      cy.intercept('POST', '**/v1/mcp-apps/resources', {
+        statusCode: 500,
+        body: { error: 'Failed to fetch MCP resource' },
+      }).as('mcpResourcesError');
+
+      cy.get(promptInput).type(`${MCP_PROMPT}{enter}`);
+
+      cy.wait('@mcpQuery', { timeout: 3 * MINUTE });
+      cy.wait('@mcpResourcesError', { timeout: 3 * MINUTE });
+
+      cy.get(mcpAppError, { timeout: 10000 }).should('exist').should('contain', 'MCP App Error');
+      cy.get(mcpAppIframe).should('not.exist');
+    });
+
+    it('does not render iframe when uiResourceUri is missing', () => {
+      const responseWithoutURI = `data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Here"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " is"}}
+
+data: {"event": "token", "data": {"id": 2, "token": " your"}}
+
+data: {"event": "token", "data": {"id": 3, "token": " data"}}
+
+data: {"event": "tool_call", "data": {"id": 1, "name": "get_data", "server_name": "test-server", "args": {}}}
+
+data: {"event": "tool_result", "data": {"id": 1, "content": "Data retrieved", "status": "success"}}
+
+data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
+`;
+
+      cy.intercept('POST', '**/v1/streaming_query', (request) => {
+        expect(request.body.query).to.equal(MCP_PROMPT);
+        request.reply({ body: responseWithoutURI, delay: 1000 });
+      }).as('queryWithoutURI');
+
+      cy.get(promptInput).type(`${MCP_PROMPT}{enter}`);
+
+      cy.wait('@queryWithoutURI', { timeout: 3 * MINUTE });
+
+      cy.get(aiChatEntry, { timeout: 10000 }).should('exist');
+      cy.get(mcpAppIframe).should('not.exist');
+    });
+
+    it('handles multiple MCP iframes in conversation', () => {
+      const SECOND_PROMPT = 'Show me another dashboard';
+      const SECOND_TOOL_NAME = 'metrics';
+      const SECOND_URI = 'mcp://test-server/resources/metrics';
+
+      const SECOND_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head><title>Metrics</title></head>
+<body><div class="metrics">Metrics Dashboard</div></body>
+</html>`;
+
+      cy.interceptMCPQuery('mcpQuery1', MCP_PROMPT, MCP_TOOL_NAME, MCP_UI_RESOURCE_URI);
+      cy.interceptMCPResources(
+        'mcpResources1',
+        SAMPLE_MCP_HTML,
+        'test-server',
+        MCP_UI_RESOURCE_URI,
+      );
+
+      cy.get(promptInput).type(`${MCP_PROMPT}{enter}`);
+      cy.wait('@mcpQuery1', { timeout: 3 * MINUTE });
+      cy.wait('@mcpResources1', { timeout: 3 * MINUTE });
+
+      cy.get(mcpAppIframe).should('have.length', 1);
+
+      cy.interceptMCPQuery(
+        'mcpQuery2',
+        SECOND_PROMPT,
+        SECOND_TOOL_NAME,
+        SECOND_URI,
+        CONVERSATION_ID,
+      );
+      cy.interceptMCPResources('mcpResources2', SECOND_HTML, 'test-server', SECOND_URI);
+
+      cy.get(promptInput).type(`${SECOND_PROMPT}{enter}`);
+      cy.wait('@mcpQuery2', { timeout: 3 * MINUTE });
+      cy.wait('@mcpResources2', { timeout: 3 * MINUTE });
+
+      cy.get(mcpAppIframe).should('have.length', 2);
     });
   });
 });
