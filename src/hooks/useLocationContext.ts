@@ -8,6 +8,7 @@ import {
   isValidKindName,
   isValidNamespaceName,
   isValidResourceName,
+  isValidSilenceID,
 } from '../validation';
 
 export const useLocationContext = () => {
@@ -184,6 +185,24 @@ export const useLocationContext = () => {
           setNamespace(alertNamespace ?? undefined);
           return;
         }
+      }
+
+      // Silence details page
+      const silenceMatch = path.match(new RegExp('/monitoring/silences/([a-f0-9-]+)$'));
+      if (silenceMatch && isValidSilenceID(silenceMatch[1])) {
+        setKind('Silence');
+        setName(silenceMatch[1]);
+        setNamespace(undefined);
+        return;
+      }
+
+      // Alerting rule details page — rule is identified by a numeric hash in the URL path
+      const alertRuleMatch = path.match(new RegExp('/monitoring/alertrules/([0-9]+)'));
+      if (alertRuleMatch) {
+        setKind('AlertingRule');
+        setName(alertRuleMatch[1]);
+        setNamespace(undefined);
+        return;
       }
 
       setKind(undefined);

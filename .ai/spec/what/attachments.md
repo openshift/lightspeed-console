@@ -21,6 +21,8 @@ sending.
    | `/multicloud/applications/details/{namespace}/{name}/overview` | ACM Application/ApplicationSet |
    | `/multicloud/governance/policies/{action}/{namespace}/{name}` | ACM Policy |
    | `/monitoring/alerts/{id}?alertname=...` | Prometheus/Thanos Alert |
+   | `/monitoring/silences/{uuid}` | Alertmanager Silence |
+   | `/monitoring/alertrules/{hash}` | Alerting Rule |
 
 2. Resource key resolution must use the console's K8s model registry. Both
    direct model keys (e.g., `Deployment`) and plural-based keys (e.g.,
@@ -59,19 +61,26 @@ sending.
    (for ACM multi-cluster alerts). Alert attachments are deduplicated by
    generating a unique ID from sorted label key-value pairs.
 
-10. **File Upload**: User-uploaded YAML files from the local filesystem.
+10. **Silence**: The full silence definition YAML from the Alertmanager API,
+    fetched by silence UUID from the URL path.
+
+11. **Alerting Rule**: The full alerting rule definition YAML from the
+    Prometheus/Thanos rules API, matched by recomputing the murmur3 hash
+    that the monitoring-console-plugin uses as the rule ID in the URL.
+
+12. **File Upload**: User-uploaded YAML files from the local filesystem.
     Files must be valid YAML and under a maximum file size. The file content
     is parsed to extract `kind`, `metadata.name`, and `metadata.namespace`
     for display.
 
-11. **ManagedCluster Info**: For ACM ManagedCluster resources, the plugin
+13. **ManagedCluster Info**: For ACM ManagedCluster resources, the plugin
     attaches both the ManagedCluster object and the associated
     ManagedClusterInfo object (fetched from the ACM internal API). Both have
     `managedFields` stripped.
 
 ### Attachment Menu
 
-12. The attachment menu ("+" button) must show the following sections in
+14. The attachment menu ("+" button) must show the following sections in
     order:
     a. "Currently viewing" label (when a resource is detected).
     b. "Attach" section with available attachment options.
@@ -79,28 +88,28 @@ sending.
     d. Query mode toggle (Ask or Troubleshooting, whichever is not currently
        active).
 
-13. The Events menu item must be disabled when no events are available for
+15. The Events menu item must be disabled when no events are available for
     the current resource.
 
 ### Attachment Display
 
-14. Each attached item must display as a label showing a resource icon and
+16. Each attached item must display as a label showing a resource icon and
     the resource name. Labels must be removable via a close button.
 
-15. Attachments must be viewable and editable in a modal dialog. The modal
+17. Attachments must be viewable and editable in a modal dialog. The modal
     must show the content in a code editor with the resource icon, kind, and
     name in the header.
 
-16. Modified attachments (where current value differs from original value)
+18. Modified attachments (where current value differs from original value)
     must show an edit indicator icon. The original value can be restored via
     an undo action in the editor modal.
 
-17. A warning alert must be displayed when the total size of all attachments
+19. A warning alert must be displayed when the total size of all attachments
     exceeds a threshold.
 
 ### API Conversion
 
-18. When sending attachments to the OLS API, the plugin must convert them
+20. When sending attachments to the OLS API, the plugin must convert them
     using the following mapping:
 
     | Plugin attachment type | API `attachment_type` | API `content_type` |
@@ -111,14 +120,14 @@ sending.
 
 ### Attachment Keying
 
-19. Each attachment is stored in a map keyed by a composite ID:
+21. Each attachment is stored in a map keyed by a composite ID:
     `{attachmentType}_{kind}_{name}_{ownerName}`. An explicit ID can
     override the default key (used for alerts to avoid duplicates).
 
-20. Attachments persist in Redux state across popover open/close cycles
+22. Attachments persist in Redux state across popover open/close cycles
     within the same session.
 
-21. Attachments are cleared after query submission and when starting a new
+23. Attachments are cleared after query submission and when starting a new
     chat.
 
 ## Constraints
