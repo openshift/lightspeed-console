@@ -525,6 +525,8 @@ describe('OLS UI', () => {
         .find('.pf-m-danger')
         .should('exist')
         .should('contain', MOCK_ERROR_MESSAGE);
+
+      // Verify that the tool call label is displayed
       cy.get(aiChatEntry).find('.ols-plugin__references').should('contain', 'ABC');
     });
   });
@@ -645,7 +647,7 @@ describe('OLS UI', () => {
       cy.wait('@userFeedbackStub');
       cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
 
-      // It should also be possible to submit user feedback without a comment
+      // Submit negative feedback with no comment
       cy.interceptFeedback(
         'userFeedbackWithoutCommentStub',
         CONVERSATION_ID,
@@ -752,7 +754,7 @@ describe('OLS UI', () => {
       cy.get(mainButton).click();
       cy.get(popover).should('exist');
 
-      // There should be not prompt attachments initially
+      // There should be no prompt attachments initially
       cy.get(attachments).should('be.empty');
 
       cy.get(attachButton).click();
