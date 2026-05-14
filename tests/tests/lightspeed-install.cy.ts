@@ -331,23 +331,8 @@ describe('OLS UI', () => {
       });
 
       cy.visit('/');
-      // Dismiss tour if it appears. The tour renders asynchronously after the
-      // page loads, so a single synchronous jQuery check can miss it. Instead,
-      // retry the check multiple times with a delay to give the tour time to
-      // render before concluding it won't appear.
+      cy.byTestID('tour-step-footer-secondary', { timeout: MINUTE }).click();
       cy.get(mainButton, { timeout: 5 * MINUTE }).should('exist');
-      const tourSelector = '[data-test="tour-step-footer-secondary"]';
-      const dismissTour = (retriesLeft: number): void => {
-        cy.get('body').then(($body) => {
-          if ($body.find(tourSelector).length > 0) {
-            cy.wrap($body).find(tourSelector).click();
-          } else if (retriesLeft > 0) {
-            cy.wait(1000);
-            dismissTour(retriesLeft - 1);
-          }
-        });
-      };
-      dismissTour(30);
 
       // Wait 2 minutes for the page to reload so it doesn't happen during tests
       cy.wait(120000);
