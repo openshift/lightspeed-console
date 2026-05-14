@@ -4,6 +4,16 @@ import { register } from '@cypress/grep';
 
 register();
 
+Cypress.on('uncaught:exception', (err) => {
+  // The console defines __load_plugin_entry__ via webpack module federation
+  // before loading plugin bundles, but race conditions during page load can
+  // cause the plugin script to execute before the global is set.
+  // This is a console-internal timing issue, not a test failure.
+  if (err.message?.includes('__load_plugin_entry__')) {
+    return false;
+  }
+});
+
 // Collect browser console errors and warnings for output after each test
 const browserLogs = [];
 
