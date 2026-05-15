@@ -340,6 +340,9 @@ describe('OLS UI', () => {
   });
 
   after(() => {
+    // Gather cluster artifacts before cleanup so resources still exist
+    cy.task('gatherClusterArtifacts');
+
     if (Cypress.env('SKIP_OLS_SETUP')) {
       cy.task('log', 'Skip OLS uninstall because CYPRESS_SKIP_OLS_SETUP is true');
     } else {

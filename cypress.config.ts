@@ -143,9 +143,13 @@ export default defineConfig({
           console.table(data);
           return null;
         },
+        gatherClusterArtifacts() {
+          gatherClusterArtifacts(config.env.KUBECONFIG_PATH || '');
+          return null;
+        },
       });
       cypressGrepPlugin(config);
-      on('after:spec', (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => {
+      on('after:spec', (_spec: Cypress.Spec, results: CypressCommandLine.RunResult) => {
         if (results && results.video) {
           // Do we have failures for any retry attempts?
           const failures = results.tests?.some((test) =>
@@ -156,8 +160,6 @@ export default defineConfig({
             fs.unlinkSync(results.video);
           }
         }
-        console.log('Gathering cluster artifacts...');
-        gatherClusterArtifacts(config.env.KUBECONFIG_PATH || '');
       });
       return config;
     },
