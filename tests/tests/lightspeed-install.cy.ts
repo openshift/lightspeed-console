@@ -511,175 +511,175 @@ describe('OLS UI', () => {
       cy.get(popover).should('exist');
       cy.get(modeToggle).should('include.text', 'Ask');
     });
+  });
 
-    describe('Streamed response', { tags: ['@response'] }, () => {
-      it('Test submitting a prompt and fetching the streamed response', () => {
-        cy.visit('/search/all-namespaces');
-        cy.get('h1').contains('Search').should('exist');
-        cy.get(mainButton).click();
+  describe('Streamed response', { tags: ['@response'] }, () => {
+    it('Test submitting a prompt and fetching the streamed response', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
 
-        cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-        cy.get(loadingIndicator).should('exist');
-        cy.wait('@queryStub');
+      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(loadingIndicator).should('exist');
+      cy.wait('@queryStub');
 
-        // Prompt should now be empty
-        cy.get(promptInput).should('have.value', '');
+      // Prompt should now be empty
+      cy.get(promptInput).should('have.value', '');
 
-        // Our prompt should now be shown in the chat history along with a response from OLS
-        cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
-        cy.get(aiChatEntry).should('exist').should('contain', MOCK_STREAMED_RESPONSE_TEXT);
+      // Our prompt should now be shown in the chat history along with a response from OLS
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED);
+      cy.get(aiChatEntry).should('exist').should('contain', MOCK_STREAMED_RESPONSE_TEXT);
 
-        // Sending a second prompt should now send the conversation_id along with the prompt
-        const PROMPT_SUBMITTED_2 = 'Test prompt 2';
-        cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
-        cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
-        cy.get(loadingIndicator).should('exist');
-        cy.wait('@queryWithConversationIdStub');
+      // Sending a second prompt should now send the conversation_id along with the prompt
+      const PROMPT_SUBMITTED_2 = 'Test prompt 2';
+      cy.interceptQuery('queryWithConversationIdStub', PROMPT_SUBMITTED_2, CONVERSATION_ID);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED_2}{enter}`);
+      cy.get(loadingIndicator).should('exist');
+      cy.wait('@queryWithConversationIdStub');
 
-        cy.get(promptInput).should('have.value', '');
-        cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED_2);
-        cy.get(aiChatEntry).should('exist').should('contain', MOCK_STREAMED_RESPONSE_TEXT);
+      cy.get(promptInput).should('have.value', '');
+      cy.get(userChatEntry).should('contain', PROMPT_SUBMITTED_2);
+      cy.get(aiChatEntry).should('exist').should('contain', MOCK_STREAMED_RESPONSE_TEXT);
 
-        // The clear chat action should clear the current conversation, but leave any text in the prompt
-        cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
-        cy.get(clearChatButton).should('exist').click();
-        cy.get(modal).should('exist').should('contain', CLEAR_CHAT_TEXT);
-        cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
-        cy.get(userChatEntry).should('not.exist');
-        cy.get(aiChatEntry).should('not.exist');
-        cy.get(popover)
-          .should('include.text', FOOTER_TEXT)
-          .should('include.text', PRIVACY_TEXT)
-          .find('h1')
-          .should('include.text', POPOVER_TITLE);
-        cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
-      });
-
-      it('Test response with error, partial response text and tool call', () => {
-        cy.visit('/search/all-namespaces');
-        cy.get('h1').contains('Search').should('exist');
-        cy.get(mainButton).click();
-
-        cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
-        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-        cy.get(loadingIndicator).should('exist');
-        cy.wait('@queryWithErrorStub');
-
-        cy.get(aiChatEntry).should('exist').should('contain', MOCK_PARTIAL_RESPONSE_TEXT);
-        cy.get(aiChatEntry)
-          .find('.pf-m-danger')
-          .should('exist')
-          .should('contain', MOCK_ERROR_MESSAGE);
-
-        // Verify that the tool call label is displayed
-        cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').should('contain', 'ABC');
-      });
+      // The clear chat action should clear the current conversation, but leave any text in the prompt
+      cy.get(promptInput).type(PROMPT_NOT_SUBMITTED);
+      cy.get(clearChatButton).should('exist').click();
+      cy.get(modal).should('exist').should('contain', CLEAR_CHAT_TEXT);
+      cy.get(modal).find('button').contains(CLEAR_CHAT_CONFIRM_BUTTON).click();
+      cy.get(userChatEntry).should('not.exist');
+      cy.get(aiChatEntry).should('not.exist');
+      cy.get(popover)
+        .should('include.text', FOOTER_TEXT)
+        .should('include.text', PRIVACY_TEXT)
+        .find('h1')
+        .should('include.text', POPOVER_TITLE);
+      cy.get(promptInput).should('have.value', PROMPT_NOT_SUBMITTED);
     });
 
-    describe('Tool approval (HITL)', { tags: ['@hitl'] }, () => {
-      it('Test approval card is shown and tool can be approved', () => {
-        cy.visit('/search/all-namespaces');
-        cy.get('h1').contains('Search').should('exist');
-        cy.get(mainButton).click();
+    it('Test response with error, partial response text and tool call', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
 
-        cy.interceptQueryWithApproval('queryWithApproval', PROMPT_SUBMITTED);
-        cy.interceptToolApproval('approvalStub', true);
-        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-        cy.wait('@queryWithApproval');
+      cy.interceptQueryWithError('queryWithErrorStub', PROMPT_SUBMITTED, MOCK_ERROR_MESSAGE);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(loadingIndicator).should('exist');
+      cy.wait('@queryWithErrorStub');
 
-        cy.get(toolApprovalCard).should('exist');
-        cy.get(toolApprovalCard).should('contain', 'Review required');
-        cy.get(toolApprovalCard).should('contain', 'This action will list pods in the cluster.');
-        cy.get(toolApprovalCard).find('button').contains('Approve').should('exist');
-        cy.get(toolApprovalCard).find('button').contains('Reject').should('exist');
+      cy.get(aiChatEntry).should('exist').should('contain', MOCK_PARTIAL_RESPONSE_TEXT);
+      cy.get(aiChatEntry)
+        .find('.pf-m-danger')
+        .should('exist')
+        .should('contain', MOCK_ERROR_MESSAGE);
 
-        cy.get(toolApprovalCard).contains('View action details').click();
-        cy.get(toolApprovalCard).should('contain', 'mock_tool');
-        cy.get(toolApprovalCard).should('contain', 'namespace');
+      // Verify that the tool call label is displayed
+      cy.get(aiChatEntry).find('.pf-v6-c-label').should('exist').should('contain', 'ABC');
+    });
+  });
 
-        cy.get(toolApprovalCard).find('button').contains('Approve').click();
-        cy.wait('@approvalStub');
-        cy.get(toolApprovalCard).should('not.exist');
-        cy.get(toolLabel).should('contain', 'mock_tool');
+  describe('Tool approval (HITL)', { tags: ['@hitl'] }, () => {
+    it('Test approval card is shown and tool can be approved', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
 
-        cy.get(toolLabel).contains('mock_tool').click();
-        cy.get(modal).should('contain', 'Tool output');
-        cy.get(modal).should('contain', 'mock_tool');
-        cy.get(modal).should('contain', 'Status');
-        cy.get(modal).should('contain', 'pending');
-        cy.get(modal).should('not.contain', 'Tool call rejected');
-        cy.get(modal).find('button[title="Close"]').click();
-      });
+      cy.interceptQueryWithApproval('queryWithApproval', PROMPT_SUBMITTED);
+      cy.interceptToolApproval('approvalStub', true);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryWithApproval');
 
-      it('Test tool can be rejected', () => {
-        cy.visit('/search/all-namespaces');
-        cy.get('h1').contains('Search').should('exist');
-        cy.get(mainButton).click();
+      cy.get(toolApprovalCard).should('exist');
+      cy.get(toolApprovalCard).should('contain', 'Review required');
+      cy.get(toolApprovalCard).should('contain', 'This action will list pods in the cluster.');
+      cy.get(toolApprovalCard).find('button').contains('Approve').should('exist');
+      cy.get(toolApprovalCard).find('button').contains('Reject').should('exist');
 
-        cy.interceptQueryWithApproval('queryWithApproval', PROMPT_SUBMITTED);
-        cy.interceptToolApproval('denialStub', false);
-        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-        cy.wait('@queryWithApproval');
+      cy.get(toolApprovalCard).contains('View action details').click();
+      cy.get(toolApprovalCard).should('contain', 'mock_tool');
+      cy.get(toolApprovalCard).should('contain', 'namespace');
 
-        cy.get(toolApprovalCard).should('exist');
-        cy.get(toolApprovalCard).find('button').contains('Reject').click();
-        cy.wait('@denialStub');
-        cy.get(toolApprovalCard).should('not.exist');
-        cy.get(toolLabel).should('contain', 'mock_tool');
-        cy.get(toolLabel).contains('mock_tool').click();
-        cy.get(modal).should('contain', 'Tool call rejected');
-        cy.get(modal).should('contain', 'mock_tool');
-        cy.get(modal).should('not.contain', 'Status');
-        cy.get(modal).should('not.contain', 'Content');
-        cy.get(modal).find('button[title="Close"]').click();
-      });
+      cy.get(toolApprovalCard).find('button').contains('Approve').click();
+      cy.wait('@approvalStub');
+      cy.get(toolApprovalCard).should('not.exist');
+      cy.get(toolLabel).should('contain', 'mock_tool');
+
+      cy.get(toolLabel).contains('mock_tool').click();
+      cy.get(modal).should('contain', 'Tool output');
+      cy.get(modal).should('contain', 'mock_tool');
+      cy.get(modal).should('contain', 'Status');
+      cy.get(modal).should('contain', 'pending');
+      cy.get(modal).should('not.contain', 'Tool call rejected');
+      cy.get(modal).find('button[title="Close"]').click();
     });
 
-    describe('User feedback', { tags: ['@feedback'] }, () => {
-      it('Test user feedback form', () => {
-        cy.visit('/search/all-namespaces');
-        cy.get('h1').contains('Search').should('exist');
-        cy.get(mainButton).click();
+    it('Test tool can be rejected', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
 
-        cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
-        cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
-        cy.get(loadingIndicator).should('exist');
-        cy.wait('@queryStub');
+      cy.interceptQueryWithApproval('queryWithApproval', PROMPT_SUBMITTED);
+      cy.interceptToolApproval('denialStub', false);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.wait('@queryWithApproval');
 
-        // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
-        cy.get(responseAction).should('have.lengthOf', 3);
+      cy.get(toolApprovalCard).should('exist');
+      cy.get(toolApprovalCard).find('button').contains('Reject').click();
+      cy.wait('@denialStub');
+      cy.get(toolApprovalCard).should('not.exist');
+      cy.get(toolLabel).should('contain', 'mock_tool');
+      cy.get(toolLabel).contains('mock_tool').click();
+      cy.get(modal).should('contain', 'Tool call rejected');
+      cy.get(modal).should('contain', 'mock_tool');
+      cy.get(modal).should('not.contain', 'Status');
+      cy.get(modal).should('not.contain', 'Content');
+      cy.get(modal).find('button[title="Close"]').click();
+    });
+  });
 
-        // Submit positive feedback with a comment
-        cy.get(responseAction).eq(0).click();
-        cy.get(popover).should('contain', USER_FEEDBACK_TEXT);
-        cy.interceptFeedback(
-          'userFeedbackStub',
-          CONVERSATION_ID,
-          THUMBS_UP,
-          USER_FEEDBACK_SUBMITTED,
-          `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
-        );
-        cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
-        cy.get(userFeedbackSubmit).click();
-        cy.wait('@userFeedbackStub');
-        cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
+  describe('User feedback', { tags: ['@feedback'] }, () => {
+    it('Test user feedback form', () => {
+      cy.visit('/search/all-namespaces');
+      cy.get('h1').contains('Search').should('exist');
+      cy.get(mainButton).click();
 
-        // Submit negative feedback with no comment
-        cy.get(responseAction).eq(1).click();
-        cy.get(popover).should('contain', USER_FEEDBACK_TEXT);
-        cy.interceptFeedback(
-          'userFeedbackWithoutCommentStub',
-          CONVERSATION_ID,
-          THUMBS_DOWN,
-          '',
-          `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
-        );
-        cy.get(userFeedbackInput).clear();
-        cy.get(userFeedbackSubmit).click();
-        cy.wait('@userFeedbackWithoutCommentStub');
-        cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
-      });
+      cy.interceptQuery('queryStub', PROMPT_SUBMITTED);
+      cy.get(promptInput).type(`${PROMPT_SUBMITTED}{enter}`);
+      cy.get(loadingIndicator).should('exist');
+      cy.wait('@queryStub');
+
+      // Should have 3 response action buttons (thumbs up, thumbs down, and copy)
+      cy.get(responseAction).should('have.lengthOf', 3);
+
+      // Submit positive feedback with a comment
+      cy.get(responseAction).eq(0).click();
+      cy.get(popover).should('contain', USER_FEEDBACK_TEXT);
+      cy.interceptFeedback(
+        'userFeedbackStub',
+        CONVERSATION_ID,
+        THUMBS_UP,
+        USER_FEEDBACK_SUBMITTED,
+        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+      );
+      cy.get(userFeedbackInput).type(USER_FEEDBACK_SUBMITTED);
+      cy.get(userFeedbackSubmit).click();
+      cy.wait('@userFeedbackStub');
+      cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
+
+      // Submit negative feedback with no comment
+      cy.get(responseAction).eq(1).click();
+      cy.get(popover).should('contain', USER_FEEDBACK_TEXT);
+      cy.interceptFeedback(
+        'userFeedbackWithoutCommentStub',
+        CONVERSATION_ID,
+        THUMBS_DOWN,
+        '',
+        `${PROMPT_SUBMITTED}\n---\nThe attachments that were sent with the prompt are shown below.\n[]`,
+      );
+      cy.get(userFeedbackInput).clear();
+      cy.get(userFeedbackSubmit).click();
+      cy.wait('@userFeedbackWithoutCommentStub');
+      cy.get(popover).should('contain', USER_FEEDBACK_RECEIVED_TEXT);
     });
   });
 
