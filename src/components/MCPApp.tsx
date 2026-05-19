@@ -263,8 +263,6 @@ const MCPApp: React.FC<MCPAppProps> = ({ entryIndex, toolID }) => {
     };
 
     loadContent();
-    // Theme is intentionally excluded — theme changes are pushed via host-context-changed notification
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => {
       cancelled = true;
     };

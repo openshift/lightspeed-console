@@ -14,6 +14,7 @@ parserOptions:
   ecmaVersion: 2018
   sourceType: module
 plugins:
+  - i18next
   - prettier
   - react
   - '@typescript-eslint'
@@ -29,6 +30,21 @@ rules:
   dot-notation: 'error'
   eqeqeq: 'error'
   guard-for-in: 'error'
+  i18next/no-literal-string:
+    - 'error'
+    - framework: react
+      mode: jsx-only
+      jsx-attributes:
+        include:
+          - alt
+          - 'aria-.+'
+          - closeBtnAriaLabel
+          - description
+          - label
+          - placeholder
+          - title
+          - toggleText
+          - tooltipContent
   no-alert: 'error'
   no-caller: 'error'
   no-console: 'error'
@@ -56,6 +72,7 @@ rules:
   react/jsx-fragments: 'error'
   react/jsx-no-useless-fragment: 'error'
   react/jsx-sort-props: ['error', { ignoreCase: true }]
+  react/no-unstable-nested-components: 'error'
   react/self-closing-comp: ['error', { html: false }]
   require-atomic-updates: 'error'
   sort-imports: ['error', { ignoreCase: true, ignoreDeclarationSort: true }]

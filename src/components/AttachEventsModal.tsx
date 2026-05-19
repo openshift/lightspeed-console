@@ -119,7 +119,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   );
 
   const onSubmit = React.useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       dispatch(attachmentSet(AttachmentTypes.Events, kind, name, undefined, namespace, yaml));
       onClose();
@@ -130,9 +130,11 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('Configure events attachment')}>
       <Text>
-        {t(
-          'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
-        )}
+        {events.length === 1
+          ? t('Only one event available for this resource.')
+          : t(
+              'You can specify the most recent number of events from this resource to include as an attachment for detailed troubleshooting and analysis.',
+            )}
       </Text>
       <Form>
         {isLoading && <Spinner size="md" />}
@@ -143,15 +145,17 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
             </HelperText>
           ) : (
             <>
-              <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
-                <Slider
-                  max={events.length}
-                  min={1}
-                  onChange={onInputNumEventsChange}
-                  showTicks={events.length <= 40}
-                  value={numEvents}
-                />
-              </FormGroup>
+              {events.length > 1 && (
+                <FormGroup label={t('Most recent {{numEvents}} events', { numEvents })}>
+                  <Slider
+                    max={events.length}
+                    min={1}
+                    onChange={onInputNumEventsChange}
+                    showTicks={events.length <= 40}
+                    value={numEvents}
+                  />
+                </FormGroup>
+              )}
               <CodeBlock
                 actions={
                   <>
@@ -177,7 +181,7 @@ const AttachEventsModal: React.FC<Props> = ({ isOpen, kind, name, namespace, onC
           <Button isDisabled={numEvents < 1} onClick={onSubmit} type="submit" variant="primary">
             {t('Attach')}
           </Button>
-          <Button onClick={onClose} type="submit" variant="link">
+          <Button onClick={onClose} type="button" variant="link">
             {t('Cancel')}
           </Button>
         </ActionGroup>

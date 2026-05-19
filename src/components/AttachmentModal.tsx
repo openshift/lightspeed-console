@@ -130,6 +130,7 @@ const AttachmentModal: React.FC = () => {
           attachment.namespace,
           editorValue,
           originalValue,
+          attachment.id,
         ),
       );
     }
@@ -148,7 +149,8 @@ const AttachmentModal: React.FC = () => {
         attachment.ownerName,
         attachment.namespace,
         value,
-        undefined,
+        value,
+        attachment.id,
       ),
     );
     setEditorValue(value);
@@ -175,7 +177,7 @@ const AttachmentModal: React.FC = () => {
         <Form>
           {isEditing ? (
             <ActionGroup>
-              <Button onClick={onSave} type="submit" variant="primary">
+              <Button onClick={onSave} type="button" variant="primary">
                 {t('Save')}
               </Button>
               <Button onClick={setNotEditing} variant="link">
@@ -187,7 +189,7 @@ const AttachmentModal: React.FC = () => {
               <SplitItem isFilled>
                 <ActionGroup>
                   {attachment?.isEditable && (
-                    <Button onClick={setEditing} type="submit" variant="primary">
+                    <Button onClick={setEditing} type="button" variant="primary">
                       {t('Edit')}
                     </Button>
                   )}

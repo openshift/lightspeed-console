@@ -2,6 +2,15 @@ import * as React from 'react';
 import { useLocation } from 'react-router-dom-v5-compat';
 import { useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 
+import { resolveModelKey } from '../pageContext';
+import {
+  isValidAlertName,
+  isValidKindName,
+  isValidNamespaceName,
+  isValidResourceName,
+  isValidSilenceID,
+} from '../validation';
+
 export const useLocationContext = () => {
   const [kind, setKind] = React.useState<string>();
   const [name, setName] = React.useState<string>();
@@ -25,47 +34,25 @@ export const useLocationContext = () => {
 
         urlMatches = path.match(new RegExp(`/k8s/ns/(${ns})/(${resourceKey})/(${resourceName})`));
         if (urlMatches) {
-          const key = urlMatches[2];
-
-          if (models[key]) {
-            setKind(key);
+          const modelKey = resolveModelKey(urlMatches[2], models);
+          // Exclude Secret details pages to avoid accidentally including secrets with prompt
+          if (modelKey && models[modelKey]?.kind !== 'Secret') {
+            setKind(modelKey);
             setName(urlMatches[3]);
             setNamespace(urlMatches[1]);
             return;
-          }
-
-          const modelKey = Object.keys(models).find((k) => models[k].plural === key);
-          if (modelKey) {
-            const model = models[modelKey];
-            if (model && model.kind !== 'Secret') {
-              setKind(model.kind);
-              setName(urlMatches[3]);
-              setNamespace(urlMatches[1]);
-              return;
-            }
           }
         }
 
         urlMatches = path.match(new RegExp(`/k8s/cluster/(${resourceKey})/(${resourceName})`));
         if (urlMatches) {
-          const key = urlMatches[1];
-
-          if (models[key]) {
-            setKind(key);
+          const modelKey = resolveModelKey(urlMatches[1], models);
+          // Exclude Secret details pages to avoid accidentally including secrets with prompt
+          if (modelKey && models[modelKey]?.kind !== 'Secret') {
+            setKind(modelKey);
             setName(urlMatches[2]);
             setNamespace(undefined);
             return;
-          }
-
-          const modelKey = Object.keys(models).find((k) => models[k].plural === key);
-          if (modelKey) {
-            const model = models[modelKey];
-            if (model && model.kind !== 'Secret') {
-              setKind(model.kind);
-              setName(urlMatches[2]);
-              setNamespace(undefined);
-              return;
-            }
           }
         }
 
@@ -89,17 +76,23 @@ export const useLocationContext = () => {
         // ACM search resources page
         if (path.startsWith('/multicloud/search/resources')) {
           const key = params.get('kind');
-          if (key && params.get('name')) {
+          const searchName = params.get('name');
+          const searchNamespace = params.get('namespace');
+          if (
+            isValidKindName(key) &&
+            isValidResourceName(searchName) &&
+            (searchNamespace === null || isValidNamespaceName(searchNamespace))
+          ) {
             if (key === 'VirtualMachine') {
               // ACM VirtualMachine details page
               setKind('kubevirt.io~v1~VirtualMachine');
-              setName(params.get('name'));
-              setNamespace(params.get('namespace') || undefined);
+              setName(searchName);
+              setNamespace(searchNamespace ?? undefined);
               return;
             } else if (models[key]) {
               setKind(key);
-              setName(params.get('name'));
-              setNamespace(params.get('namespace') || undefined);
+              setName(searchName);
+              setNamespace(searchNamespace ?? undefined);
               return;
             }
           }
@@ -134,16 +127,75 @@ export const useLocationContext = () => {
           setNamespace(urlMatches[2]);
           return;
         }
+
+        // Namespaced list page: /k8s/ns/{namespace}/{resourceKey}
+        urlMatches = path.match(new RegExp(`/k8s/ns/(${ns})/(${resourceKey})/?$`));
+        if (urlMatches) {
+          const modelKey = resolveModelKey(urlMatches[2], models);
+          if (modelKey) {
+            setKind(modelKey);
+            setName(undefined);
+            setNamespace(urlMatches[1]);
+            return;
+          }
+        }
+
+        // All-namespaces list page: /k8s/all-namespaces/{resourceKey}
+        urlMatches = path.match(new RegExp(`/k8s/all-namespaces/(${resourceKey})/?$`));
+        if (urlMatches) {
+          const modelKey = resolveModelKey(urlMatches[1], models);
+          if (modelKey) {
+            setKind(modelKey);
+            setName(undefined);
+            setNamespace(undefined);
+            return;
+          }
+        }
+
+        // Cluster-scoped list page: /k8s/cluster/{resourceKey}
+        urlMatches = path.match(new RegExp(`/k8s/cluster/(${resourceKey})/?$`));
+        if (urlMatches) {
+          const modelKey = resolveModelKey(urlMatches[1], models);
+          if (modelKey) {
+            setKind(modelKey);
+            setName(undefined);
+            setNamespace(undefined);
+            return;
+          }
+        }
       }
 
       // Alert details page
       if (new RegExp('^/monitoring/alerts/[0-9]+').test(path)) {
-        if (params.has('alertname')) {
+        const alertname = params.get('alertname');
+        const alertNamespace = params.get('namespace');
+        if (
+          isValidAlertName(alertname) &&
+          (alertNamespace === null || isValidNamespaceName(alertNamespace))
+        ) {
           setKind('Alert');
-          setName(params.get('alertname'));
-          setNamespace(params.get('namespace'));
+          setName(alertname);
+          setNamespace(alertNamespace ?? undefined);
           return;
         }
+      }
+
+      // Silence details page
+      const silenceMatch = path.match(new RegExp('/monitoring/silences/([a-f0-9-]+)$'));
+      if (silenceMatch && isValidSilenceID(silenceMatch[1])) {
+        setKind('Silence');
+        setName(silenceMatch[1]);
+        setNamespace(undefined);
+        return;
+      }
+
+      // Alerting rule details page — rule is identified by a numeric hash in the URL path
+      const alertRuleMatch = path.match(new RegExp('/monitoring/alertrules/([0-9]+)'));
+      if (alertRuleMatch) {
+        setKind('AlertingRule');
+        setName(alertRuleMatch[1]);
+        setNamespace(undefined);
+        return;
       }
 
       setKind(undefined);

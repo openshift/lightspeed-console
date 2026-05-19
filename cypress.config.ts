@@ -72,12 +72,6 @@ export default defineConfig({
           console.table(data);
           return null;
         },
-        readFileIfExists(filename) {
-          if (fs.existsSync(filename)) {
-            return fs.readFileSync(filename, 'utf8');
-          }
-          return null;
-        },
       });
       cypressGrepPlugin(config);
       on('after:spec', (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => {

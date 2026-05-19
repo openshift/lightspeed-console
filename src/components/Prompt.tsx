@@ -44,13 +44,17 @@ import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
+import { buildPageContext } from '../pageContext';
+import { alertingRuleID } from '../validation';
 import {
   attachmentsClear,
   attachmentSet,
   chatHistoryPush,
   chatHistoryUpdateByID,
   chatHistoryUpdateTool,
+  setAutoSubmit,
   setConversationID,
+  setHidePrompt,
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
@@ -59,10 +63,31 @@ import AttachLogModal from './AttachLogModal';
 import ResourceIcon from './ResourceIcon';
 
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
+const ALERTS_THANOS_ENDPOINT =
+  '/api/proxy/plugin/monitoring-console-plugin/thanos-proxy/api/v1/rules?type=alert';
+const SILENCE_ENDPOINT = '/api/alertmanager/api/v2/silence';
 const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
+
+const NON_K8S_KINDS = ['Alert', 'AlertingRule', 'Silence'];
 
 // Sanity check on the upload file size
 const MAX_FILE_SIZE_MB = 1;
+
+const WORKLOAD_KINDS = [
+  'CronJob',
+  'DaemonSet',
+  'Deployment',
+  'DeploymentConfig',
+  'HorizontalPodAutoscaler',
+  'Job',
+  'kubevirt.io~v1~VirtualMachine',
+  'kubevirt.io~v1~VirtualMachineInstance',
+  'Pod',
+  'PodDisruptionBudget',
+  'ReplicaSet',
+  'ReplicationController',
+  'StatefulSet',
+];
 
 const FilteredYAMLInfo = () => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -172,21 +197,23 @@ const AttachMenu: React.FC = () => {
 
   const [kind, name, namespace] = useLocationContext();
 
+  const isNonK8sKind = NON_K8S_KINDS.includes(kind);
+
   const k8sContext = useK8sWatchResource<K8sResourceKind>(
-    kind && kind !== 'Alert' && name ? { isList: false, kind, name, namespace } : null,
+    kind && !isNonK8sKind && name ? { isList: false, kind, name, namespace } : null,
   );
 
-  const [context] = kind === 'Alert' && name ? [] : k8sContext;
+  const [context] = isNonK8sKind && name ? [] : k8sContext;
 
   const onSelect = React.useCallback(
-    (_ev: React.MouseEvent, attachmentType: string) => {
+    (_ev: React.MouseEvent<Element, MouseEvent>, attachmentType: string | number) => {
       if (attachmentType === AttachmentTypes.Events) {
         openEventsModal();
         closeMenu();
       } else if (attachmentType === AttachmentTypes.Log) {
         openLogModal();
         closeMenu();
-      } else if (kind === 'Alert') {
+      } else if (attachmentType === AttachmentTypes.YAML && kind === 'Alert') {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
         consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader())
@@ -231,6 +258,74 @@ const AttachMenu: React.FC = () => {
               }
             } else {
               setError(t('Failed to find definition YAML for alert'));
+            }
+            setLoaded();
+          })
+          .catch((err) => {
+            setError(t('Error fetching alerting rules: {{err}}', { err }));
+            setLoaded();
+          });
+      } else if (attachmentType === AttachmentTypes.YAML && kind === 'Silence') {
+        setLoading();
+        consoleFetchJSON(`${SILENCE_ENDPOINT}/${name}`, 'get', getRequestInitWithAuthHeader())
+          .then((silence) => {
+            try {
+              const silenceName =
+                silence.matchers
+                  ?.map((m) => {
+                    const op = m.isRegex ? (m.isEqual ? '=~' : '!~') : m.isEqual ? '=' : '!=';
+                    return `${m.name}${op}${m.value}`;
+                  })
+                  .join(', ') || name;
+              const yaml = dumpYAML(silence, { lineWidth: -1 }).trim();
+              dispatch(
+                attachmentSet(AttachmentTypes.YAML, kind, silenceName, undefined, namespace, yaml),
+              );
+              closeMenu();
+            } catch (e) {
+              setError(t('Error converting to YAML: {{e}}', { e }));
+            }
+            setLoaded();
+          })
+          .catch((err) => {
+            setError(t('Error fetching silence: {{err}}', { err }));
+            setLoaded();
+          });
+      } else if (attachmentType === AttachmentTypes.YAML && kind === 'AlertingRule') {
+        setLoading();
+        const ruleLabels = Object.fromEntries(new URLSearchParams(location.search));
+        const rulesEndpoint = ruleLabels.cluster ? ALERTS_THANOS_ENDPOINT : ALERTS_ENDPOINT;
+        consoleFetchJSON(rulesEndpoint, 'get', getRequestInitWithAuthHeader())
+          .then((response) => {
+            let matchedRule;
+            each(response?.data?.groups, (group) => {
+              const found = group.rules?.find(
+                (rule) => rule.type === 'alerting' && alertingRuleID(group, rule) === name,
+              );
+              if (found) {
+                matchedRule = found;
+                return false;
+              }
+            });
+            if (matchedRule) {
+              try {
+                const yaml = dumpYAML(matchedRule, { lineWidth: -1 }).trim();
+                dispatch(
+                  attachmentSet(
+                    AttachmentTypes.YAML,
+                    kind,
+                    matchedRule.name,
+                    undefined,
+                    namespace,
+                    yaml,
+                  ),
+                );
+                closeMenu();
+              } catch (e) {
+                setError(t('Error converting to YAML: {{e}}', { e }));
+              }
+            } else {
+              setError(t('Failed to find definition YAML for alerting rule'));
             }
             setLoaded();
           })
@@ -346,41 +441,8 @@ const AttachMenu: React.FC = () => {
     [isOpen, t, toggleIsOpen],
   );
 
-  const showEvents =
-    !!context &&
-    [
-      'CronJob',
-      'DaemonSet',
-      'Deployment',
-      'DeploymentConfig',
-      'HorizontalPodAutoscaler',
-      'Job',
-      'kubevirt.io~v1~VirtualMachine',
-      'kubevirt.io~v1~VirtualMachineInstance',
-      'Pod',
-      'PodDisruptionBudget',
-      'ReplicaSet',
-      'ReplicationController',
-      'StatefulSet',
-    ].includes(kind);
-
-  const showLogs =
-    !!context &&
-    [
-      'CronJob',
-      'DaemonSet',
-      'Deployment',
-      'DeploymentConfig',
-      'HorizontalPodAutoscaler',
-      'Job',
-      'kubevirt.io~v1~VirtualMachine',
-      'kubevirt.io~v1~VirtualMachineInstance',
-      'Pod',
-      'PodDisruptionBudget',
-      'ReplicaSet',
-      'ReplicationController',
-      'StatefulSet',
-    ].includes(kind);
+  const showEvents = !!context && WORKLOAD_KINDS.includes(kind);
+  const showLogs = !!context && WORKLOAD_KINDS.includes(kind);
 
   const isResourceContext = !!context && !!kind && !!name;
 
@@ -430,6 +492,14 @@ const AttachMenu: React.FC = () => {
               <SelectOption value={AttachmentTypes.YAML}>
                 <FileCodeIcon /> {t('Alert')} {isLoading && <Spinner size="md" />}
               </SelectOption>
+            ) : kind === 'Silence' ? (
+              <SelectOption value={AttachmentTypes.YAML}>
+                <FileCodeIcon /> {t('Silence')} {isLoading && <Spinner size="md" />}
+              </SelectOption>
+            ) : kind === 'AlertingRule' ? (
+              <SelectOption value={AttachmentTypes.YAML}>
+                <FileCodeIcon /> {t('Alerting rule')} {isLoading && <Spinner size="md" />}
+              </SelectOption>
             ) : kind === 'cluster.open-cluster-management.io~v1~ManagedCluster' ? (
               <SelectOption value={AttachmentTypes.YAML}>
                 <TaskIcon /> {t('Attach cluster info')}
@@ -440,10 +510,10 @@ const AttachMenu: React.FC = () => {
                 {isResourceContext && (
                   <>
                     <SelectOption value={AttachmentTypes.YAML}>
-                      <FileCodeIcon /> Full YAML file
+                      <FileCodeIcon /> {t('Full YAML file')}
                     </SelectOption>
                     <SelectOption value={AttachmentTypes.YAMLFiltered}>
-                      <FileCodeIcon /> Filtered YAML <FilteredYAMLInfo />
+                      <FileCodeIcon /> {t('Filtered YAML')} <FilteredYAMLInfo />
                     </SelectOption>
                   </>
                 )}
@@ -493,10 +563,12 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const dispatch = useDispatch();
 
   const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
+  const autoSubmit: boolean = useSelector((s: State) => s.plugins?.ols?.get('autoSubmit'));
   const chatHistory: ImmutableList<ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
+  const hidePrompt: boolean = useSelector((s: State) => s.plugins?.ols?.get('hidePrompt'));
   const query: string = useSelector((s: State) => s.plugins?.ols?.get('query'));
 
   const [validated, setValidated] = React.useState<'default' | 'error'>('default');
@@ -504,8 +576,15 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
   const promptRef = React.useRef(null);
 
+  const [kind, name, namespace] = useLocationContext();
+
+  const pageContext = React.useMemo(
+    () => buildPageContext(kind, name, namespace),
+    [kind, name, namespace],
+  );
+
   const onChange = React.useCallback(
-    (_e, value) => {
+    (_e: React.SyntheticEvent, value: string) => {
       if (value.trim().length > 0) {
         setValidated('default');
       }
@@ -517,8 +596,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   const isStreaming = !!chatHistory.last()?.get('isStreaming');
 
   const onSubmit = React.useCallback(
-    (e) => {
-      e.preventDefault();
+    (e?) => {
+      e?.preventDefault();
 
       if (isStreaming) {
         return;
@@ -532,10 +611,16 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       dispatch(
         chatHistoryPush({
           attachments: attachments.map((a) => omit(a, 'originalValue')),
+          hidden: hidePrompt,
           text: query,
           who: 'user',
         }),
       );
+
+      // Reset hidePrompt after using it
+      if (hidePrompt) {
+        dispatch(setHidePrompt(false));
+      }
       const chatEntryID = uniqueId('ChatEntry_');
       dispatch(
         chatHistoryPush({
@@ -557,7 +642,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         conversation_id: conversationID,
         // eslint-disable-next-line camelcase
         media_type: 'application/json',
-        query,
+        query: pageContext ? `Context: ${pageContext}\n\n${query}` : query,
       };
 
       const streamResponse = async () => {
@@ -588,6 +673,12 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
         // Use buffer because long strings (e.g. tool call output) may be split into multiple chunks
         let buffer = '';
+
+        // OLS does not yet provide an ID to link approval_required to tool_call/tool_result, so for
+        // now we use a combination of tool name + arguments, which should be equivalent in practice
+        const toolKeyToID = new Map<string, string>();
+        const makeToolKey = (toolName: string, args: unknown) =>
+          `${toolName}:${JSON.stringify(args)}`;
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -630,7 +721,28 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                   );
                 } else if (json.event === 'tool_call') {
                   const { args, id, name: toolName } = json.data;
-                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { name: toolName, args }));
+                  toolKeyToID.set(makeToolKey(toolName, args), id);
+                  dispatch(chatHistoryUpdateTool(chatEntryID, id, { args, name: toolName }));
+                } else if (json.event === 'approval_required') {
+                  /* eslint-disable camelcase */
+                  const {
+                    approval_id: approvalID,
+                    tool_args: args,
+                    tool_description: description,
+                    tool_name: toolName,
+                  } = json.data;
+                  /* eslint-enable camelcase */
+                  const toolCallID = toolKeyToID.get(makeToolKey(toolName, args));
+                  if (toolCallID) {
+                    dispatch(
+                      chatHistoryUpdateTool(chatEntryID, toolCallID, {
+                        approvalID,
+                        args,
+                        description,
+                        isUserApproval: true,
+                      }),
+                    );
+                  }
                 } else if (json.event === 'tool_result') {
                   const {
                     content,
@@ -641,13 +753,30 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
                     tool_meta: toolMeta,
                   } = json.data;
                   const uiResourceUri = toolMeta?.ui?.resourceUri as string | undefined;
+                  const olsToolUiID = toolMeta?.olsUi?.id as string | undefined;
                   dispatch(
                     chatHistoryUpdateTool(chatEntryID, id, {
                       content,
+                      isUserApproval: false,
                       status,
                       ...(uiResourceUri && { uiResourceUri }),
                       ...(serverName && { serverName }),
                       ...(structuredContent && { structuredContent }),
+                      ...(olsToolUiID && { olsToolUiID }),
+                    }),
+                  );
+                } else if (json.event === 'history_compression_start') {
+                  dispatch(
+                    chatHistoryUpdateByID(chatEntryID, {
+                      historyCompression: { status: 'compressing' },
+                    }),
+                  );
+                } else if (json.event === 'history_compression_end') {
+                  const rawDuration = Number(json.data?.duration_ms);
+                  const durationMs = Number.isFinite(rawDuration) ? rawDuration : undefined;
+                  dispatch(
+                    chatHistoryUpdateByID(chatEntryID, {
+                      historyCompression: { durationMs, status: 'done' },
                     }),
                   );
                 } else if (json.event === 'error') {
@@ -684,14 +813,31 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       dispatch(attachmentsClear());
       promptRef.current?.focus();
     },
-    [attachments, conversationID, dispatch, isStreaming, query, scrollIntoView, t],
+    [
+      attachments,
+      conversationID,
+      dispatch,
+      hidePrompt,
+      isStreaming,
+      pageContext,
+      query,
+      scrollIntoView,
+      t,
+    ],
   );
+
+  React.useEffect(() => {
+    if (autoSubmit) {
+      dispatch(setAutoSubmit(false));
+      onSubmit();
+    }
+  }, [autoSubmit, dispatch, onSubmit]);
 
   const streamingResponseID: string = isStreaming
     ? (chatHistory.last()?.get('id') as string)
     : undefined;
   const onStreamCancel = React.useCallback(
-    (e) => {
+    (e: React.FormEvent) => {
       e.preventDefault();
       if (streamingResponseID) {
         streamController.abort();

@@ -9,8 +9,8 @@ export enum ActionType {
   AttachmentSet = 'attachmentSet',
   ChatHistoryClear = 'chatHistoryClear',
   ChatHistoryPush = 'chatHistoryPush',
-  chatHistoryUpdateByID = 'chatHistoryUpdateByID',
-  chatHistoryUpdateTool = 'chatHistoryUpdateTool',
+  ChatHistoryUpdateByID = 'chatHistoryUpdateByID',
+  ChatHistoryUpdateTool = 'chatHistoryUpdateTool',
   ClearContextEvents = 'clearContextEvents',
   CloseOLS = 'closeOLS',
   OpenAttachmentClear = 'openAttachmentClear',
@@ -20,6 +20,8 @@ export enum ActionType {
   OpenToolSet = 'openToolSet',
   SetConversationID = 'setConversationID',
   SetIsContextEventsLoading = 'setIsContextEventsLoading',
+  SetAutoSubmit = 'setAutoSubmit',
+  SetHidePrompt = 'setHidePrompt',
   SetQuery = 'setQuery',
   UserFeedbackClose = 'userFeedbackClose',
   UserFeedbackDisable = 'userFeedbackDisable',
@@ -61,10 +63,10 @@ export const chatHistoryClear = () => action(ActionType.ChatHistoryClear);
 export const chatHistoryPush = (entry: ChatEntry) => action(ActionType.ChatHistoryPush, { entry });
 
 export const chatHistoryUpdateByID = (id: string, entry: Partial<ChatEntry>) =>
-  action(ActionType.chatHistoryUpdateByID, { entry, id });
+  action(ActionType.ChatHistoryUpdateByID, { entry, id });
 
 export const chatHistoryUpdateTool = (id: string, toolID: string, tool: Partial<Tool>) =>
-  action(ActionType.chatHistoryUpdateTool, { id, tool, toolID });
+  action(ActionType.ChatHistoryUpdateTool, { id, tool, toolID });
 
 export const clearContextEvents = () => action(ActionType.ClearContextEvents);
 
@@ -81,6 +83,12 @@ export const openToolClear = () => action(ActionType.OpenToolClear);
 
 export const openToolSet = (chatEntryIndex: number, id: string) =>
   action(ActionType.OpenToolSet, { chatEntryIndex, id });
+
+export const setAutoSubmit = (autoSubmit: boolean) =>
+  action(ActionType.SetAutoSubmit, { autoSubmit });
+
+export const setHidePrompt = (hidePrompt: boolean) =>
+  action(ActionType.SetHidePrompt, { hidePrompt });
 
 export const setConversationID = (id: string) => action(ActionType.SetConversationID, { id });
 
@@ -123,6 +131,8 @@ const actions = {
   openOLS,
   openToolClear,
   openToolSet,
+  setAutoSubmit,
+  setHidePrompt,
   setConversationID,
   setIsContextEventsLoading,
   setQuery,

@@ -43,7 +43,7 @@ import {
   setConversationID,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry, ReferencedDoc } from '../types';
+import { Attachment, ChatEntry, ReferencedDoc, Tool } from '../types';
 import AttachmentModal from './AttachmentModal';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
@@ -55,6 +55,7 @@ import Prompt from './Prompt';
 import ReadinessAlert from './ReadinessAlert';
 import ResponseTools from './ResponseTools';
 import ToolModal from './ResponseToolModal';
+import ToolApproval from './ToolApproval';
 import WelcomeNotice from './WelcomeNotice';
 
 import './general-page.css';
@@ -147,13 +148,23 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
     s.plugins?.ols?.get('isUserFeedbackEnabled'),
   );
 
+  if (entry.who === 'user' && entry.hidden) {
+    return null;
+  }
+
   if (entry.who === 'ai') {
+    const pendingApprovalTools = entry.tools
+      ? Object.entries(entry.tools as unknown as { [key: string]: Tool }).filter(
+          ([, tool]) => tool.isUserApproval && !tool.isApproved && !tool.isDenied,
+        )
+      : [];
+
     return (
       <div
         className="ols-plugin__chat-entry ols-plugin__chat-entry--ai"
         data-test="ols-plugin__chat-entry-ai"
       >
-        <div className="ols-plugin__chat-entry-name">OpenShift Lightspeed</div>
+        <div className="ols-plugin__chat-entry-name">{t('OpenShift Lightspeed')}</div>
         <Markdown components={{ code: Code }} remarkPlugins={[remarkGfm]}>
           {entry.text}
         </Markdown>
@@ -178,6 +189,39 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
           </Alert>
         )}
+        {entry.historyCompression?.status === 'compressing' && !entry.isCancelled && (
+          <Alert
+            customIcon={<Spinner isInline size="md" />}
+            isInline
+            isPlain
+            title={t('Compressing history...')}
+            variant="info"
+          />
+        )}
+        {entry.historyCompression?.status === 'done' &&
+          (() => {
+            const historyCompressedAlert = (
+              <Alert
+                className="ols-plugin__history-compressed"
+                customIcon={<CheckIcon />}
+                isInline
+                isPlain
+                title={t('History compressed')}
+                variant="success"
+              />
+            );
+            return entry.historyCompression.durationMs === undefined ? (
+              historyCompressedAlert
+            ) : (
+              <Tooltip
+                content={t('Compressed in {{seconds}} seconds', {
+                  seconds: (entry.historyCompression.durationMs / 1000).toFixed(2),
+                })}
+              >
+                {historyCompressedAlert}
+              </Tooltip>
+            );
+          })()}
         {entry.isTruncated && (
           <Alert isInline title={t('History truncated')} variant="warning">
             {t('Conversation history has been truncated to fit within context window.')}
@@ -192,6 +236,9 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             variant="info"
           />
         )}
+        {pendingApprovalTools.map(([toolID, tool]) => (
+          <ToolApproval chatEntryID={entry.id} key={toolID} tool={tool} toolID={toolID} />
+        ))}
         {entry.tools && <ResponseTools entryIndex={entryIndex} />}
         <ReferenceDocs references={entry.references} />
         {isUserFeedbackEnabled && !entry.isStreaming && entry.text && (
@@ -206,7 +253,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
         className="ols-plugin__chat-entry ols-plugin__chat-entry--user"
         data-test="ols-plugin__chat-entry-user"
       >
-        <div className="ols-plugin__chat-entry-name">You</div>
+        <div className="ols-plugin__chat-entry-name">{t('You')}</div>
         <div className="ols-plugin__chat-entry-text">{entry.text}</div>
         {entry.attachments && Object.keys(entry.attachments).length > 0 && (
           <ExpandableSection
@@ -216,7 +263,7 @@ const ChatHistoryEntry: React.FC<ChatHistoryEntryProps> = ({
             onToggle={toggleContextExpanded}
             toggleContent={
               <>
-                Context <Badge>{Object.keys(entry.attachments).length}</Badge>
+                {t('Context')} <Badge>{Object.keys(entry.attachments).length}</Badge>
               </>
             }
           >
@@ -316,7 +363,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
   const [isNewChatModalOpen, , openNewChatModal, closeNewChatModal] = useBoolean(false);
   const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
 
-  const chatHistoryEndRef = React.useRef(null);
+  const chatHistoryEndRef = React.useRef<HTMLDivElement | null>(null);
 
   const scrollIntoView = React.useCallback((behavior = 'smooth') => {
     defer(() => {
@@ -349,7 +396,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
       let conversationText = '';
 
       chatEntries.forEach((entry: ChatEntry) => {
-        if (entry.who === 'user') {
+        if (entry.who === 'user' && !entry.hidden) {
           conversationText += `You: ${entry.text}\n\n`;
         } else if (entry.who === 'ai' && entry.text && !entry.isStreaming) {
           conversationText += `OpenShift Lightspeed: ${entry.text}\n\n`;
@@ -481,7 +528,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ onClose, onCollapse, onExpand
             <HelperTextItem className="ols-plugin__footer" variant="indeterminate">
               {t('For questions or feedback about OpenShift Lightspeed,')}{' '}
               <ExternalLink href="mailto:openshift-lightspeed-contact-requests@redhat.com?subject=Contact the OpenShift Lightspeed team">
-                email the Red Hat team
+                {t('email the Red Hat team')}
               </ExternalLink>
             </HelperTextItem>
           </HelperText>

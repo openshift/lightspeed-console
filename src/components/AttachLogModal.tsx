@@ -39,7 +39,7 @@ const DEFAULT_LOG_LINES = 25;
 type ContainerInputProps = {
   containers: string[];
   selectedContainer: string;
-  setContainer: (string) => void;
+  setContainer: (container: string) => void;
 };
 
 const ContainerDropdown: React.FC<ContainerInputProps> = ({
@@ -50,29 +50,29 @@ const ContainerDropdown: React.FC<ContainerInputProps> = ({
   const [isOpen, toggleIsOpen, , closeDropdown, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
-    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string) => {
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newValue: string | number) => {
       closeDropdown();
-      setContainer(newValue);
+      setContainer(String(newValue));
     },
     [closeDropdown, setContainer],
   );
 
+  const toggle = React.useCallback(
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
+      <MenuToggle
+        icon={<ResourceIcon kind="Container" />}
+        isExpanded={isOpen}
+        onClick={toggleIsOpen}
+        ref={toggleRef}
+      >
+        {selectedContainer}
+      </MenuToggle>
+    ),
+    [isOpen, selectedContainer, toggleIsOpen],
+  );
+
   return (
-    <Dropdown
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      onSelect={onSelect}
-      toggle={(toggleRef) => (
-        <MenuToggle
-          icon={<ResourceIcon kind="Container" />}
-          isExpanded={isOpen}
-          onClick={toggleIsOpen}
-          ref={toggleRef}
-        >
-          {selectedContainer}
-        </MenuToggle>
-      )}
-    >
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
       <DropdownList>
         {containers.map((container) => (
           <DropdownItem key={container} value={container}>
@@ -135,34 +135,37 @@ const ContainerInput: React.FC<ContainerInputProps> = ({
 type PodInputProps = {
   pods: K8sResourceKind[];
   selectedPod: K8sResourceKind;
-  setPod: (K8sResourceKind) => void;
+  setPod: (pod: K8sResourceKind) => void;
 };
 
 const PodDropdown: React.FC<PodInputProps> = ({ pods, selectedPod, setPod }) => {
   const [isOpen, toggleIsOpen, , closeDropdown, setIsOpen] = useBoolean(false);
 
   const onSelect = React.useCallback(
-    (_e: React.MouseEvent<Element, MouseEvent> | undefined, newPod: K8sResourceKind) => {
+    (_e: React.MouseEvent<Element, MouseEvent> | undefined, podUID: string | number) => {
       closeDropdown();
-      setPod(newPod);
+      const newPod = pods.find((p: K8sResourceKind) => p.metadata?.uid === podUID);
+      if (newPod) {
+        setPod(newPod);
+      }
     },
-    [closeDropdown, setPod],
+    [closeDropdown, pods, setPod],
+  );
+
+  const toggle = React.useCallback(
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
+      <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
+        <ResourceIcon kind="Pod" /> {selectedPod?.metadata?.name}
+      </MenuToggle>
+    ),
+    [isOpen, selectedPod, toggleIsOpen],
   );
 
   return (
-    <Dropdown
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      onSelect={onSelect}
-      toggle={(toggleRef) => (
-        <MenuToggle isExpanded={isOpen} onClick={toggleIsOpen} ref={toggleRef}>
-          <ResourceIcon kind="Pod" /> {selectedPod?.metadata?.name}
-        </MenuToggle>
-      )}
-    >
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} onSelect={onSelect} toggle={toggle}>
       <DropdownList>
         {pods.map((pod) => (
-          <DropdownItem key={pod.metadata?.uid} value={pod}>
+          <DropdownItem key={pod.metadata?.uid} value={pod.metadata?.uid}>
             <ResourceIcon kind="Pod" /> {pod.metadata?.name}
           </DropdownItem>
         ))}
@@ -352,7 +355,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   }, [container, loadPreview, lines, namespace, pod]);
 
   const onSubmit = React.useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
 
       const podName = pod?.metadata?.name;
@@ -400,7 +403,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
         {!scaleTargetError && (
           <>
             {showPodInput && (
-              <FormGroup label="Pod">
+              <FormGroup label={t('Pod')}>
                 {podsError && <Error title={t('Failed to load pods')}>{podsError.message}</Error>}
                 {jobsError && isCronJob && (
                   <Error title={t('Failed to load jobs')}>{jobsError.message}</Error>
@@ -425,7 +428,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
             )}
             {(!showPodInput || (podsLoaded && pods && pods.length > 0)) && (
               <>
-                <FormGroup label="Container">
+                <FormGroup label={t('Container')}>
                   <ContainerInput
                     containers={containers}
                     selectedContainer={container}
@@ -477,7 +480,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
           >
             {t('Attach')}
           </Button>
-          <Button onClick={onClose} type="submit" variant="link">
+          <Button onClick={onClose} type="button" variant="link">
             {t('Cancel')}
           </Button>
         </ActionGroup>

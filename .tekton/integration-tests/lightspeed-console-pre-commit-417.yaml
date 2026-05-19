@@ -146,7 +146,7 @@ spec:
             env:
               - name: COMMIT_SHA
                 value: $(params.commit)
-            image: cypress/browsers:24.14.0
+            image: cypress/browsers:24.14.1
             resources:
               limits:
                 memory: 4Gi
@@ -166,6 +166,8 @@ spec:
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
               npm run lint
+              echo "---------------------------------------------"
+              npm run test:unit
               echo "---------------------------------------------"
               npm run i18n
     - name: ols-e2e-tests
@@ -234,7 +236,7 @@ spec:
             resources:
               limits:
                 memory: 8Gi
-            image: cypress/browsers:24.14.0
+            image: cypress/browsers:24.14.1
             script: |
               echo "COMMIT_SHA: ${COMMIT_SHA}"
               echo "CYPRESS_BASE_URL: ${CYPRESS_BASE_URL}"
@@ -357,3 +359,23 @@ spec:
                   value: main
                 - name: pathInRepo
                   value: stepactions/fail-if-any-step-failed/0.1/fail-if-any-step-failed.yaml
+  finally:
+    - name: export-logs-for-retention
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: tasks/export-logs/0.1/export-logs-to-quay.yaml
+      params:
+        - name: pipeline-run-name
+          value: $(context.pipelineRun.name)
+        - name: namespace
+          value: $(context.pipelineRun.namespace)
+        - name: quay-repo
+          value: "quay.io/openshift-lightspeed/ols-console-artifacts"
+        - name: artifact-credentials-secret
+          value: ols-konflux-artifacts-bot

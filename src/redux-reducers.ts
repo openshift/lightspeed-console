@@ -1,6 +1,7 @@
 import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
 
 import { ActionType, OLSAction } from './redux-actions';
+import { isAttachmentChanged } from './attachments';
 import { Attachment } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,11 +22,13 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
   if (!state) {
     return ImmutableMap({
       attachments: ImmutableMap<string, Attachment>(),
+      autoSubmit: false,
       chatHistory: ImmutableList(),
       codeBlock: null,
       context: null,
       contextEvents: [],
       conversationID: null,
+      hidePrompt: false,
       isContextEventsLoading: false,
       isOpen: false,
       isUserFeedbackEnabled: true,
@@ -57,20 +60,27 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       const id =
         action.payload.id ??
         `${action.payload.attachmentType}_${action.payload.kind}_${action.payload.name}_${action.payload.ownerName ?? 'NO-OWNER'}`;
-      return state.setIn(['attachments', id], action.payload);
+      const existing: Attachment | undefined = state.getIn(['attachments', id]);
+      // Preserve user edits when re-selecting the same resource from the attach menu (no
+      // originalValue). Explicit saves from the editor pass originalValue and bypass this guard.
+      const newAttachment =
+        existing && isAttachmentChanged(existing) && action.payload.originalValue === undefined
+          ? { ...existing, originalValue: action.payload.value }
+          : action.payload;
+      return state.setIn(['attachments', id], newAttachment);
     }
 
     case ActionType.ChatHistoryClear:
       return state.set('chatHistory', ImmutableList());
 
-    case ActionType.chatHistoryUpdateByID: {
+    case ActionType.ChatHistoryUpdateByID: {
       const index = state
         .get('chatHistory')
         .findIndex((entry) => entry.get('id') === action.payload.id);
       return state.mergeIn(['chatHistory', index], action.payload.entry);
     }
 
-    case ActionType.chatHistoryUpdateTool: {
+    case ActionType.ChatHistoryUpdateTool: {
       const index = state
         .get('chatHistory')
         .findIndex((entry) => entry.get('id') === action.payload.id);
@@ -90,7 +100,7 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       return state.set('contextEvents', []);
 
     case ActionType.CloseOLS:
-      return state.set('isOpen', false);
+      return state.set('isOpen', false).set('hidePrompt', false);
 
     case ActionType.OpenAttachmentClear:
       return state.set('openAttachment', null);
@@ -100,6 +110,12 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.OpenOLS:
       return state.set('isOpen', true);
+
+    case ActionType.SetAutoSubmit:
+      return state.set('autoSubmit', action.payload.autoSubmit);
+
+    case ActionType.SetHidePrompt:
+      return state.set('hidePrompt', action.payload.hidePrompt);
 
     case ActionType.OpenToolClear:
       return state.setIn(['openTool', 'chatEntryIndex'], null).setIn(['openTool', 'id'], null);
