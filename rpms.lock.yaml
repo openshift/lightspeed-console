@@ -4,27 +4,27 @@ lockfileVendor: redhat
 arches:
 - arch: aarch64
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-1.20.1-24.el9_7.2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-1.20.1-24.el9_7.3.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 44842
-    checksum: sha256:95c613a310b1ab36164ec5597a5821aece11907463817fb07463265aee41ae9e
+    size: 44985
+    checksum: sha256:0edf6e206fae94d8afb9b09814c98803f0e2cb289dbb58c403dc74b9d12bba3a
     name: nginx
-    evr: 2:1.20.1-24.el9_7.2
-    sourcerpm: nginx-1.20.1-24.el9_7.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-core-1.20.1-24.el9_7.2.aarch64.rpm
+    evr: 2:1.20.1-24.el9_7.3
+    sourcerpm: nginx-1.20.1-24.el9_7.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-core-1.20.1-24.el9_7.3.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 592501
-    checksum: sha256:57b4c34eec7dfd7acd22e035624c1c4cef8630f8042f263df9851f21a52a6110
+    size: 592586
+    checksum: sha256:50ff5bb1b51acfc0312cfb9974ea7e61f6c29226a2044588e3eaca3451ae5b9d
     name: nginx-core
-    evr: 2:1.20.1-24.el9_7.2
-    sourcerpm: nginx-1.20.1-24.el9_7.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-filesystem-1.20.1-24.el9_7.2.noarch.rpm
+    evr: 2:1.20.1-24.el9_7.3
+    sourcerpm: nginx-1.20.1-24.el9_7.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-filesystem-1.20.1-24.el9_7.3.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 16547
-    checksum: sha256:37a7798971cde2b0bf3c0f6ab63ddc91438b739379049113780a7e2968af9ee7
+    size: 16702
+    checksum: sha256:886440104ebede3045246d6ca5a882fb0752f1971ee29df780d3fbaabd4d4b59
     name: nginx-filesystem
-    evr: 2:1.20.1-24.el9_7.2
-    sourcerpm: nginx-1.20.1-24.el9_7.2.src.rpm
+    evr: 2:1.20.1-24.el9_7.3
+    sourcerpm: nginx-1.20.1-24.el9_7.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/r/redhat-logos-httpd-90.5-1.el9_6.1.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 16643
@@ -204,27 +204,27 @@ arches:
   module_metadata: []
 - arch: x86_64
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-1.20.1-24.el9_7.2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-1.20.1-24.el9_7.3.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 44878
-    checksum: sha256:862341438b681e77605516070c02cefee954272fa319ce639e40805bfcb031a0
+    size: 45018
+    checksum: sha256:195d44ffef4127d64887d877f8ec11dd1565c3ae129dde8b1ea3e769aefba7fe
     name: nginx
-    evr: 2:1.20.1-24.el9_7.2
-    sourcerpm: nginx-1.20.1-24.el9_7.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-core-1.20.1-24.el9_7.2.x86_64.rpm
+    evr: 2:1.20.1-24.el9_7.3
+    sourcerpm: nginx-1.20.1-24.el9_7.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-core-1.20.1-24.el9_7.3.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 591573
-    checksum: sha256:20169ebe2c8c1f4ea569c1ac5c94e0f6cf0f6cb945428885ebc81295a4b6b99a
+    size: 591783
+    checksum: sha256:aa51c8a833b87d33647aba18ddea813f2d9bc46b2efc30347930fa8ef7a08351
     name: nginx-core
-    evr: 2:1.20.1-24.el9_7.2
-    sourcerpm: nginx-1.20.1-24.el9_7.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-filesystem-1.20.1-24.el9_7.2.noarch.rpm
+    evr: 2:1.20.1-24.el9_7.3
+    sourcerpm: nginx-1.20.1-24.el9_7.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-filesystem-1.20.1-24.el9_7.3.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 16547
-    checksum: sha256:37a7798971cde2b0bf3c0f6ab63ddc91438b739379049113780a7e2968af9ee7
+    size: 16702
+    checksum: sha256:886440104ebede3045246d6ca5a882fb0752f1971ee29df780d3fbaabd4d4b59
     name: nginx-filesystem
-    evr: 2:1.20.1-24.el9_7.2
-    sourcerpm: nginx-1.20.1-24.el9_7.2.src.rpm
+    evr: 2:1.20.1-24.el9_7.3
+    sourcerpm: nginx-1.20.1-24.el9_7.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/r/redhat-logos-httpd-90.5-1.el9_6.1.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 16643
