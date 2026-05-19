@@ -43,6 +43,7 @@ import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
 import { buildPageContext } from '../pageContext';
+import { alertingRuleID } from '../validation';
 import {
   attachmentDelete,
   attachmentsClear,
@@ -68,7 +69,10 @@ import ToolModal from './ResponseToolModal';
 const ALERTS_ENDPOINT = '/api/prometheus/api/v1/rules?type=alert';
 const ALERTS_THANOS_ENDPOINT =
   '/api/proxy/plugin/monitoring-console-plugin/thanos-proxy/api/v1/rules?type=alert';
+const SILENCE_ENDPOINT = '/api/alertmanager/api/v2/silence';
 const QUERY_ENDPOINT = getApiUrl('/v1/streaming_query');
+
+const NON_K8S_KINDS = ['Alert', 'AlertingRule', 'Silence'];
 
 // Sanity check on the upload file size
 const MAX_FILE_SIZE_MB = 1;
@@ -148,10 +152,12 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     [kind, name, namespace],
   );
 
+  const isNonK8sKind = NON_K8S_KINDS.includes(kind);
+
   const k8sContext = useK8sWatchResource<K8sResourceKind>(
-    kind && kind !== 'Alert' && name ? { isList: false, kind, name, namespace } : null,
+    kind && !isNonK8sKind && name ? { isList: false, kind, name, namespace } : null,
   );
-  const [context] = kind === 'Alert' && name ? [] : k8sContext;
+  const [context] = isNonK8sKind && name ? [] : k8sContext;
 
   const isStreaming = !!chatHistory.last()?.get('isStreaming');
 
@@ -279,6 +285,26 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
             {t('Alert')} {isLoading && <Spinner size="md" />}
           </DropdownItem>
         )}
+        {kind === 'Silence' && (
+          <DropdownItem
+            icon={<FileCodeIcon />}
+            id="silence-yaml"
+            key="silence-yaml"
+            value={AttachmentTypes.YAML}
+          >
+            {t('Silence')} {isLoading && <Spinner size="md" />}
+          </DropdownItem>
+        )}
+        {kind === 'AlertingRule' && (
+          <DropdownItem
+            icon={<FileCodeIcon />}
+            id="alerting-rule-yaml"
+            key="alerting-rule-yaml"
+            value={AttachmentTypes.YAML}
+          >
+            {t('Alerting rule')} {isLoading && <Spinner size="md" />}
+          </DropdownItem>
+        )}
         {showEvents && (
           <DropdownItem
             icon={<TaskIcon />}
@@ -370,6 +396,72 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
               }
             } else {
               setError(t('Failed to find definition YAML for alert'));
+            }
+            setLoaded();
+          })
+          .catch((err) => {
+            setError(t('Error fetching alerting rules: {{err}}', { err }));
+            setLoaded();
+          });
+      } else if (kind === 'Silence') {
+        setLoading();
+        consoleFetchJSON(`${SILENCE_ENDPOINT}/${name}`, 'get', getRequestInitWithAuthHeader())
+          .then((silence) => {
+            try {
+              const silenceName =
+                silence.matchers
+                  ?.map((m) => {
+                    const op = m.isRegex ? (m.isEqual ? '=~' : '!~') : m.isEqual ? '=' : '!=';
+                    return `${m.name}${op}${m.value}`;
+                  })
+                  .join(', ') || name;
+              const yaml = dumpYAML(silence, { lineWidth: -1 }).trim();
+              dispatch(
+                attachmentSet(AttachmentTypes.YAML, kind, silenceName, undefined, namespace, yaml),
+              );
+            } catch (e) {
+              setError(t('Error converting to YAML: {{e}}', { e }));
+            }
+            setLoaded();
+          })
+          .catch((err) => {
+            setError(t('Error fetching silence: {{err}}', { err }));
+            setLoaded();
+          });
+      } else if (kind === 'AlertingRule') {
+        setLoading();
+        const ruleLabels = Object.fromEntries(new URLSearchParams(location.search));
+        const rulesEndpoint = ruleLabels.cluster ? ALERTS_THANOS_ENDPOINT : ALERTS_ENDPOINT;
+        consoleFetchJSON(rulesEndpoint, 'get', getRequestInitWithAuthHeader())
+          .then((response) => {
+            let matchedRule;
+            each(response?.data?.groups, (group) => {
+              const found = group.rules?.find(
+                (rule) => rule.type === 'alerting' && alertingRuleID(group, rule) === name,
+              );
+              if (found) {
+                matchedRule = found;
+                return false;
+              }
+            });
+            if (matchedRule) {
+              try {
+                const yaml = dumpYAML(matchedRule, { lineWidth: -1 }).trim();
+                dispatch(
+                  attachmentSet(
+                    AttachmentTypes.YAML,
+                    kind,
+                    matchedRule.name,
+                    undefined,
+                    namespace,
+                    yaml,
+                  ),
+                );
+              } catch (e) {
+                setError(t('Error converting to YAML: {{e}}', { e }));
+              }
+            } else {
+              setError(t('Failed to find definition YAML for alerting rule'));
             }
             setLoaded();
           })
