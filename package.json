@@ -68,7 +68,7 @@
     "prettier": "^3.8.1",
     "stylelint": "^17.6.0",
     "stylelint-config-standard": "^40.0.0",
-    "webpack-dev-server": "^5.2.3"
+    "webpack-dev-server": "5.2.4"
   },
   "overrides": {
     "webpack": "5.106.2"
