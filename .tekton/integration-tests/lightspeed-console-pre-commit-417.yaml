@@ -276,6 +276,8 @@ spec:
               echo "---------------------------------------------"
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
+              npx cypress install
+              echo "---------------------------------------------"
               export CYPRESS_LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
               set +e
               NO_COLOR=1 npx cypress run
