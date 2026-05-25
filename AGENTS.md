@@ -84,6 +84,8 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 ### Running
 
 - Dependencies are installed by running `npm install`
+  - Then run `npx cypress install` to download the Cypress binary (required
+    because `.npmrc` sets `ignore-scripts=true`)
 - To run the project locally:
   - Run `npm run start` in one terminal
     - Starts the dev server for the plugin on port 9001
