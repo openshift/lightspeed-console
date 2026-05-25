@@ -12,6 +12,14 @@ cluster and then run a series of Cypress e2e tests against the UI.
 All required dependencies are defined in `package.json`. Run `npm install` to
 install the dependencies in the `node_modules` folder.
 
+Because `.npmrc` sets `ignore-scripts=true` for security, Cypress's postinstall
+script does not run automatically. You must explicitly install the Cypress binary
+before running tests:
+
+```bash
+npx cypress install
+```
+
 ## Export necessary variables
 
 Test behavior can be customized by setting environment variables.
