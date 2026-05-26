@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { CodeEditor, Language } from '@patternfly/react-code-editor';
+import { CodeEditor, EditorDidMount, Language } from '@patternfly/react-code-editor';
 import {
   ActionGroup,
   Button,
@@ -50,10 +50,10 @@ type EditorProps = {
 const Editor: React.FC<EditorProps> = ({ onChange }) => {
   const attachment: Attachment = useSelector((s: State) => s.plugins?.ols?.get('openAttachment'));
 
-  const onEditorDidMount = (_editor, monaco) => {
+  const onEditorDidMount: EditorDidMount = (_editor, monaco) => {
     // Work around crash when CodeEditor attempts to call this nonexistent function
     // TODO: Figure out why this is happening
-    monaco.editor.onDidChangeMarkers = () => {};
+    (monaco.editor as { onDidChangeMarkers: () => void }).onDidChangeMarkers = () => {};
   };
 
   const [isDarkTheme] = useIsDarkTheme();
