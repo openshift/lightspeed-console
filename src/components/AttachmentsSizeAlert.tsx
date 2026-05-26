@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { Alert } from '@patternfly/react-core';
 
 import { State } from '../redux-reducers';
+import { Attachment } from '../types';
 
 const MAX_CHARS = 1000000;
 
@@ -12,7 +13,9 @@ const AttachmentsSizeAlert: React.FC = () => {
 
   const attachments = useSelector((s: State) => s.plugins?.ols?.get('attachments'));
 
-  const totalChars = attachments.valueSeq().reduce((sum, a) => sum + a.value.length, 0);
+  const totalChars = attachments
+    .valueSeq()
+    .reduce((sum: number, a: Attachment) => sum + a.value.length, 0);
 
   if (totalChars <= MAX_CHARS) {
     return null;
