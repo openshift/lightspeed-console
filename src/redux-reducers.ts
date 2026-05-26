@@ -76,14 +76,14 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     case ActionType.ChatHistoryUpdateByID: {
       const index = state
         .get('chatHistory')
-        .findIndex((entry) => entry.get('id') === action.payload.id);
+        .findIndex((entry: ImmutableMap<string, unknown>) => entry.get('id') === action.payload.id);
       return state.mergeIn(['chatHistory', index], action.payload.entry);
     }
 
     case ActionType.ChatHistoryUpdateTool: {
       const index = state
         .get('chatHistory')
-        .findIndex((entry) => entry.get('id') === action.payload.id);
+        .findIndex((entry: ImmutableMap<string, unknown>) => entry.get('id') === action.payload.id);
       return state.mergeIn(
         ['chatHistory', index, 'tools', action.payload.toolID],
         action.payload.tool,

@@ -8,6 +8,10 @@ import {
   consoleFetch,
   consoleFetchJSON,
   K8sResourceKind,
+  PrometheusAlert,
+  PrometheusRule,
+  PrometheusRulesResponse,
+  Silence,
   useK8sWatchResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -58,6 +62,7 @@ import {
   setQuery,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
+import { Attachment } from '../types';
 import AttachEventsModal from './AttachEventsModal';
 import AttachLogModal from './AttachLogModal';
 import ResourceIcon from './ResourceIcon';
@@ -141,8 +146,8 @@ const FileUploadSelectOption: React.FC<FileUploadSelectOptionProps> = ({ setErro
       reader.onload = (event) => {
         try {
           const yaml = event.target?.result as string;
-          const content = loadYAML(yaml);
-          if (typeof content !== 'object') {
+          const content = loadYAML(yaml) as K8sResourceKind | null;
+          if (typeof content !== 'object' || content === null) {
             setError(t('Uploaded file is not valid YAML'));
             return;
           }
@@ -217,8 +222,8 @@ const AttachMenu: React.FC = () => {
         setLoading();
         const labels = Object.fromEntries(new URLSearchParams(location.search));
         consoleFetchJSON(ALERTS_ENDPOINT, 'get', getRequestInitWithAuthHeader())
-          .then((response) => {
-            let alert;
+          .then((response: PrometheusRulesResponse) => {
+            let alert: PrometheusAlert | undefined;
             each(response?.data?.groups, (group) => {
               each(group.rules, (rule) => {
                 alert = rule.alerts?.find((a) => isMatch(labels, a.labels));
@@ -268,7 +273,7 @@ const AttachMenu: React.FC = () => {
       } else if (attachmentType === AttachmentTypes.YAML && kind === 'Silence') {
         setLoading();
         consoleFetchJSON(`${SILENCE_ENDPOINT}/${name}`, 'get', getRequestInitWithAuthHeader())
-          .then((silence) => {
+          .then((silence: Silence) => {
             try {
               const silenceName =
                 silence.matchers
@@ -296,8 +301,8 @@ const AttachMenu: React.FC = () => {
         const ruleLabels = Object.fromEntries(new URLSearchParams(location.search));
         const rulesEndpoint = ruleLabels.cluster ? ALERTS_THANOS_ENDPOINT : ALERTS_ENDPOINT;
         consoleFetchJSON(rulesEndpoint, 'get', getRequestInitWithAuthHeader())
-          .then((response) => {
-            let matchedRule;
+          .then((response: PrometheusRulesResponse) => {
+            let matchedRule: PrometheusRule | undefined;
             each(response?.data?.groups, (group) => {
               const found = group.rules?.find(
                 (rule) => rule.type === 'alerting' && alertingRuleID(group, rule) === name,
@@ -610,7 +615,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
       dispatch(
         chatHistoryPush({
-          attachments: attachments.map((a) => omit(a, 'originalValue')),
+          attachments: attachments.map((a: Attachment) => omit(a, 'originalValue')),
           hidden: hidePrompt,
           text: query,
           who: 'user',
