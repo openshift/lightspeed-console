@@ -14,7 +14,7 @@ export const alertingRuleID = (
     rule.query,
     ..._map(rule.labels, (v, k) => `${v}=${k}`),
   ].join(',');
-  return String(murmur3(key, 'monitoring-salt'));
+  return String(murmur3(key));
 };
 
 export const isValidAlertName = (value: string | null | undefined): boolean =>
