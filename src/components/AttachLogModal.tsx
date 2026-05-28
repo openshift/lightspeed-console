@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import {
   consoleFetchText,
   K8sResourceKind,
+  Selector,
   useK8sWatchResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
@@ -259,9 +260,9 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     isCronJob ? { isList: true, kind: 'Job', namespace } : null,
   );
 
-  let selector;
+  let selector: Selector | undefined;
   if (kind === 'Job') {
-    selector = { 'job-name': name };
+    selector = { matchLabels: { 'job-name': name } };
   } else if (isCronJob) {
     const ownedJobNames = (jobs || [])
       .filter((job) =>
@@ -283,7 +284,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
       selector = undefined;
     }
   } else if (kind === 'VirtualMachine' || kind === 'VirtualMachineInstance') {
-    selector = { 'vm.kubevirt.io/name': name };
+    selector = { matchLabels: { 'vm.kubevirt.io/name': name } };
   } else if (scaleTarget && scaleTargetLoaded && !scaleTargetError) {
     selector = scaleTarget.spec?.selector;
   } else {
@@ -299,7 +300,8 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
   const changePod = (newPod: K8sResourceKind) => {
     if (newPod) {
       setPod(newPod);
-      const newContainers = newPod.spec?.containers?.map((c) => c.name).sort() ?? [];
+      const newContainers =
+        newPod.spec?.containers?.map((c: { name: string }) => c.name).sort() ?? [];
       setContainers(newContainers);
       setContainer(newContainers[0]);
     }
