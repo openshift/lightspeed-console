@@ -146,7 +146,7 @@ spec:
             env:
               - name: COMMIT_SHA
                 value: $(params.commit)
-            image: cypress/browsers:26.0.0
+            image: mcr.microsoft.com/playwright:v1.60.0-noble
             resources:
               limits:
                 memory: 4Gi
@@ -219,31 +219,29 @@ spec:
               - name: credentials
                 mountPath: /credentials
             env:
-              - name: CYPRESS_KUBECONFIG_PATH
+              - name: KUBECONFIG_PATH
                 value: "/credentials/$(steps.get-kubeconfig.results.kubeconfig)"
-              - name: CYPRESS_LOGIN_IDP
+              - name: LOGIN_IDP
                 value: "kube:admin"
               - name: LLM_TOKEN_PATH
                 value: "/var/run/openai/token"
-              - name: CYPRESS_CONSOLE_IMAGE
+              - name: CONSOLE_IMAGE
                 value: "$(params.console-image)"
               - name: COMMIT_SHA
                 value: "$(params.commit)"
               - name: PASSWORD_PATH
                 value: "/credentials/$(steps.get-kubeconfig.results.passwordPath)"
-              - name: CYPRESS_BASE_URL
+              - name: BASE_URL
                 value: "$(steps.get-kubeconfig.results.consoleURL)"
             resources:
               limits:
                 memory: 8Gi
-            image: cypress/browsers:26.0.0
+            image: mcr.microsoft.com/playwright:v1.60.0-noble
             script: |
               echo "COMMIT_SHA: ${COMMIT_SHA}"
-              echo "CYPRESS_BASE_URL: ${CYPRESS_BASE_URL}"
-              echo "CYPRESS_CONSOLE_IMAGE: ${CYPRESS_CONSOLE_IMAGE}"
-              echo "CYPRESS_KUBECONFIG_PATH: ${CYPRESS_KUBECONFIG_PATH}"
-              echo "---------------------------------------------"
-              cat "${CYPRESS_KUBECONFIG_PATH}"
+              echo "BASE_URL: ${BASE_URL}"
+              echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
+              echo "KUBECONFIG_PATH: ${KUBECONFIG_PATH}"
               echo "---------------------------------------------"
               wget --no-verbose -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
                   && tar -xvzf oc.tar.gz \
@@ -276,18 +274,16 @@ spec:
               echo "---------------------------------------------"
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
-              npx cypress install
-              echo "---------------------------------------------"
-              export CYPRESS_LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
+              export LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
               set +e
-              NO_COLOR=1 npx cypress run
+              npx playwright test
               err_status=$?
-              echo -n "${err_status}" > /workspace/cypress-exit-code
+              echo -n "${err_status}" > /workspace/playwright-exit-code
               echo "---------------------------------------------"
               ls ./gui_test_screenshots
               mv ./gui_test_screenshots /workspace/artifacts/
               set -e
-              echo "Cypress exit code: ${err_status}"
+              echo "Playwright exit code: ${err_status}"
               echo "---------------------------------------------"
           - name: gather-cluster-resources
             onError: continue
@@ -334,23 +330,23 @@ spec:
                 value: "quay.io/openshift-lightspeed/ols-console-artifacts:$(params.commit)"
               - name: credentials-volume-name
                 value: ols-konflux-artifacts-bot-creds
-          - name: assert-cypress-succeeded
+          - name: assert-playwright-succeeded
             image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
             workingDir: "/workspace/"
             script: |
               #!/bin/bash
               set -euo pipefail
-              code_file="/workspace/cypress-exit-code"
+              code_file="/workspace/playwright-exit-code"
               if [ ! -f "$code_file" ]; then
-                echo "Cypress exit code file missing at $code_file"
+                echo "Playwright exit code file missing at $code_file"
                 exit 99
               fi
               code=$(cat "$code_file")
               if [ "$code" != "0" ]; then
-                echo "Cypress failed with exit code: $code"
+                echo "Playwright failed with exit code: $code"
                 exit "$code"
               fi
-              echo "Cypress tests passed"
+              echo "Playwright tests passed"
           - name: fail-if-any-step-failed
             ref:
               resolver: git
