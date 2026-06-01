@@ -88,9 +88,8 @@ and communicates with the OLS backend service via the console's plugin proxy.
 
 | Path | Purpose |
 |---|---|
-| `tests/` | Cypress e2e test specs |
-| `cypress/` | Cypress support files and fixtures |
-| `cypress.config.ts` | Cypress configuration |
+| `tests/` | Playwright e2e test specs, support fixtures, and page objects |
+| `playwright.config.ts` | Playwright configuration |
 | `unit-tests/` | Unit tests using Node's built-in test runner. Tests for: redux-reducers, error handling, attachments |
 
 ## Data Flow

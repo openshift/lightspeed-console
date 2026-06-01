@@ -8,3 +8,4 @@ CLAUDE.local.md
 dist/
 gui_test_screenshots/
 node_modules/
+tests/.auth/
