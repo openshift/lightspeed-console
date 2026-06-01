@@ -24,7 +24,7 @@
   "dependencies": {
     "@openshift-console/dynamic-plugin-sdk": "4.22.0-prerelease.3",
     "@openshift-console/dynamic-plugin-sdk-webpack": "4.22.0-prerelease.3",
-    "@patternfly/chatbot": "6.6.0-prerelease.6",
+    "@patternfly/chatbot": "6.6.0",
     "@patternfly/react-code-editor": "6.4.3",
     "@patternfly/react-core": "6.4.3",
     "@patternfly/react-icons": "6.4.0",
