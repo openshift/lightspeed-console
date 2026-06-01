@@ -109,6 +109,17 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 - Unit tests live in `unit-tests/` and use Node's built-in test runner
 - To run: `npm run test:unit`
 
+### Keeping tests up to date
+
+When making code changes, add or update unit tests (`unit-tests/`) and
+end-to-end tests (`tests/`) to cover new or changed functionality.
+
+### Spec files
+
+Spec files in `.ai/spec/` describe the plugin's architecture, features, and
+implementation details. When your change affects behavior, data flow, or
+structure, update the relevant spec files.
+
 ### Do not commit
 
 - Secrets or tokens (e.g., `OLS_API_BEARER_TOKEN`)
