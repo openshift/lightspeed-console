@@ -67,7 +67,7 @@
     },
     {
       "groupName": "test",
-      "matchPackageNames": ["@cypress/*", "cypress", "mocha-junit-reporter"]
+      "matchPackageNames": ["@playwright/*"]
     }
   ]
 }
