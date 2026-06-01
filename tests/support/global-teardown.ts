@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { oc } from './fixtures';
+import { gatherClusterArtifacts, oc } from './fixtures';
 
 const globalTeardown = async () => {
   if (process.env.SKIP_OLS_SETUP) {
@@ -9,6 +9,13 @@ const globalTeardown = async () => {
 
   const OLS_NAMESPACE = 'openshift-lightspeed';
   const username = process.env.LOGIN_USERNAME || 'kubeadmin';
+
+  console.log('Gathering cluster artifacts...');
+  try {
+    gatherClusterArtifacts();
+  } catch {
+    // Ignore errors during artifact gathering
+  }
 
   try {
     oc(['delete', '--timeout=2m', 'OLSConfig', 'cluster']);
