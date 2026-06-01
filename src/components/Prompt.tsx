@@ -8,6 +8,10 @@ import {
   consoleFetch,
   consoleFetchJSON,
   K8sResourceKind,
+  PrometheusAlert,
+  PrometheusRule,
+  PrometheusRulesResponse,
+  Silence,
   useK8sWatchResource,
 } from '@openshift-console/dynamic-plugin-sdk';
 import { MessageBar } from '@patternfly/chatbot';
@@ -184,8 +188,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       reader.onload = (event) => {
         try {
           const yaml = event.target?.result as string;
-          const content = loadYAML(yaml);
-          if (typeof content !== 'object') {
+          const content = loadYAML(yaml) as K8sResourceKind | null;
+          if (typeof content !== 'object' || content === null) {
             setError(t('Uploaded file is not valid YAML'));
             return;
           }
@@ -356,8 +360,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         const labels = Object.fromEntries(new URLSearchParams(location.search));
         const alertsEndpoint = labels.cluster ? ALERTS_THANOS_ENDPOINT : ALERTS_ENDPOINT;
         consoleFetchJSON(alertsEndpoint, 'get', getRequestInitWithAuthHeader())
-          .then((response) => {
-            let alert;
+          .then((response: PrometheusRulesResponse) => {
+            let alert: PrometheusAlert | undefined;
             each(response?.data?.groups, (group) => {
               each(group.rules, (rule) => {
                 alert = rule.alerts?.find((a) => isMatch(labels, a.labels));
@@ -406,7 +410,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
       } else if (kind === 'Silence') {
         setLoading();
         consoleFetchJSON(`${SILENCE_ENDPOINT}/${name}`, 'get', getRequestInitWithAuthHeader())
-          .then((silence) => {
+          .then((silence: Silence) => {
             try {
               const silenceName =
                 silence.matchers
@@ -433,8 +437,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         const ruleLabels = Object.fromEntries(new URLSearchParams(location.search));
         const rulesEndpoint = ruleLabels.cluster ? ALERTS_THANOS_ENDPOINT : ALERTS_ENDPOINT;
         consoleFetchJSON(rulesEndpoint, 'get', getRequestInitWithAuthHeader())
-          .then((response) => {
-            let matchedRule;
+          .then((response: PrometheusRulesResponse) => {
+            let matchedRule: PrometheusRule | undefined;
             each(response?.data?.groups, (group) => {
               const found = group.rules?.find(
                 (rule) => rule.type === 'alerting' && alertingRuleID(group, rule) === name,
@@ -575,7 +579,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
     dispatch(
       chatHistoryPush({
-        attachments: attachments.map((a) => omit(a, 'originalValue')),
+        attachments: attachments.map((a: Attachment) => omit(a, 'originalValue')),
         hidden: hidePrompt,
         text: query,
         who: 'user',
@@ -907,7 +911,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         hasStopButton={isStreaming}
         innerRef={textareaRef}
         isSendButtonDisabled={!query || query.trim().length === 0}
-        onChange={(e) => onChange(e, e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e, e.target.value)}
         onSendMessage={onSubmit}
         placeholder={
           isTroubleshooting

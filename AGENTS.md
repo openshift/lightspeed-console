@@ -41,7 +41,7 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 - Put images and other assets in `src/assets/`
 - Modules and extensions exposed by the plugin are added to
   `console-extensions.json`
-- End-to-end tests live in `tests/` and `cypress/`
+- End-to-end tests live in `tests/`
 - Unit tests live in `unit-tests/`
 
 ### Coding style
@@ -95,17 +95,24 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
   - The `start-console.sh` script includes a proxy configuration that routes
     requests through the console, avoiding CORS issues
 
-### End-to-end tests (Cypress)
+### End-to-end tests (Playwright)
 
+- Run `npx playwright install` to download browser binaries (required because
+  `.npmrc` sets `ignore-scripts=true`)
 - To run all tests: `npm run test-headless`
 - To run just some tests filtered by tag:
-  `npm run test-headless -- --expose grepTags="@attach"`
+  `npm run test-headless -- --grep "@attach"`
 - See `tests/README.md` for full details and environment variables
 
 ### Unit tests
 
 - Unit tests live in `unit-tests/` and use Node's built-in test runner
 - To run: `npm run test:unit`
+
+### Keeping tests up to date
+
+When making code changes, add or update unit tests (`unit-tests/`) and
+end-to-end tests (`tests/`) to cover new or changed functionality.
 
 ### Do not commit
 
