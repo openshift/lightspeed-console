@@ -7,10 +7,10 @@
     "jsx": "react",
     "allowJs": true,
     "strict": true,
-    "noImplicitAny": false,
     "strictNullChecks": false,
     "noUnusedLocals": true,
-    "sourceMap": false
+    "sourceMap": false,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src", "types.d.ts"]
 }

@@ -217,6 +217,10 @@
   text-align: center;
 }
 
+.ols-plugin__history-compressed {
+  width: fit-content;
+}
+
 .ols-plugin__header {
   --logo-size: var(--pf-v5-global--spacer--2xl);
   --logo-spacer-left: var(--pf-v5-global--spacer--lg);
@@ -277,6 +281,36 @@
   color: var(--pf-v5-global--Color--200);
   margin: var(--pf-v5-global--spacer--lg) auto;
   max-width: 30rem;
+}
+
+.ols-plugin__tool-call {
+  background-color: var(--pf-v5-global--palette--gold-50);
+  border: none;
+  margin-bottom: var(--pf-v5-global--spacer--md);
+}
+
+/* stylelint-disable-next-line selector-disallowed-list */
+.pf-v5-theme-dark .ols-plugin__tool-call {
+  background-color: var(--pf-v5-global--palette--gold-700);
+}
+
+.ols-plugin__tool-call-args {
+  margin-left: var(--pf-v5-global--spacer--xl);
+}
+
+.ols-plugin__tool-call-description {
+  margin-bottom: var(--pf-v5-global--spacer--sm);
+  margin-top: var(--pf-v5-global--spacer--sm);
+}
+
+.ols-plugin__tool-call-header {
+  align-items: center;
+  display: flex;
+  gap: var(--pf-v5-global--spacer--sm);
+}
+
+.ols-plugin__tool-call-icon {
+  color: var(--pf-v5-global--warning-color--100);
 }
 
 .ols-plugin__tool-metadata {

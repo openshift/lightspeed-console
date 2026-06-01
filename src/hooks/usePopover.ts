@@ -6,7 +6,7 @@ import Popover from '../components/Popover';
 
 const POPOVER_ID = 'plugin__lightspeed-console-plugin__POPOVER_ID';
 
-const usePopover = () => {
+const usePopover = (): null => {
   const [isLaunched, , setLaunched] = useBoolean(false);
 
   const launchModal = useModal();
@@ -21,7 +21,7 @@ const usePopover = () => {
     }
   }, [isLaunched, launchModal, setLaunched]);
 
-  return [];
+  return null;
 };
 
 export default usePopover;
