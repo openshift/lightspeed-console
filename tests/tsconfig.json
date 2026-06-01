@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     "types": [
-      "cypress",
-      "node",
-      "@cypress/grep"
+      "node"
     ]
   },
   "include": [
