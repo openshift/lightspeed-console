@@ -198,10 +198,16 @@ spec:
     const existingConfig = JSON.parse(configCheck);
     if (existingConfig.metadata.deletionTimestamp) {
       console.log('OLSConfig is being deleted. Waiting for deletion...');
-      execSync(
-        `timeout 180 bash -c 'until ! oc get ${OLS_CONFIG_KIND} ${OLS_CONFIG_NAME} --kubeconfig ${KUBECONFIG} 2>/dev/null; do echo "Waiting for deletion..."; sleep 5; done'`,
-        { encoding: 'utf-8', timeout: 4 * MINUTE },
-      );
+      const deadline = Date.now() + 3 * MINUTE;
+      while (Date.now() < deadline) {
+        try {
+          oc(['get', OLS_CONFIG_KIND, OLS_CONFIG_NAME]);
+        } catch {
+          break;
+        }
+        console.log('Waiting for deletion...');
+        execSync('sleep 5');
+      }
       configExists = false;
     } else {
       console.log('OLSConfig already exists. Using existing config.');
