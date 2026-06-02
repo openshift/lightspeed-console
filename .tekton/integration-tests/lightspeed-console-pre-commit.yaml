@@ -37,68 +37,44 @@ spec:
           value: $(context.pipelineRun.name)
         - name: ownerUid
           value: $(context.pipelineRun.uid)
-    - name: provision-cluster
+    - name: provision-ephemeral-cluster
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/openshift/konflux-tasks
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: tasks/provision-ephemeral-cluster/0.1/provision-ephemeral-cluster.yaml
+      params:
+        - name: ownerName
+          value: $(context.pipelineRun.name) # Internal usage only, use always this value here
+        - name: ownerUid
+          value: $(context.pipelineRun.uid) # Internal usage only, use always this value here
+        - name: prEventPayload
+          value: '{{ body }}' # Internal usage only, use always this value here
+        - name: prEventHeaders
+          value: '{{ headers }}' # Internal usage only, use always this value here
+        - name: workflow
+          value: generic-claim
+        - name: clusterClaim
+          value: |
+            {
+              "architecture": "amd64",
+              "cloud": "aws",
+              "labels": {
+                "region": "us-east-1",
+                "variant": "fips"
+              },
+              "owner": "obs",
+              "product": "ocp",
+              "timeout": "1h30m0s",
+              "version": "4.22"
+            }
       runAfter:
         - eaas-provision-space
         - lint
-      taskSpec:
-        results:
-          - name: clusterName
-            value: "$(steps.create-cluster.results.clusterName)"
-        steps:
-          - name: pick-version
-            ref:
-              resolver: git
-              params:
-                - name: url
-                  value: https://github.com/konflux-ci/build-definitions.git
-                - name: revision
-                  value: main
-                - name: pathInRepo
-                  value: stepactions/eaas-get-latest-openshift-version-by-prefix/0.1/eaas-get-latest-openshift-version-by-prefix.yaml
-            params:
-              - name: prefix
-                value: "4.22."
-          - name: create-cluster
-            ref:
-              resolver: git
-              params:
-                - name: url
-                  value: https://github.com/konflux-ci/build-definitions.git
-                - name: revision
-                  value: main
-                - name: pathInRepo
-                  value: stepactions/eaas-create-ephemeral-cluster-hypershift-aws/0.1/eaas-create-ephemeral-cluster-hypershift-aws.yaml
-            params:
-              - name: eaasSpaceSecretRef
-                value: $(tasks.eaas-provision-space.results.secretRef)
-              - name: version
-                value: "$(steps.pick-version.results.version)"
-              - name: instanceType
-                value: "m5.xlarge"
-              - name: imageContentSources
-                value: |
-                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-rhel9-operator
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-operator
-                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-operator-bundle
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/bundle
-                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-service-api-rhel9
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-service
-                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-console-plugin-rhel9
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/ols/lightspeed-console
-                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-console-plugin-pf5-rhel9
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-console-pf5
-                  - source: registry.redhat.io/openshift-lightspeed/lightspeed-to-dataverse-exporter-rhel9
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/lightspeed-to-dataverse-exporter
-                  - source: registry.redhat.io/openshift-lightspeed/openshift-mcp-server-rhel9
-                    mirrors:
-                      - quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server
     - name: extract-snapshot-metadata
       description: Extract console image and commit from SNAPSHOT input
       runAfter:
@@ -174,12 +150,14 @@ spec:
       description: Task to run tests from service repository
       runAfter:
         - extract-snapshot-metadata
-        - provision-cluster
+        - provision-ephemeral-cluster
       params:
         - name: console-image
           value: $(tasks.extract-snapshot-metadata.results.console-image)
         - name: commit
           value: $(tasks.extract-snapshot-metadata.results.commit)
+        - name: clusterCredentialsSecretRef
+          value: $(tasks.provision-ephemeral-cluster.results.secretRef)
       taskSpec:
         volumes:
           - name: openai-token
@@ -193,24 +171,31 @@ spec:
         params:
           - name: console-image
           - name: commit
+          - name: clusterCredentialsSecretRef
+            type: string
+            description: "The secret that holds the cluster credentials"
         steps:
-          - name: get-kubeconfig
-            ref:
-              resolver: git
-              params:
-                - name: url
-                  value: https://github.com/konflux-ci/build-definitions.git
-                - name: revision
-                  value: main
-                - name: pathInRepo
-                  value: stepactions/eaas-get-ephemeral-cluster-credentials/0.1/eaas-get-ephemeral-cluster-credentials.yaml
-            params:
-              - name: eaasSpaceSecretRef
-                value: $(tasks.eaas-provision-space.results.secretRef)
-              - name: clusterName
-                value: "$(tasks.provision-cluster.results.clusterName)"
-              - name: credentials
-                value: credentials
+          - name: debug-secret-keys
+            onError: continue
+            image: registry.redhat.io/openshift4/ose-cli:latest
+            env:
+              - name: KUBECONFIG_VALUE
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.clusterCredentialsSecretRef)
+                    key: kubeconfig
+              - name: SECRET_NAME
+                value: $(params.clusterCredentialsSecretRef)
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              echo "=== Secret keys in clusterCredentialsSecretRef ==="
+              echo "$KUBECONFIG_VALUE" > /tmp/kubeconfig
+              dnf -y install jq
+              kubectl --kubeconfig /tmp/kubeconfig get secret "$SECRET_NAME" -o json 2>/dev/null | jq -r '.data | keys[]' || echo "Secret not found in cluster"
+              echo "=== Trying to read secret from local namespace ==="
+              kubectl get secret "$SECRET_NAME" -o json 2>/dev/null | jq -r '.data | keys[]' || echo "Secret not found locally either"
+              echo "=== Done ==="
           - name: run-e2e-tests
             onError: continue
             volumeMounts:
@@ -220,7 +205,12 @@ spec:
                 mountPath: /credentials
             env:
               - name: KUBECONFIG_PATH
-                value: "/credentials/$(steps.get-kubeconfig.results.kubeconfig)"
+                value: "/credentials/kubeconfig"
+              - name: KUBECONFIG_VALUE
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.clusterCredentialsSecretRef)
+                    key: kubeconfig
               - name: LOGIN_IDP
                 value: "kube:admin"
               - name: LLM_TOKEN_PATH
@@ -229,15 +219,19 @@ spec:
                 value: "$(params.console-image)"
               - name: COMMIT_SHA
                 value: "$(params.commit)"
-              - name: PASSWORD_PATH
-                value: "/credentials/$(steps.get-kubeconfig.results.passwordPath)"
-              - name: BASE_URL
-                value: "$(steps.get-kubeconfig.results.consoleURL)"
+              # TODO: determine the correct secret key for kubeadmin password
+              # - name: PASSWORD_VALUE
+              #   valueFrom:
+              #     secretKeyRef:
+              #       name: $(params.clusterCredentialsSecretRef)
+              #       key: password  # key name TBD — check debug-secret-keys step output
             resources:
               limits:
                 memory: 8Gi
             image: mcr.microsoft.com/playwright:v1.60.0-noble
             script: |
+              echo "$KUBECONFIG_VALUE" > /credentials/kubeconfig
+              export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
               echo "COMMIT_SHA: ${COMMIT_SHA}"
               echo "BASE_URL: ${BASE_URL}"
               echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
@@ -274,7 +268,9 @@ spec:
               echo "---------------------------------------------"
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
-              export LOGIN_PASSWORD=$(cat ${PASSWORD_PATH})
+              # TODO: set LOGIN_PASSWORD once the correct secret key is known
+              # export LOGIN_PASSWORD="$PASSWORD_VALUE"
+              export LOGIN_PASSWORD="placeholder"
               set +e
               npx playwright test
               err_status=$?
@@ -300,7 +296,7 @@ spec:
               - name: credentials
                 value: "credentials"
               - name: kubeconfig
-                value: "$(steps.get-kubeconfig.results.kubeconfig)"
+                value: "kubeconfig"
               - name: artifact-dir
                 value: "/workspace/artifacts/konflux-artifacts"
           # validate that the cluster resources are available in another tekton step
