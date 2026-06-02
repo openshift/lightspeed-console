@@ -1,8 +1,10 @@
 import { test as base, expect, type Page } from '@playwright/test';
 import { execFileSync } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const API_BASE_URL = '/api/proxy/plugin/lightspeed-console-plugin/ols';
-const getApiUrl = (path: string): string => `${API_BASE_URL}${path}`;
+const getApiUrl = (apiPath: string): string => `${API_BASE_URL}${apiPath}`;
 
 export const CONVERSATION_ID = '5f424596-a4f9-4a3a-932b-46a768de3e7c';
 
@@ -69,6 +71,101 @@ export const oc = (args: string[]): string =>
     encoding: 'utf-8',
     timeout: 180_000,
   });
+
+const ARTIFACTS_DIR = './gui_test_screenshots/artifacts';
+const OLS_NAMESPACE = 'openshift-lightspeed';
+
+const CLUSTER_RESOURCES = [
+  'pods',
+  'services',
+  'deployments',
+  'replicasets',
+  'routes',
+  'rolebindings',
+  'serviceaccounts',
+  'olsconfig',
+  'clusterserviceversion',
+  'installplan',
+  'configmap',
+];
+
+function safeOc(args: string[]): string | null {
+  try {
+    return oc(args);
+  } catch (e: unknown) {
+    // eslint-disable-next-line no-console
+    console.error(`oc ${args.slice(0, 3).join(' ')} failed: ${e}`);
+    return null;
+  }
+}
+
+export function gatherClusterArtifacts(): void {
+  const clusterDir = path.join(ARTIFACTS_DIR, 'cluster');
+  const podLogsDir = path.join(clusterDir, 'podlogs');
+  fs.mkdirSync(podLogsDir, { recursive: true });
+
+  for (const resource of CLUSTER_RESOURCES) {
+    const output = safeOc(['get', resource, '-n', OLS_NAMESPACE, '-o', 'yaml']);
+    if (output) {
+      fs.writeFileSync(path.join(clusterDir, `${resource}.yaml`), output);
+    }
+  }
+
+  const podsJson = safeOc(['get', 'pods', '-n', OLS_NAMESPACE, '-o', 'json']);
+  if (podsJson) {
+    try {
+      const pods = JSON.parse(podsJson);
+      for (const pod of pods.items || []) {
+        const podName = pod.metadata?.name;
+        const getName = (c: { name: string }) => c.name;
+        const containers = (pod.spec?.containers || []).map(getName);
+        const initContainers = (pod.spec?.initContainers || []).map(getName);
+        const ephemeralContainers = (pod.status?.ephemeralContainerStatuses || []).map(getName);
+
+        const groups: { names: string[]; suffix: string }[] = [
+          { names: containers, suffix: '' },
+          { names: initContainers, suffix: '.init' },
+          { names: ephemeralContainers, suffix: '.ephemeral' },
+        ];
+
+        for (const { names, suffix } of groups) {
+          for (const container of names) {
+            const logPrefix = `${podName}-${container}${suffix}`;
+            const current = safeOc([
+              'logs',
+              `pod/${podName}`,
+              '-c',
+              container,
+              '-n',
+              OLS_NAMESPACE,
+            ]);
+            if (current) {
+              fs.writeFileSync(path.join(podLogsDir, `${logPrefix}.log`), current);
+            }
+            const previous = safeOc([
+              'logs',
+              `pod/${podName}`,
+              '-c',
+              container,
+              '--previous',
+              '-n',
+              OLS_NAMESPACE,
+            ]);
+            if (previous) {
+              fs.writeFileSync(path.join(podLogsDir, `${logPrefix}.previous.log`), previous);
+            }
+          }
+        }
+      }
+    } catch (e: unknown) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to parse pod JSON: ${e}`);
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(`Cluster artifacts gathered in ${clusterDir}`);
+}
 
 export const interceptQuery = async (
   page: Page,
