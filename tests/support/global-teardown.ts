@@ -11,11 +11,7 @@ const globalTeardown = async () => {
   const username = process.env.LOGIN_USERNAME || 'kubeadmin';
 
   console.log('Gathering cluster artifacts...');
-  try {
-    gatherClusterArtifacts();
-  } catch {
-    // Ignore errors during artifact gathering
-  }
+  gatherClusterArtifacts();
 
   try {
     oc(['delete', '--timeout=2m', 'OLSConfig', 'cluster']);
