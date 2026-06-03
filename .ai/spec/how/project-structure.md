@@ -124,7 +124,8 @@ containing all three UI variants:
 
 At container startup, `entrypoint.sh` reads the `OCP_VERSION` env var (set by
 the operator), symlinks the matching build directory to `/usr/share/nginx/html`,
-and execs nginx. Unsupported or missing versions cause a clear error and exit.
+and execs nginx. Older OCP versions are mapped to their specific builds; any
+unrecognized or missing version defaults to the main build (latest).
 
 ### CI/CD pipeline (`.tekton/`)
 
@@ -132,9 +133,10 @@ and execs nginx. Unsupported or missing versions cause a clear error and exit.
 |---|---|
 | `.tekton/lightspeed-console-push.yaml` | Konflux/Tekton pipeline for push events |
 | `.tekton/lightspeed-console-pull-request.yaml` | Konflux/Tekton pipeline for pull request events |
+| `.tekton/integration-tests/lightspeed-console-pre-commit.yaml` | Integration test pipeline: provisions an ephemeral cluster, installs the operator, runs lint/unit tests and Playwright e2e tests |
 
-Both pipelines use `git-clone-oci-ta` with `SUBMODULES: "true"` to fetch the
-git submodules. The Cachi2 `prefetch-input` includes npm paths for all three
+The push and pull-request pipelines use `git-clone-oci-ta` with `submodules:
+"true"` to fetch the git submodules. The Cachi2 `prefetch-input` includes npm paths for all three
 source directories (`"."`, `"branches/pf5"`, `"branches/4-19"`) plus a single
 RPM path (`"."`). This enables hermetic builds with pre-fetched dependencies.
 
@@ -142,9 +144,8 @@ RPM path (`"."`). This enables hermetic builds with pre-fetched dependencies.
 
 | Path | Purpose |
 |---|---|
-| `tests/` | Cypress e2e test specs |
-| `cypress/` | Cypress support files and fixtures |
-| `cypress.config.ts` | Cypress configuration |
+| `tests/` | Playwright e2e test specs |
+| `playwright.config.ts` | Playwright configuration |
 | `unit-tests/` | Unit tests using Node's built-in test runner. Tests for: redux-reducers, error handling, attachments, pageContext (model key resolution), validation (alert rule ID hashing) |
 
 ## Data Flow
