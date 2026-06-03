@@ -144,7 +144,6 @@ sending.
 
 | Jira Key | Summary |
 |---|---|
-| OLS-1401 | Upload local YAML files (completed) |
 | OLS-1896 | ACM: Attach ApplicationSet objects from Applications page |
 | OLS-2065 | ACM: Attach policy violations |
 | OLS-2116 | ACM: Attach cluster info in ACM-enabled environments |
