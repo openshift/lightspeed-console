@@ -73,33 +73,41 @@ product is being rebranded to "Red Hat OpenShift Intelligent Assistant."
 14. When Troubleshooting mode is active, a removable label is displayed in
     the message bar. Removing the label switches back to Ask mode.
 
+### Deployment Model
+
+15. The plugin is shipped as a single container image containing UI builds
+    for all supported OCP versions (4.16+). The operator sets an
+    `OCP_VERSION` environment variable on the container, and the entrypoint
+    script serves the correct build at startup. This replaces the previous
+    three-image approach.
+
 ### Relationship to OLS Service
 
-15. The plugin is a pure UI client of the OLS backend service. It has no
+16. The plugin is a pure UI client of the OLS backend service. It has no
     local AI processing, no local conversation storage, and no direct LLM
     communication. All intelligence comes from the service.
 
-16. The plugin sends queries to the streaming endpoint and processes
+17. The plugin sends queries to the streaming endpoint and processes
     server-sent events (SSE) for incremental response rendering.
 
-17. The plugin sends conversation IDs with requests to maintain multi-turn
+18. The plugin sends conversation IDs with requests to maintain multi-turn
     context. The service manages conversation history; the plugin maintains
     only the current session's chat entries in Redux state.
 
 ### Internationalization
 
-18. All user-facing strings must be wrapped in translation calls using the
+19. All user-facing strings must be wrapped in translation calls using the
     `plugin__lightspeed-console-plugin` namespace.
 
-19. Locale files must be updated when UI text changes.
+20. Locale files must be updated when UI text changes.
 
 ### Theme Support
 
-20. The plugin must support both light and dark console themes. Theme
+21. The plugin must support both light and dark console themes. Theme
     detection uses the user's console theme setting, falling back to the
     OS-level `prefers-color-scheme` media query when set to system default.
 
-21. Theme-dependent assets (logos, avatars) must switch based on the active
+22. Theme-dependent assets (logos, avatars) must switch based on the active
     theme.
 
 ## Configuration Surface
