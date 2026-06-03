@@ -175,27 +175,6 @@ spec:
             type: string
             description: "The secret that holds the cluster credentials"
         steps:
-          - name: debug-secret-keys
-            onError: continue
-            image: registry.redhat.io/openshift4/ose-cli:latest
-            env:
-              - name: KUBECONFIG_VALUE
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.clusterCredentialsSecretRef)
-                    key: kubeconfig
-              - name: SECRET_NAME
-                value: $(params.clusterCredentialsSecretRef)
-            script: |
-              #!/bin/bash
-              set -euo pipefail
-              echo "=== Secret keys in clusterCredentialsSecretRef ==="
-              echo "$KUBECONFIG_VALUE" > /tmp/kubeconfig
-              dnf -y install jq
-              kubectl --kubeconfig /tmp/kubeconfig get secret "$SECRET_NAME" -o json 2>/dev/null | jq -r '.data | keys[]' || echo "Secret not found in cluster"
-              echo "=== Trying to read secret from local namespace ==="
-              kubectl get secret "$SECRET_NAME" -o json 2>/dev/null | jq -r '.data | keys[]' || echo "Secret not found locally either"
-              echo "=== Done ==="
           - name: run-e2e-tests
             onError: continue
             volumeMounts:
@@ -219,12 +198,11 @@ spec:
                 value: "$(params.console-image)"
               - name: COMMIT_SHA
                 value: "$(params.commit)"
-              # TODO: determine the correct secret key for kubeadmin password
-              # - name: PASSWORD_VALUE
-              #   valueFrom:
-              #     secretKeyRef:
-              #       name: $(params.clusterCredentialsSecretRef)
-              #       key: password  # key name TBD — check debug-secret-keys step output
+              - name: PASSWORD_VALUE
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.clusterCredentialsSecretRef)
+                    key: kubeAdminPassword
             resources:
               limits:
                 memory: 8Gi
@@ -268,9 +246,7 @@ spec:
               echo "---------------------------------------------"
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
-              # TODO: set LOGIN_PASSWORD once the correct secret key is known
-              # export LOGIN_PASSWORD="$PASSWORD_VALUE"
-              export LOGIN_PASSWORD="placeholder"
+              export LOGIN_PASSWORD="$PASSWORD_VALUE"
               set +e
               npx playwright test
               err_status=$?
