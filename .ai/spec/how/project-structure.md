@@ -116,7 +116,8 @@ containing all three UI variants:
 
 At container startup, `entrypoint.sh` reads the `OCP_VERSION` env var (set by
 the operator), symlinks the matching build directory to `/usr/share/nginx/html`,
-and execs nginx. Unsupported or missing versions cause a clear error and exit.
+and execs nginx. Older OCP versions are mapped to their specific builds; any
+unrecognized or missing version defaults to the main build (latest).
 
 ### CI/CD pipeline (`.tekton/`)
 
