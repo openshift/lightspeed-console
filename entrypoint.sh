@@ -7,5 +7,5 @@ case "${OCP_VERSION:-}" in
   *)              BUILD_DIR=/builds/main ;;
 esac
 
-ln -sfn "$BUILD_DIR" /usr/share/nginx/html
+ln -sfn "$BUILD_DIR" /tmp/nginx/html
 exec nginx -g 'daemon off;' -e stderr

@@ -44,10 +44,10 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 RUN rm -rf /usr/share/nginx/html && \
+    ln -s /tmp/nginx/html /usr/share/nginx/html && \
     mkdir -p /tmp/nginx && \
     chgrp -R 0 /var/log/nginx /var/lib/nginx /tmp/nginx /builds && \
-    chmod -R g=u /var/log/nginx /var/lib/nginx /tmp/nginx /builds && \
-    chgrp 0 /usr/share/nginx && chmod g=u /usr/share/nginx
+    chmod -R g=u /var/log/nginx /var/lib/nginx /tmp/nginx /builds
 
 LABEL name="openshift-lightspeed/lightspeed-console-plugin-rhel9" \
       cpe="cpe:/a:redhat:openshift_lightspeed:1::el9" \
