@@ -198,7 +198,7 @@ spec:
                 value: "$(params.console-image)"
               - name: COMMIT_SHA
                 value: "$(params.commit)"
-              - name: PASSWORD_VALUE
+              - name: LOGIN_PASSWORD
                 valueFrom:
                   secretKeyRef:
                     name: $(params.clusterCredentialsSecretRef)
@@ -246,7 +246,6 @@ spec:
               echo "---------------------------------------------"
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
-              export LOGIN_PASSWORD="$PASSWORD_VALUE"
               set +e
               npx playwright test
               err_status=$?
@@ -329,3 +328,19 @@ spec:
                   value: main
                 - name: pathInRepo
                   value: stepactions/fail-if-any-step-failed/0.1/fail-if-any-step-failed.yaml
+  finally:
+  - name: deprovision-ephemeral-cluster
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/openshift/konflux-tasks
+      - name: revision
+        value: main
+      - name: pathInRepo
+        value: tasks/deprovision-ephemeral-cluster/0.1/deprovision-ephemeral-cluster.yaml
+    params:
+    - name: testPlatformClusterClaimName
+      value: $(tasks.provision-ephemeral-cluster.results.testPlatformClusterClaimName)
+    - name: testPlatformClusterClaimNamespace
+      value: $(tasks.provision-ephemeral-cluster.results.testPlatformClusterClaimNamespace)
