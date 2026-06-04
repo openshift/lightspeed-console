@@ -18,6 +18,8 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `src/error.ts` | `ErrorType` and `FetchError` types. `getFetchErrorMessage()` extracts structured error messages from fetch responses, handling both string and object `detail` fields. |
 | `src/flags.ts` | `FLAG_LIGHTSPEED_PLUGIN` constant and `enableLightspeedPluginFlag()` handler for the `console.flag` extension. |
 | `src/clipboard.ts` | `copyToClipboard(value)` utility wrapping `navigator.clipboard.writeText()`. |
+| `src/pageContext.ts` | `resolveModelKey()` resolves URL resource keys to K8s model keys. Handles direct model keys (e.g., `Pod`), plural-based keys (e.g., `pods`), and group~version~kind references (e.g., `core~v1~Pod`). |
+| `src/validation.ts` | `alertingRuleID()` generates murmur3 hash matching the monitoring-console-plugin's alerting rule ID format. `isValidAlertName()` validates alert name strings. |
 
 ### `src/hooks/` -- Custom React hooks
 
@@ -51,7 +53,6 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `src/components/AttachEventsModal.tsx` | Modal for selecting Kubernetes events to attach. |
 | `src/components/AttachLogModal.tsx` | Modal for selecting pod logs. Container selection, line count slider, live preview. |
 | `src/components/ErrorBoundary.tsx` | React error boundary. Catches component crashes and renders fallback. |
-| `src/components/Modal.tsx` | Reusable modal wrapper component. |
 | `src/components/ResourceIcon.tsx` | Renders Kubernetes resource kind icons. |
 | `src/components/CopyAction.tsx` | Copy-to-clipboard button with visual confirmation. |
 | `src/components/ImportAction.tsx` | "Import YAML" action button. Opens confirmation modal, then navigates to console's YAML import page with content. |
@@ -59,9 +60,16 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `src/components/ReadinessAlert.tsx` | Alert shown when OLS service is not ready. |
 | `src/components/WelcomeNotice.tsx` | Welcome message for first-time users. |
 | `src/components/ConfirmationModal.tsx` | Generic confirmation dialog. |
-| `src/components/CloseButton.tsx` | Close icon button. |
 | `src/components/NullContextProvider.tsx` | No-op React context provider returning `null`. Used as the component for the `console.context-provider` extension. |
 | `src/components/OverviewDetail.tsx` | Dashboard detail item showing plugin version. |
+
+### `src/components/` -- Component CSS
+
+| Path | Purpose |
+|---|---|
+| `src/components/general-page.css` | Styles for the GeneralPage chat interface |
+| `src/components/mcp-app.css` | Styles for MCP App card and iframe container |
+| `src/components/popover.css` | Styles for the Popover modal and floating button |
 
 ### `src/assets/` -- Static assets
 
@@ -88,9 +96,10 @@ and communicates with the OLS backend service via the console's plugin proxy.
 
 | Path | Purpose |
 |---|---|
-| `tests/` | Playwright e2e test specs, support fixtures, and page objects |
-| `playwright.config.ts` | Playwright configuration |
-| `unit-tests/` | Unit tests using Node's built-in test runner. Tests for: redux-reducers, error handling, attachments |
+| `tests/` | Cypress e2e test specs |
+| `cypress/` | Cypress support files and fixtures |
+| `cypress.config.ts` | Cypress configuration |
+| `unit-tests/` | Unit tests using Node's built-in test runner. Tests for: redux-reducers, error handling, attachments, pageContext (model key resolution), validation (alert rule ID hashing) |
 
 ## Data Flow
 

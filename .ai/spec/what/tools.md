@@ -152,7 +152,6 @@ interactive MCP App UIs and OLS-native tool visualizations.
 
 | Jira Key | Summary |
 |---|---|
-| OLS-2683 | MVP for HITL approve/deny (completed) |
 | OLS-2722 | OLS Tool UI extensibility from external plugins |
 | OLS-2598 | MCP Apps support in OLS console |
 | OLS-1556 | Display info about tools called while generating OLS response |
