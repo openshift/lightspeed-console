@@ -52,10 +52,6 @@ spec:
           value: $(context.pipelineRun.name) # Internal usage only, use always this value here
         - name: ownerUid
           value: $(context.pipelineRun.uid) # Internal usage only, use always this value here
-        - name: prEventPayload
-          value: '{{ body }}' # Internal usage only, use always this value here
-        - name: prEventHeaders
-          value: '{{ headers }}' # Internal usage only, use always this value here
         - name: workflow
           value: generic-claim
         - name: clusterClaim
@@ -209,7 +205,6 @@ spec:
             image: mcr.microsoft.com/playwright:v1.60.0-noble
             script: |
               echo "$KUBECONFIG_VALUE" > /credentials/kubeconfig
-              export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
               echo "COMMIT_SHA: ${COMMIT_SHA}"
               echo "BASE_URL: ${BASE_URL}"
               echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
@@ -220,6 +215,7 @@ spec:
                   && chmod +x kubectl oc \
                   && mv oc kubectl /usr/local/bin/
               echo "---------------------------------------------"
+              export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
               export OPERATOR_SDK_VERSION=1.36.1
               export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
               export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}
