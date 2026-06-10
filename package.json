@@ -22,8 +22,8 @@
     "test:unit": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' node -r ts-node/register --test 'unit-tests/**/*.test.ts'"
   },
   "dependencies": {
-    "@openshift-console/dynamic-plugin-sdk": "4.22.0-prerelease.3",
-    "@openshift-console/dynamic-plugin-sdk-webpack": "4.22.0-prerelease.3",
+    "@openshift-console/dynamic-plugin-sdk": "4.22.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "4.22.0",
     "@patternfly/chatbot": "6.6.0",
     "@patternfly/react-code-editor": "6.4.3",
     "@patternfly/react-core": "6.4.3",
