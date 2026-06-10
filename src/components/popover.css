@@ -14,6 +14,7 @@
 }
 
 .ols-plugin__popover {
+  background-color: var(--pf-t--global--background--color--primary--default);
   border: var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default);
 }
 
