@@ -35,7 +35,7 @@ export default defineConfig({
     baseURL,
     storageState,
     ignoreHTTPSErrors: true,
-    viewport: { width: 1440, height: 900 },
+    viewport: { width: 1440, height: 1080 },
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
