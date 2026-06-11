@@ -292,13 +292,16 @@ spec:
   // After initial detection, wait for the page to stabilize (no further
   // reloads) by confirming the button remains present after a brief interval.
   // The console can reload multiple times after operator installation, so we
-  // wait until the button has been continuously visible for several checks.
-  const STABLE_THRESHOLD = 3;
+  // wait until the button has been continuously visible for a few consecutive
+  // checks before considering the page settled.
+  const LOAD_MAX_POLLS = 36;
+  const LOAD_POLL_INTERVAL = 10_000;
+  const LOAD_REQUIRED_POLLS = 12;
   let stableCount = 0;
-  for (let i = 0; i < 12; i++) {
-    await page.waitForTimeout(10_000);
+  for (let i = 0; i < LOAD_MAX_POLLS; i++) {
+    await page.waitForTimeout(LOAD_POLL_INTERVAL);
     if (await olsButton.isVisible().catch(() => false)) {
-      if (++stableCount >= STABLE_THRESHOLD) {
+      if (++stableCount >= LOAD_REQUIRED_POLLS) {
         break;
       }
       continue;
