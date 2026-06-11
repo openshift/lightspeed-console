@@ -241,6 +241,20 @@ spec:
     ]);
   }
 
+  // Dump cluster state for debugging
+  try {
+    console.log('--- Pods ---');
+    console.log(oc(['get', 'pods', '-n', OLS_NAMESPACE]));
+    console.log('--- Deployments ---');
+    console.log(oc(['get', 'deployments', '-n', OLS_NAMESPACE]));
+    console.log('--- Console plugin logs ---');
+    console.log(
+      oc(['logs', 'deployment/lightspeed-console-plugin', '-n', OLS_NAMESPACE, '--tail=30']),
+    );
+  } catch (e) {
+    console.log('Diagnostic commands failed:', e);
+  }
+
   // Log in via browser and save storageState
   const browser = await chromium.launch();
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
@@ -287,7 +301,38 @@ spec:
   // Wait for the OLS button to confirm plugin is loaded, re-checking after
   // any page reloads triggered by operator installation.
   const olsButton = page.locator('[data-test="ols-plugin__popover-button"]');
-  await olsButton.waitFor({ timeout: 5 * MINUTE });
+  try {
+    await olsButton.waitFor({ timeout: 5 * MINUTE });
+  } catch (err) {
+    console.log('=== OLS button not found after 5 minutes — dumping cluster state ===');
+    try {
+      console.log('--- Pods ---');
+      console.log(oc(['get', 'pods', '-n', OLS_NAMESPACE]));
+      console.log('--- Deployments ---');
+      console.log(oc(['get', 'deployments', '-n', OLS_NAMESPACE]));
+      console.log('--- ConsolePLugin CR ---');
+      console.log(oc(['get', 'consoleplugin', '-o', 'yaml']));
+      console.log('--- Operator logs ---');
+      console.log(
+        oc([
+          'logs',
+          'deployment/lightspeed-operator-controller-manager',
+          '-n',
+          OLS_NAMESPACE,
+          '--tail=80',
+        ]),
+      );
+      console.log('--- Console plugin logs ---');
+      console.log(
+        oc(['logs', 'deployment/lightspeed-console-plugin', '-n', OLS_NAMESPACE, '--tail=40']),
+      );
+      console.log('--- Events ---');
+      console.log(oc(['get', 'events', '-n', OLS_NAMESPACE, '--sort-by=.lastTimestamp']));
+    } catch (diagErr) {
+      console.log('Diagnostic commands failed:', diagErr);
+    }
+    throw err;
+  }
 
   // After initial detection, wait for the page to stabilize (no further
   // reloads) by confirming the button remains present after a brief interval.

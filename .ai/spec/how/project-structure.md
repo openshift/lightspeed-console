@@ -91,6 +91,53 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `.prettierrc.yml` | Prettier config: 100 char width, single quotes, trailing commas |
 | `.stylelintrc.yaml` | Stylelint config: no hex colors (use PF design tokens), selector must match `ols-plugin__*` |
 | `start-console.sh` | Dev script: runs console in Docker/Podman on port 9000, proxies plugin from port 9001, proxies OLS API from localhost:8080 |
+| `.gitmodules` | Git submodule definitions for `branches/pf5` (pattern-fly-5) and `branches/4-19` (release-4.19) |
+| `entrypoint.sh` | Container entrypoint. Maps `OCP_VERSION` env var to the correct build directory via symlink, then execs nginx |
+
+### Git submodules (`branches/`)
+
+The main branch includes two git submodules that point to the same repo at
+specific commits on other branches. Each submodule contains the full source
+for a UI variant targeting older OCP versions.
+
+| Path | Branch | OCP versions |
+|---|---|---|
+| `branches/pf5/` | `pattern-fly-5` | 4.16 - 4.18 |
+| `branches/4-19/` | `release-4.19` | 4.19 - 4.21 |
+
+The main branch source (repo root) targets OCP 4.22+.
+
+Development on the `pattern-fly-5` and `release-4.19` branches continues
+independently. Submodule refs on `main` are bumped when those branches change.
+
+### Container image build
+
+The `Dockerfile` uses a multi-stage build to produce a single container image
+containing all three UI variants:
+
+1. **build-pf5** -- Builds from `branches/pf5/` (PF5 variant)
+2. **build-4-19** -- Builds from `branches/4-19/` (4.19 variant)
+3. **build-main** -- Builds from the repo root (main variant)
+4. **Runtime stage** -- Copies all three `dist/` outputs into `/builds/pf5/`,
+   `/builds/4-19/`, `/builds/main/`, installs nginx, and sets `entrypoint.sh`
+   as the entrypoint
+
+At container startup, `entrypoint.sh` reads the `OCP_VERSION` env var (set by
+the operator), symlinks the matching build directory to `/usr/share/nginx/html`,
+and execs nginx. Older OCP versions are mapped to their specific builds; any
+unrecognized or missing version defaults to the main build (latest).
+
+### CI/CD pipeline (`.tekton/`)
+
+| Path | Purpose |
+|---|---|
+| `.tekton/lightspeed-console-push.yaml` | Konflux/Tekton pipeline for push events |
+| `.tekton/lightspeed-console-pull-request.yaml` | Konflux/Tekton pipeline for pull request events |
+
+Both pipelines use `git-clone-oci-ta` with `SUBMODULES: "true"` to fetch the
+git submodules. The Cachi2 `prefetch-input` includes npm paths for all three
+source directories (`"."`, `"branches/pf5"`, `"branches/4-19"`) plus a single
+RPM path (`"."`). This enables hermetic builds with pre-fetched dependencies.
 
 ### Test directories
 
