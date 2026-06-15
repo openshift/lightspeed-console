@@ -19,18 +19,20 @@ const globalSetup = async (config: FullConfig) => {
 
   oc(['adm', 'policy', 'add-cluster-role-to-user', 'cluster-admin', username]);
   oc(['adm', 'policy', 'add-cluster-role-to-user', 'lightspeed-operator-query-access', username]);
-
-  const oauthResult = oc([
-    'get',
-    'oauthclient',
-    'openshift-browser-client',
-    '-o',
-    'go-template',
-    '--template={{index .redirectURIs 0}}',
-  ]);
-  const oauthOrigin = new URL(oauthResult.trim().replace(/"/g, '')).origin;
-  console.log(`OAuth origin: ${oauthOrigin}`);
-
+  try {
+    const oauthResult = oc([
+      'get',
+      'oauthclient',
+      'openshift-browser-client',
+      '-o',
+      'go-template',
+      '--template={{index .redirectURIs 0}}',
+    ]);
+    const oauthOrigin = new URL(oauthResult.trim().replace(/"/g, '')).origin;
+    console.log(`OAuth origin: ${oauthOrigin}`);
+  } catch {
+    console.log('oauthclient not available on this cluster, skipping OAuth origin lookup');
+  }
   const OLS_NAMESPACE = 'openshift-lightspeed';
   const OLS_CONFIG_KIND = 'OLSConfig';
   const OLS_CONFIG_NAME = 'cluster';

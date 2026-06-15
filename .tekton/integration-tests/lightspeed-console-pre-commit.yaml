@@ -206,7 +206,6 @@ spec:
             script: |
               echo "$KUBECONFIG_VALUE" > /credentials/kubeconfig
               echo "COMMIT_SHA: ${COMMIT_SHA}"
-              echo "BASE_URL: ${BASE_URL}"
               echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
               echo "KUBECONFIG_PATH: ${KUBECONFIG_PATH}"
               echo "---------------------------------------------"
@@ -216,6 +215,7 @@ spec:
                   && mv oc kubectl /usr/local/bin/
               echo "---------------------------------------------"
               export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
+              echo "BASE_URL: ${BASE_URL}"
               export OPERATOR_SDK_VERSION=1.36.1
               export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
               export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}
