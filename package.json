@@ -45,7 +45,7 @@
     "react-redux": "9.2.0",
     "react-router": "7.13.1",
     "style-loader": "^4.0.0",
-    "ts-loader": "^9.5.7",
+    "ts-loader": "^9.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "webpack": "5.107.2",
