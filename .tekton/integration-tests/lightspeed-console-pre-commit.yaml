@@ -118,7 +118,7 @@ spec:
             env:
               - name: COMMIT_SHA
                 value: $(params.commit)
-            image: mcr.microsoft.com/playwright:v1.60.0-noble
+            image: mcr.microsoft.com/playwright:v1.61.0-noble
             resources:
               limits:
                 memory: 4Gi
@@ -202,7 +202,7 @@ spec:
             resources:
               limits:
                 memory: 8Gi
-            image: mcr.microsoft.com/playwright:v1.60.0-noble
+            image: mcr.microsoft.com/playwright:v1.61.0-noble
             script: |
               echo "$KUBECONFIG_VALUE" > /credentials/kubeconfig
               echo "COMMIT_SHA: ${COMMIT_SHA}"
