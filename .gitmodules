@@ -1,0 +1,8 @@
+[submodule "branches/pf5"]
+	path = branches/pf5
+	url = https://github.com/openshift/lightspeed-console.git
+	branch = pattern-fly-5
+[submodule "branches/4-19"]
+	path = branches/4-19
+	url = https://github.com/openshift/lightspeed-console.git
+	branch = release-4.19
