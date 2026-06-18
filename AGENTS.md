@@ -155,7 +155,9 @@ structure, update the relevant spec files.
 - Use imperative mood
 
 ### Pull Requests
-This repo uses a **fork-based workflow**:
+This repo uses a **fork-based workflow**. Never merge or commit directly
+to `main`, `release-4.19`, or `pattern-fly-5` — all changes go through
+PRs.
 
 1. **Push to your fork**, not to `origin` (openshift/lightspeed-console)
 2. **Create the PR** against `origin/main` using your fork's branch:
