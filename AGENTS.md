@@ -149,6 +149,11 @@ structure, update the relevant spec files.
 
 ## Git and PR Workflow
 
+### Release branches
+- `main` — supports OpenShift 4.22+
+- `release-4.19` — supports OpenShift 4.19 – 4.21
+- `pattern-fly-5` — supports OpenShift 4.16 – 4.18
+
 ### Commit Messages
 - Start with the Jira ticket reference: `OLS-XXXX description`
 - Keep the first line under 72 characters
