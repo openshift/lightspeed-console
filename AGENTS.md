@@ -27,6 +27,15 @@ extensions used by this plugin.
 built-in plugin proxy at `/api/proxy/plugin/lightspeed-console-plugin/ols`. This
 avoids CORS issues and leverages the console's authentication.
 
+**Plugin SDK docs:** When working with console extensions, SDK APIs, or
+PatternFly compatibility, fetch the relevant docs from the `openshift/console`
+repo. The URLs below use the `main` branch of `openshift/console`; to target
+a specific OCP version, replace `main` in the URL with the corresponding
+`openshift/console` branch (e.g. `release-4.17`):
+- SDK overview: `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/README.md`
+- Extension types: `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md`
+- API reference (hooks, components, K8s utilities): `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md`
+
 ### Data flow
 
 The user types a prompt and optionally attaches context from the Kubernetes
@@ -140,13 +149,20 @@ structure, update the relevant spec files.
 
 ## Git and PR Workflow
 
+### Release branches
+- `main` — supports OpenShift 4.22+
+- `release-4.19` — supports OpenShift 4.19 – 4.21
+- `pattern-fly-5` — supports OpenShift 4.16 – 4.18
+
 ### Commit Messages
 - Start with the Jira ticket reference: `OLS-XXXX description`
 - Keep the first line under 72 characters
 - Use imperative mood
 
 ### Pull Requests
-This repo uses a **fork-based workflow**:
+This repo uses a **fork-based workflow**. Never merge or commit directly
+to `main`, `release-4.19`, or `pattern-fly-5` — all changes go through
+PRs.
 
 1. **Push to your fork**, not to `origin` (openshift/lightspeed-console)
 2. **Create the PR** against `origin/main` using your fork's branch:
