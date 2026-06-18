@@ -23,6 +23,15 @@ extensions used by this plugin.
 built-in plugin proxy at `/api/proxy/plugin/lightspeed-console-plugin/ols`. This
 avoids CORS issues and leverages the console's authentication.
 
+**Plugin SDK docs:** When working with console extensions, SDK APIs, or
+PatternFly compatibility, fetch the relevant docs from the `openshift/console`
+repo. The URLs below use the `main` branch of `openshift/console`; to target
+a specific OCP version, replace `main` in the URL with the corresponding
+`openshift/console` branch (e.g. `release-4.17`):
+- SDK overview: `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/README.md`
+- Extension types: `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md`
+- API reference (hooks, components, K8s utilities): `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md`
+
 ### Data flow
 
 The user types a prompt and optionally attaches context from the Kubernetes
