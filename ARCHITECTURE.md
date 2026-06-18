@@ -135,7 +135,7 @@ Other console plugins can interact with this plugin through:
 - **UI library**: PatternFly 6 + PatternFly AI Chatbot
 - **State**: Redux + Immutable.js
 - **Console SDK**: `@openshift-console/dynamic-plugin-sdk`
-- **Testing**: Cypress (e2e), Node built-in test runner (unit)
+- **Testing**: Playwright (e2e), Node built-in test runner (unit)
 - **Linting**: ESLint + Prettier + Stylelint
 
 ## Key Architectural Decisions
