@@ -23,6 +23,15 @@ extensions used by this plugin.
 built-in plugin proxy at `/api/proxy/plugin/lightspeed-console-plugin/ols`. This
 avoids CORS issues and leverages the console's authentication.
 
+**Plugin SDK docs:** When working with console extensions, SDK APIs, or
+PatternFly compatibility, fetch the relevant docs from the `openshift/console`
+repo. The URLs below use the `main` branch of `openshift/console`; to target
+a specific OCP version, replace `main` in the URL with the corresponding
+`openshift/console` branch (e.g. `release-4.17`):
+- SDK overview: `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/README.md`
+- Extension types: `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md`
+- API reference (hooks, components, K8s utilities): `https://raw.githubusercontent.com/openshift/console/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md`
+
 ### Data flow
 
 The user types a prompt and optionally attaches context from the Kubernetes
@@ -127,3 +136,40 @@ end-to-end tests (`tests/`) to cover new or changed functionality.
 - Ensure build works: `npm run build`
 - Ensure unit tests pass: `npm run test:unit`
 - Ensure tests pass: `npm run test-headless`
+
+## Git and PR Workflow
+
+### Release branches
+- `main` — supports OpenShift 4.22+
+- `release-4.19` — supports OpenShift 4.19 – 4.21
+- `pattern-fly-5` — supports OpenShift 4.16 – 4.18
+
+### Commit Messages
+- Start with the Jira ticket reference: `OLS-XXXX description`
+- Keep the first line under 72 characters
+- Use imperative mood
+
+### Pull Requests
+This repo uses a **fork-based workflow**. Never merge or commit directly
+to `main`, `release-4.19`, or `pattern-fly-5` — all changes go through
+PRs.
+
+1. **Push to your fork**, not to `origin` (openshift/lightspeed-console)
+2. **Create the PR** against `origin/main` using your fork's branch:
+   ```bash
+   git push <your-fork-remote> <branch>
+   gh pr create --repo openshift/lightspeed-console --head <your-github-user>:<branch> --base main
+   ```
+3. **PR title** must start with the Jira reference: `OLS-XXXX description`
+4. **Squash commits** before pushing -- one logical commit per PR unless the PR explicitly tracks multiple independent changes
+
+### Branch Completion
+When finishing a development branch:
+1. Remove any process artifacts (design docs, plans in `docs/superpowers/`)
+2. Squash commits with the Jira-prefixed message
+3. Push to the contributor's fork remote (not `origin`)
+4. Create the PR against `origin/main` using `--head <user>:<branch>`
+
+## Risk Levels
+
+Risk levels are enforced via a PreToolUse hook before every Jira create/edit call. The rubric and classification examples live in [lightspeed-team-harness/hooks/risk-rubric.md](https://github.com/openshift/lightspeed-team-harness/blob/main/hooks/risk-rubric.md).
