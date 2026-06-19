@@ -35,7 +35,6 @@ export default defineConfig({
     baseURL,
     storageState,
     ignoreHTTPSErrors: true,
-    viewport: { width: 1440, height: 1080 },
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
@@ -44,7 +43,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1080 } },
     },
   ],
 });
