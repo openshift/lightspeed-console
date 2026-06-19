@@ -1,0 +1,1 @@
+../../.cursor/skills/review-readmes/SKILL.md
