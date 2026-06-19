@@ -66,6 +66,8 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 
 ### Linting
 
+- Run `npm run lint-fix` before considering any code change ready to push - CI
+  runs a lint check before e2e tests, so unlinted code will fail the CI pipeline
 - ALWAYS use `npm run lint-fix` instead of `npm run lint`. The `lint-fix`
   command automatically fixes most ESLint, Prettier, and Stylelint issues
 - Only use `npm run lint` if you specifically need to check for errors without
