@@ -13,7 +13,8 @@ and enabled in the console operator config by a cluster administrator.
 
 Requires OpenShift 4.16 or higher.
 
-- `main` branch supports OpenShift 4.19+
+- `main` branch supports OpenShift 4.22+
+- `release-4.19` branch supports OpenShift 4.19 – 4.21
 - `pattern-fly-5` branch supports OpenShift 4.16 – 4.18
 
 [Node.js](https://nodejs.org/en/) >= 22 and [npm](https://www.npmjs.com) are
