@@ -246,7 +246,19 @@ export const interceptFeedback = async (
 
 // Custom test fixture that captures browser console errors/warnings and prints
 // them only when the test fails, keeping passing test output clean.
-export const test = base.extend<{ captureConsoleLogs: void }>({
+export const test = base.extend<{ captureConsoleLogs: void; dismissGuidedTour: void }>({
+  dismissGuidedTour: [
+    async ({ page }, use) => {
+      await page.addLocatorHandler(
+        page.locator('[data-test="tour-step-footer-secondary"]'),
+        async (btn) => {
+          await btn.click();
+        },
+      );
+      await use();
+    },
+    { auto: true },
+  ],
   captureConsoleLogs: [
     async ({ page }, use, testInfo) => {
       const logs: { method: string; msg: string }[] = [];
