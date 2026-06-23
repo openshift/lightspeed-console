@@ -59,4 +59,17 @@ You can limit which tests are run by tag using `--grep "<@tags>"`.
 For example, `npm run test-headless -- --grep "@core|@attach"` runs the core
 functionality and attachment-related tests in headless mode.
 
+### Available test tags
+
+- `@core` - Core functionality (opening chat, sending prompts, basic interactions)
+- `@response` - Streamed response handling
+- `@hitl` - Human-in-the-loop tool approval
+- `@feedback` - User feedback forms
+- `@clipboard` - Copy functionality
+- `@attach` - Attachment menu and operations
+- `@acm` - Advanced Cluster Management features
+- `@mcp` - MCP (Model Context Protocol) iframe rendering
+- `@iframe` - Iframe-specific tests
+- `@precheck` - Cluster update pre-check button integration
+
 Artifacts (screenshots/videos/reports) are saved in `gui_test_screenshots/`.
