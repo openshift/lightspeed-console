@@ -1181,3 +1181,43 @@ data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
     });
   });
 });
+
+test.describe.serial('Cluster updates integration', { tag: ['@precheck'] }, () => {
+  test.describe.serial('Pre-check button', () => {
+    test('clicking pre-check button in console opens OLS and gets a response', async ({ page }) => {
+      // Navigate to cluster settings page
+      await page.goto('/settings/cluster');
+
+      // Check if pre-check button exists (feature may not be available)
+      const precheckButton = page.getByRole('button', { name: /Pre-check with AI/i });
+      const buttonCount = await precheckButton.count();
+
+      if (buttonCount === 0) {
+        test.skip(
+          true,
+          'Pre-check button feature (CONSOLE-5118) not available in this console version',
+        );
+      }
+
+      // Wait for pre-check button to appear
+      await expect(precheckButton).toBeVisible({ timeout: 30_000 });
+
+      // Intercept OLS API to mock a response
+      // Pre-check button starts a new conversation, so conversation_id is null
+      const queryPromise = interceptQuery(page, '', null, []);
+
+      // Click the pre-check button
+      await precheckButton.click();
+
+      // Verify OLS plugin opens
+      await expect(page.locator(popover)).toBeVisible();
+
+      // Wait for the query to be sent
+      await queryPromise;
+
+      // Verify response appears in chat
+      await expect(page.locator(aiChatEntry).first()).toBeVisible({ timeout: 10_000 });
+      await expect(page.locator(aiChatEntry).first()).toContainText('Mock OLS response');
+    });
+  });
+});
