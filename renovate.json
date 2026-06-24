@@ -28,7 +28,7 @@
       ]
     },
     {
-      "matchPackageNames": ["react", "react-dom", "react-i18next", "react-redux"],
+      "matchPackageNames": ["react", "react-dom", "react-i18next", "react-redux", "react-router"],
       "enabled": false
     },
     {
@@ -39,7 +39,6 @@
         "eslint",
         "node",
         "react-markdown",
-        "react-router",
         "remark-gfm"
       ],
       "matchUpdateTypes": ["major"],
