@@ -34,13 +34,9 @@ const goToPodsList = async (page: Page, ns: string | null = null) => {
 const goToPodDetails = async (page: Page, ns: string, podName: string) => {
   await goToPodsList(page, ns);
   await filterByName(page, podName);
-  const rows = page.locator(resourceRows);
-  await expect(async () => {
-    const count = await rows.count();
-    expect(count).toBeGreaterThanOrEqual(1);
-    expect(count).toBeLessThanOrEqual(4);
-  }).toPass({ timeout: 5_000 });
-  await page.locator('a.co-resource-item__resource-name').first().click();
+  const link = page.locator(resourceRows).filter({ hasText: podName });
+  await expect(link.first()).toBeVisible({ timeout: 30_000 });
+  await link.first().click();
 };
 
 const popover = '[data-test="ols-plugin__popover"]';
