@@ -4,27 +4,27 @@ lockfileVendor: redhat
 arches:
 - arch: aarch64
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-1.20.1-28.el9_8.2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-1.20.1-28.el9_8.3.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 45396
-    checksum: sha256:5a15f60e49058c41b8b7778075053f85c960126d846b15af8711de5565a56306
+    size: 45441
+    checksum: sha256:c2feaccecc623254d57f85d8578ff905dd06f223bc89c9b763fe139978b2a4fd
     name: nginx
-    evr: 2:1.20.1-28.el9_8.2
-    sourcerpm: nginx-1.20.1-28.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-core-1.20.1-28.el9_8.2.aarch64.rpm
+    evr: 2:1.20.1-28.el9_8.3
+    sourcerpm: nginx-1.20.1-28.el9_8.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-core-1.20.1-28.el9_8.3.aarch64.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 593596
-    checksum: sha256:902632e893de896bed936444eddb93076145ed2823bf2a666d8aa765c92b09bf
+    size: 593802
+    checksum: sha256:ce2a936a4b58893902f580acaf650aea04bbc8448f1e5d0de670a3ee4e7f2a7d
     name: nginx-core
-    evr: 2:1.20.1-28.el9_8.2
-    sourcerpm: nginx-1.20.1-28.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-filesystem-1.20.1-28.el9_8.2.noarch.rpm
+    evr: 2:1.20.1-28.el9_8.3
+    sourcerpm: nginx-1.20.1-28.el9_8.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/n/nginx-filesystem-1.20.1-28.el9_8.3.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
-    size: 17059
-    checksum: sha256:5199f3b402a9c1adb81b378950fa149799eeca049648e6d438b5840f2a732ba4
+    size: 17136
+    checksum: sha256:a1cdf1bb04e4a148cea973154a47fe7b87c50125960dfd2f7cd24b0c44ffd45a
     name: nginx-filesystem
-    evr: 2:1.20.1-28.el9_8.2
-    sourcerpm: nginx-1.20.1-28.el9_8.2.src.rpm
+    evr: 2:1.20.1-28.el9_8.3
+    sourcerpm: nginx-1.20.1-28.el9_8.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/r/redhat-logos-httpd-90.6-1.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 15717
@@ -193,34 +193,34 @@ arches:
     name: pam
     evr: 1.5.1-28.el9
     sourcerpm: pam-1.5.1-28.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-252-67.el9_8.2.aarch64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-252-67.el9_8.4.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 4155781
-    checksum: sha256:2052a9bbb59b77d20fd8e402e5f798d2498792e60e239e56ce963b460cd97c93
+    size: 4156431
+    checksum: sha256:f49001c208ea0ec7776b2353800f133d3383e72bda8486132dc6822a803aef9f
     name: systemd
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-libs-252-67.el9_8.2.aarch64.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-libs-252-67.el9_8.4.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 648224
-    checksum: sha256:dbd9902caab6c3668815b47c102d157feb1f6a278bcf90cc2acf8e2802a7de1f
+    size: 647617
+    checksum: sha256:78f8f784050b920675ce5d37d659213226265dd72de14ec10df291afae59d8b7
     name: systemd-libs
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-pam-252-67.el9_8.2.aarch64.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-pam-252-67.el9_8.4.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 267038
-    checksum: sha256:f828175f86e78f6df0dd0a84cb84487b6d731299d948fad360ce073743173492
+    size: 266579
+    checksum: sha256:e85f1916e5fc35f483282c2de00cb4e1a9a40743e745c00bb66e30e383955d46
     name: systemd-pam
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-rpm-macros-252-67.el9_8.2.noarch.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/s/systemd-rpm-macros-252-67.el9_8.4.noarch.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
-    size: 60014
-    checksum: sha256:40414d69836b9e6b409c63ff8fa3b443321bfe5f5074e1ca90367d215f9b5afc
+    size: 59475
+    checksum: sha256:7d671ec39a7caeb7346be6d5fcb44212545844ced6f4974c4b409fef6a12a891
     name: systemd-rpm-macros
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/u/util-linux-2.37.4-25.el9.aarch64.rpm
     repoid: ubi-9-for-aarch64-baseos-rpms
     size: 2390152
@@ -239,27 +239,27 @@ arches:
   module_metadata: []
 - arch: x86_64
   packages:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-1.20.1-28.el9_8.2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-1.20.1-28.el9_8.3.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 45416
-    checksum: sha256:648dd83896e35df8bb5cbfa40f6e4924933eae72be186a9193b679badb6e5f96
+    size: 45480
+    checksum: sha256:dde8e2266e9c397afb9594dc7172051cacfa5d184b176c72f028feea86bc5a89
     name: nginx
-    evr: 2:1.20.1-28.el9_8.2
-    sourcerpm: nginx-1.20.1-28.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-core-1.20.1-28.el9_8.2.x86_64.rpm
+    evr: 2:1.20.1-28.el9_8.3
+    sourcerpm: nginx-1.20.1-28.el9_8.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-core-1.20.1-28.el9_8.3.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 592601
-    checksum: sha256:ede6775e755a9129a2e40d3de494981dc6d8c0c80cb7ddc0cee9cf2c856cb5dc
+    size: 592754
+    checksum: sha256:c6848eec0e3e4dba67e9980ea248e3e4424da49b03967680abad7adaa53aabeb
     name: nginx-core
-    evr: 2:1.20.1-28.el9_8.2
-    sourcerpm: nginx-1.20.1-28.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-filesystem-1.20.1-28.el9_8.2.noarch.rpm
+    evr: 2:1.20.1-28.el9_8.3
+    sourcerpm: nginx-1.20.1-28.el9_8.3.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nginx-filesystem-1.20.1-28.el9_8.3.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 17059
-    checksum: sha256:5199f3b402a9c1adb81b378950fa149799eeca049648e6d438b5840f2a732ba4
+    size: 17136
+    checksum: sha256:a1cdf1bb04e4a148cea973154a47fe7b87c50125960dfd2f7cd24b0c44ffd45a
     name: nginx-filesystem
-    evr: 2:1.20.1-28.el9_8.2
-    sourcerpm: nginx-1.20.1-28.el9_8.2.src.rpm
+    evr: 2:1.20.1-28.el9_8.3
+    sourcerpm: nginx-1.20.1-28.el9_8.3.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/r/redhat-logos-httpd-90.6-1.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 15717
@@ -428,34 +428,34 @@ arches:
     name: pam
     evr: 1.5.1-28.el9
     sourcerpm: pam-1.5.1-28.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-67.el9_8.2.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-67.el9_8.4.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 4397848
-    checksum: sha256:fa993eb11a345c8082b75bd989b7f81d9c15232c4424892256ca479f65bbaee1
+    size: 4401138
+    checksum: sha256:e3cbe70aaa847f1b02bd4ea9470625434c26b25368cbfcb0e9a18de99e3bc1c7
     name: systemd
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-67.el9_8.2.x86_64.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-67.el9_8.4.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 681874
-    checksum: sha256:2e8e02ddd7b463a886126a8836d19a220ac5b91e45da7a919209f52ca37acef2
+    size: 681056
+    checksum: sha256:ca5a11f102b0e3a32fdddf017a4509984db83290d7364c9566d037d0ef7f1e66
     name: systemd-libs
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-67.el9_8.2.x86_64.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-67.el9_8.4.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 277510
-    checksum: sha256:8595b54b71be77fafbbbfd5f40d8afd26d489094955979c0cad486e809f99667
+    size: 276960
+    checksum: sha256:de8408dbe8ee06afa99fbb914377384774e27b9b337cb3b491a37f84ccca7e9b
     name: systemd-pam
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-67.el9_8.2.noarch.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-67.el9_8.4.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 60014
-    checksum: sha256:40414d69836b9e6b409c63ff8fa3b443321bfe5f5074e1ca90367d215f9b5afc
+    size: 59475
+    checksum: sha256:7d671ec39a7caeb7346be6d5fcb44212545844ced6f4974c4b409fef6a12a891
     name: systemd-rpm-macros
-    evr: 252-67.el9_8.2
-    sourcerpm: systemd-252-67.el9_8.2.src.rpm
+    evr: 252-67.el9_8.4
+    sourcerpm: systemd-252-67.el9_8.4.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/u/util-linux-2.37.4-25.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 2382511
