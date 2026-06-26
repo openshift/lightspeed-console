@@ -72,7 +72,7 @@
   },
   "overrides": {
     "dompurify": "3.4.9",
-    "js-cookie": "3.0.7",
+    "js-cookie": "3.0.8",
     "monaco-editor": "0.55.1",
     "ws": "8.21.0"
   },
