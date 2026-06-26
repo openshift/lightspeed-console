@@ -74,7 +74,7 @@
   },
   "overrides": {
     "dompurify": "3.4.9",
-    "js-cookie": "3.0.7",
+    "js-cookie": "3.0.8",
     "monaco-editor": "0.55.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
