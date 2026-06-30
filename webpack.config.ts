@@ -79,7 +79,14 @@ const config: Configuration = {
     }),
     new ConsoleRemotePlugin(),
     new CopyWebpackPlugin({
-      patterns: [{ from: path.resolve(__dirname, 'locales'), to: 'locales' }],
+      patterns: [
+        {
+          context: path.resolve(__dirname, 'locales'),
+          from: '**/*',
+          noErrorOnMissing: true,
+          to: 'locales',
+        },
+      ],
     }),
   ],
   devtool: 'source-map',

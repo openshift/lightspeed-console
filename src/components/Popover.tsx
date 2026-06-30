@@ -84,21 +84,14 @@ const Popover: React.FC = () => {
 
   return isOpen ? (
     <>
-      {isExpanded ? (
-        <GeneralPage
-          ariaLabel={title}
-          className={popoverClassName}
-          onClose={onClose}
-          onCollapse={collapse}
-        />
-      ) : (
-        <GeneralPage
-          ariaLabel={title}
-          className={popoverClassName}
-          onClose={onClose}
-          onExpand={expand}
-        />
-      )}
+      <GeneralPage
+        ariaLabel={title}
+        className={popoverClassName}
+        isExpanded={isExpanded}
+        onClose={onClose}
+        onCollapse={isExpanded ? collapse : undefined}
+        onExpand={isExpanded ? undefined : expand}
+      />
       <Button
         aria-label={title}
         className={buttonClassName}

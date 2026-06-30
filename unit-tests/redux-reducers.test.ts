@@ -28,6 +28,7 @@ describe('reducer initialization', () => {
     strictEqual(state.get('isContextEventsLoading'), false);
     strictEqual(state.get('codeBlock'), null);
     strictEqual(state.get('openAttachment'), null);
+    strictEqual(state.get('evidenceTour').isActive, false);
     strictEqual(ImmutableList.isList(state.get('chatHistory')), true);
     strictEqual(state.get('chatHistory').size, 0);
     strictEqual(ImmutableMap.isMap(state.get('attachments')), true);
@@ -478,5 +479,61 @@ describe('user feedback', () => {
       dispatch(state, ActionType.UserFeedbackDisable).get('isUserFeedbackEnabled'),
       false,
     );
+  });
+});
+
+describe('evidence tour', () => {
+  const steps = [
+    {
+      id: '/k8s/ns/payments/pods/api',
+      label: 'Pod/api',
+      narration: 'Pods Get',
+      path: '/k8s/ns/payments/pods/api',
+      source: 'tool' as const,
+    },
+  ];
+
+  it('EvidenceTourStart activates tour with steps', () => {
+    const state = initState();
+    const next = dispatch(state, ActionType.EvidenceTourStart, {
+      chatEntryId: 'entry-1',
+      steps,
+    });
+    const tour = next.get('evidenceTour');
+    strictEqual(tour.isActive, true);
+    strictEqual(tour.chatEntryId, 'entry-1');
+    strictEqual(tour.currentIndex, 0);
+    deepStrictEqual(tour.steps, steps);
+  });
+
+  it('EvidenceTourNext and EvidenceTourPrev move the index', () => {
+    const twoSteps = [...steps, { ...steps[0], id: '/other', path: '/other' }];
+    let state = dispatch(initState(), ActionType.EvidenceTourStart, {
+      chatEntryId: 'entry-1',
+      steps: twoSteps,
+    });
+    state = dispatch(state, ActionType.EvidenceTourNext);
+    strictEqual(state.get('evidenceTour').currentIndex, 1);
+    state = dispatch(state, ActionType.EvidenceTourPrev);
+    strictEqual(state.get('evidenceTour').currentIndex, 0);
+  });
+
+  it('EvidenceTourClose resets tour state', () => {
+    let state = dispatch(initState(), ActionType.EvidenceTourStart, {
+      chatEntryId: 'entry-1',
+      steps,
+    });
+    state = dispatch(state, ActionType.EvidenceTourClose);
+    strictEqual(state.get('evidenceTour').isActive, false);
+    strictEqual(state.get('evidenceTour').steps.length, 0);
+  });
+
+  it('ChatHistoryClear clears an active tour', () => {
+    let state = dispatch(initState(), ActionType.EvidenceTourStart, {
+      chatEntryId: 'entry-1',
+      steps,
+    });
+    state = dispatch(state, ActionType.ChatHistoryClear);
+    strictEqual(state.get('evidenceTour').isActive, false);
   });
 });

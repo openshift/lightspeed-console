@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Map as ImmutableMap } from 'immutable';
 
 import { ErrorType } from './error';
+import { ResourceRef } from './pageContext';
 
 declare global {
   interface Window {
@@ -84,4 +85,20 @@ export type CodeBlock = {
   id: string;
   value: string;
   triggeredFrom?: string;
+};
+
+export type EvidenceTourStep = {
+  id: string;
+  label: string;
+  narration: string;
+  path: string;
+  resourceRef?: ResourceRef;
+  source: 'text' | 'tool';
+};
+
+export type EvidenceTourState = {
+  chatEntryId: string | null;
+  currentIndex: number;
+  isActive: boolean;
+  steps: EvidenceTourStep[];
 };
