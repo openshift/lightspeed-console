@@ -4,6 +4,8 @@ import { strictEqual } from 'node:assert';
 import {
   buildPageContext,
   buildResourceConsolePath,
+  isClusterScopedRef,
+  isNamespacedRef,
   resolveKindToModelKey,
   resolveModelKey,
 } from '../src/pageContext';
@@ -112,6 +114,37 @@ describe('resolveKindToModelKey', () => {
 
   it('returns undefined for unknown kinds', () => {
     strictEqual(resolveKindToModelKey('NotARealKind', testK8sModels), undefined);
+  });
+});
+
+describe('resource scope helpers', () => {
+  it('detects cluster-scoped refs', () => {
+    strictEqual(isClusterScopedRef({ kind: 'Node', name: 'worker-1' }, testK8sModels), true);
+    strictEqual(
+      isClusterScopedRef(
+        { kind: 'flows.netobserv.io~v1beta2~FlowCollector', name: 'cluster' },
+        testK8sModels,
+      ),
+      true,
+    );
+    strictEqual(
+      isClusterScopedRef(
+        { kind: 'Deployment', name: 'payments-api', namespace: 'payments' },
+        testK8sModels,
+      ),
+      false,
+    );
+  });
+
+  it('detects namespaced refs', () => {
+    strictEqual(
+      isNamespacedRef(
+        { kind: 'Deployment', name: 'payments-api', namespace: 'payments' },
+        testK8sModels,
+      ),
+      true,
+    );
+    strictEqual(isNamespacedRef({ kind: 'Node', name: 'worker-1' }, testK8sModels), false);
   });
 });
 

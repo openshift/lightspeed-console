@@ -6,6 +6,12 @@ import {
   K8sModelRef,
   ResourceRef,
 } from './pageContext';
+import {
+  GenericCondition,
+  isPhaseCondition,
+  isStandardKubeCondition,
+  variantForPhase,
+} from './crStatus';
 import { extractWatchableResourceRefs, isWatchableResource } from './livingResponse';
 import { normalizeResourceRef } from './resourceRefs';
 import { Tool } from './types';
@@ -32,7 +38,7 @@ const TIMELINE_WORKLOAD_PRIORITY = [
   'Pod',
 ];
 
-export type TimelineEntryType = 'event' | 'rollout' | 'scale';
+export type TimelineEntryType = 'event' | 'rollout' | 'scale' | 'status';
 
 export type TimelineSeverity = 'warning' | 'error' | 'normal' | 'info';
 
@@ -82,8 +88,9 @@ export const shouldShowChangeTimeline = (
   query: string | undefined,
   tools: Record<string, Tool> | undefined,
   anchor: TimelineAnchor | null,
+  models: Record<string, K8sModelRef>,
 ): boolean => {
-  if (!anchor?.name || !anchor.namespace) {
+  if (!anchor || !isTimelineEligibleAnchor(anchor, models)) {
     return false;
   }
   if (isChangeTimelineQuery(query)) {
@@ -95,7 +102,7 @@ export const shouldShowChangeTimeline = (
 export const isTimelineEligibleAnchor = (
   ref: ResourceRef | undefined,
   models: Record<string, K8sModelRef>,
-): ref is TimelineAnchor => !!ref && isWatchableResource(ref, models) && !!ref.namespace;
+): ref is TimelineAnchor => !!ref && isWatchableResource(ref, models);
 
 export const resolveTimelineAnchor = (
   pageKind: string | undefined,
@@ -105,12 +112,12 @@ export const resolveTimelineAnchor = (
   responseText: string | undefined,
   models: Record<string, K8sModelRef>,
 ): TimelineAnchor | null => {
-  if (pageKind && pageName && pageNamespace) {
+  if (pageKind && pageName) {
     const pageRef = normalizeResourceRef(
       { kind: pageKind, name: pageName, namespace: pageNamespace },
       models,
     );
-    if (pageRef && isWatchableResource(pageRef, models)) {
+    if (pageRef && isTimelineEligibleAnchor(pageRef, models)) {
       return pageRef;
     }
   }
@@ -126,8 +133,10 @@ export const resolveTimelineAnchor = (
   const fallback = refs.filter((ref) => !prioritized.includes(ref));
   const ordered = [...prioritized, ...fallback];
 
-  const anchor = ordered.find((ref) => ref.namespace && ref.name);
-  return anchor ? { kind: anchor.kind, name: anchor.name, namespace: anchor.namespace } : null;
+  const anchor = ordered.find((ref) => isTimelineEligibleAnchor(ref, models));
+  return anchor
+    ? { kind: anchor.kind, name: anchor.name, namespace: anchor.namespace }
+    : null;
 };
 
 export const eventTimestamp = (event: K8sEventLike): Date | null => {
@@ -301,7 +310,10 @@ export const formatTimelineAnchorLabel = (
   models: Record<string, K8sModelRef>,
 ): string => {
   const kindName = getModelKindName(anchor.kind, models);
-  return `${kindName}/${anchor.name} (${anchor.namespace})`;
+  if (anchor.namespace) {
+    return `${kindName}/${anchor.name} (${anchor.namespace})`;
+  }
+  return `${kindName}/${anchor.name}`;
 };
 
 export const buildEventFetchTargets = (
@@ -354,7 +366,95 @@ export const buildEventFetchTargets = (
   return targets.slice(0, MAX_EVENT_TARGETS);
 };
 
-export const eventsListPath = (namespace: string, kind: string, name: string): string => {
+export const eventsListPath = (kind: string, name: string, namespace?: string): string => {
   const fieldSelector = `involvedObject.kind=${kind},involvedObject.name=${name}`;
-  return `/api/kubernetes/api/v1/namespaces/${namespace}/events?fieldSelector=${encodeURIComponent(fieldSelector)}`;
+  if (namespace) {
+    return `/api/kubernetes/api/v1/namespaces/${namespace}/events?fieldSelector=${encodeURIComponent(fieldSelector)}`;
+  }
+  return `/api/kubernetes/api/v1/events?fieldSelector=${encodeURIComponent(fieldSelector)}`;
+};
+
+const conditionSeverity = (condition: GenericCondition): TimelineSeverity => {
+  if (isStandardKubeCondition(condition)) {
+    if (condition.type === 'Degraded' || condition.type === 'Failure') {
+      return condition.status === 'True' ? 'error' : 'normal';
+    }
+    if (condition.status === 'False') {
+      return 'warning';
+    }
+    return 'normal';
+  }
+
+  if (condition.phase) {
+    const variant = variantForPhase(condition.phase, condition.reason);
+    if (variant === 'danger') {
+      return 'error';
+    }
+    if (variant === 'warning') {
+      return 'warning';
+    }
+    return 'normal';
+  }
+
+  return 'info';
+};
+
+const formatConditionTitle = (condition: GenericCondition): string => {
+  if (isStandardKubeCondition(condition)) {
+    const reason = condition.reason || condition.type || 'Status changed';
+    return condition.type ? `${condition.type}: ${reason}` : reason;
+  }
+
+  if (isPhaseCondition(condition)) {
+    return condition.reason
+      ? `${condition.phase}: ${condition.reason}`
+      : (condition.phase ?? 'Status changed');
+  }
+
+  return condition.reason || condition.phase || 'Status changed';
+};
+
+export const statusConditionToTimelineEntry = (
+  condition: GenericCondition,
+  index: number,
+  anchor: TimelineAnchor,
+  models: Record<string, K8sModelRef>,
+): ChangeTimelineEntry | null => {
+  const raw = condition.lastTransitionTime;
+  if (!raw) {
+    return null;
+  }
+
+  const timestamp = new Date(raw);
+  if (Number.isNaN(timestamp.getTime())) {
+    return null;
+  }
+
+  const consolePath = buildResourceConsolePath(anchor, models) ?? undefined;
+
+  return {
+    consolePath,
+    detail: condition.message?.trim(),
+    id: `status-${timestamp.getTime()}-${condition.reason ?? condition.type ?? condition.phase ?? index}`,
+    resourceRef: anchor,
+    severity: conditionSeverity(condition),
+    timestamp,
+    title: formatConditionTitle(condition),
+    type: 'status',
+  };
+};
+
+export const resourceStatusToTimelineEntries = (
+  resource: K8sResourceKind | undefined,
+  anchor: TimelineAnchor,
+  models: Record<string, K8sModelRef>,
+): ChangeTimelineEntry[] => {
+  const conditions = resource?.status?.conditions;
+  if (!Array.isArray(conditions) || conditions.length === 0) {
+    return [];
+  }
+
+  return (conditions as GenericCondition[])
+    .map((condition, index) => statusConditionToTimelineEntry(condition, index, anchor, models))
+    .filter((entry): entry is ChangeTimelineEntry => entry !== null);
 };

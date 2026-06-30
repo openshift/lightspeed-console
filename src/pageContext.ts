@@ -63,6 +63,25 @@ export const resolveKindToModelKey = (
 export const getModelKindName = (modelKey: string, models: Record<string, K8sModelRef>): string =>
   models[modelKey]?.kind ?? modelKey.split('~').pop() ?? modelKey;
 
+export const isClusterScopedRef = (
+  ref: ResourceRef,
+  models: Record<string, K8sModelRef>,
+): boolean => {
+  const modelKey = resolveKindToModelKey(ref.kind, models);
+  if (!modelKey) {
+    return false;
+  }
+  return models[modelKey]?.namespaced === false;
+};
+
+export const isNamespacedRef = (ref: ResourceRef, models: Record<string, K8sModelRef>): boolean => {
+  const modelKey = resolveKindToModelKey(ref.kind, models);
+  if (!modelKey) {
+    return true;
+  }
+  return models[modelKey]?.namespaced !== false;
+};
+
 export const getModelUrlSegment = (
   modelKey: string,
   models: Record<string, K8sModelRef>,

@@ -33,7 +33,7 @@ export const useChangeTimeline = (
     [enabled, k8sModels, pageKind, pageName, pageNamespace, responseText, tools],
   );
 
-  const showTimeline = enabled && shouldShowChangeTimeline(query, tools, anchor);
+  const showTimeline = enabled && shouldShowChangeTimeline(query, tools, anchor, k8sModels);
 
   return { anchor, showTimeline };
 };

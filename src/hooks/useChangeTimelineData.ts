@@ -12,9 +12,11 @@ import {
   DEFAULT_TIMELINE_WINDOW_MS,
   eventToTimelineEntry,
   eventsListPath,
+  isTimelineEligibleAnchor,
   K8sEventLike,
   mergeTimelineEntries,
   replicaSetToTimelineEntry,
+  resourceStatusToTimelineEntries,
   TimelineAnchor,
 } from '../changeTimeline';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
@@ -57,7 +59,7 @@ export const useChangeTimelineData = (
   }, [kindName, workload?.spec?.selector]);
 
   const [replicaSets, replicaSetsLoaded, replicaSetsError] = useK8sWatchResource<K8sResourceKind[]>(
-    anchor && isDeploymentLike(kindName) && selector
+    anchor?.namespace && isDeploymentLike(kindName) && selector
       ? {
           isList: true,
           kind: 'ReplicaSet',
@@ -68,7 +70,7 @@ export const useChangeTimelineData = (
   );
 
   const [pods, podsLoaded, podsError] = useK8sWatchResource<K8sResourceKind[]>(
-    anchor && selector
+    anchor?.namespace && selector
       ? {
           isList: true,
           kind: 'Pod',
@@ -83,7 +85,7 @@ export const useChangeTimelineData = (
     (!isDeploymentLike(kindName) || (replicaSetsLoaded && podsLoaded));
 
   React.useEffect(() => {
-    if (!anchor?.namespace || !anchor.name || !listsReady) {
+    if (!anchor?.name || !isTimelineEligibleAnchor(anchor, k8sModels) || !listsReady) {
       return;
     }
 
@@ -97,7 +99,7 @@ export const useChangeTimelineData = (
       const eventResponses = await Promise.all(
         targets.map(async (target) => {
           const response = (await consoleFetchJSON(
-            eventsListPath(anchor.namespace!, target.kind, target.name),
+            eventsListPath(target.kind, target.name, anchor.namespace),
             'get',
             getRequestInitWithAuthHeader(),
           )) as EventListResponse;
@@ -121,6 +123,10 @@ export const useChangeTimelineData = (
           }
         });
       }
+
+      resourceStatusToTimelineEntries(workload, anchor, k8sModels).forEach((entry) => {
+        timelineEntries.push(entry);
+      });
 
       if (!cancelled) {
         setEntries(mergeTimelineEntries(timelineEntries, windowMs));
@@ -146,6 +152,7 @@ export const useChangeTimelineData = (
     pods,
     replicaSets,
     windowMs,
+    workload,
   ]);
 
   React.useEffect(() => {

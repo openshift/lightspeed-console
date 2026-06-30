@@ -84,4 +84,56 @@ describe('getResourceLiveDetails', () => {
     strictEqual(fields[0].labelKey, 'Living detail age');
     strictEqual(fields[0].value, '2h');
   });
+
+  it('extracts generic status fields for custom resources', () => {
+    const fields = getResourceLiveDetails('ClusterServiceVersion', {
+      metadata: { creationTimestamp: new Date().toISOString() },
+      status: {
+        phase: 'Installing',
+        reason: 'InstallWaiting',
+        message: 'waiting for install components to report healthy',
+      },
+    });
+
+    strictEqual(fieldValue(fields, 'Living detail phase'), 'Installing');
+    strictEqual(fieldValue(fields, 'Living detail reason'), 'InstallWaiting');
+    strictEqual(fieldValue(fields, 'Living detail message'), 'waiting for install components to report healthy');
+  });
+
+  it('extracts job completion fields', () => {
+    const fields = getResourceLiveDetails('Job', {
+      metadata: { creationTimestamp: new Date().toISOString() },
+      spec: { completions: 1 },
+      status: { succeeded: 1, failed: 0, active: 0 },
+    });
+
+    strictEqual(fieldValue(fields, 'Living detail completions'), '1/1');
+    strictEqual(fieldValue(fields, 'Living detail succeeded'), '1');
+  });
+
+  it('extracts PVC storage fields', () => {
+    const fields = getResourceLiveDetails('PersistentVolumeClaim', {
+      metadata: { creationTimestamp: new Date().toISOString() },
+      spec: { storageClassName: 'gp3', volumeName: 'pvc-123' },
+      status: { phase: 'Bound', capacity: { storage: '10Gi' } },
+    });
+
+    strictEqual(fieldValue(fields, 'Living detail phase'), 'Bound');
+    strictEqual(fieldValue(fields, 'Living detail capacity'), '10Gi');
+    strictEqual(fieldValue(fields, 'Living detail storage class'), 'gp3');
+    strictEqual(fieldValue(fields, 'Living detail volume'), 'pvc-123');
+  });
+
+  it('extracts HPA replica fields', () => {
+    const fields = getResourceLiveDetails('HorizontalPodAutoscaler', {
+      metadata: { creationTimestamp: new Date().toISOString() },
+      spec: { minReplicas: 1, maxReplicas: 5 },
+      status: { currentReplicas: 2, desiredReplicas: 3 },
+    });
+
+    strictEqual(fieldValue(fields, 'Living detail current replicas'), '2');
+    strictEqual(fieldValue(fields, 'Living detail desired replicas'), '3');
+    strictEqual(fieldValue(fields, 'Living detail min replicas'), '1');
+    strictEqual(fieldValue(fields, 'Living detail max replicas'), '5');
+  });
 });
