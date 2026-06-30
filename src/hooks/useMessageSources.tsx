@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SourcesCardProps } from '@patternfly/chatbot';
 
-import LivingResourceCard from '../components/LivingResourceCard';
+import LivingResourceSourceBody from '../components/LivingResourceSourceBody';
 import { hasEvidenceTour } from '../evidenceTour';
 import { useConsoleNavigation } from '../hooks/useConsoleNavigation';
 import { extractLivingResources, getLivingResourceOverflow } from '../livingResponse';
@@ -41,6 +41,7 @@ type UseMessageSourcesOptions = {
   k8sModels: Record<string, K8sModelRef>;
   references?: ReferencedDoc[];
   responseText?: string;
+  timelineExpandKey?: string;
   tools?: Record<string, Tool>;
 };
 
@@ -57,6 +58,7 @@ export const useMessageSources = ({
   k8sModels,
   references,
   responseText,
+  timelineExpandKey,
   tools,
 }: UseMessageSourcesOptions): UseMessageSourcesResult => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
@@ -108,10 +110,11 @@ export const useMessageSources = ({
 
       return {
         body: (
-          <LivingResourceCard
+          <LivingResourceSourceBody
             k8sModels={k8sModels}
             onUnavailable={() => markUnavailable(key)}
             resourceRef={ref}
+            timelineDefaultExpanded={timelineExpandKey === key}
           />
         ),
         link: path,
@@ -125,7 +128,7 @@ export const useMessageSources = ({
         title: formatResourceLabel(ref, k8sModels),
       };
     });
-  }, [k8sModels, markUnavailable, navigate, t, visibleClusterRefs]);
+  }, [k8sModels, markUnavailable, navigate, t, timelineExpandKey, visibleClusterRefs]);
 
   const docSources = React.useMemo(
     () => (enabled ? buildDocSources(references) : []),

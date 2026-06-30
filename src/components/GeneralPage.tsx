@@ -46,8 +46,10 @@ import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useA
 import { useBoolean } from '../hooks/useBoolean';
 import { useFirstTimeUser } from '../hooks/useFirstTimeUser';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
+import { useChangeTimeline } from '../hooks/useChangeTimeline';
 import { useMessageSources } from '../hooks/useMessageSources';
 import { compactResponseForLivingResources } from '../livingResponse';
+import { resourceRefKey } from '../resourceRefs';
 import {
   attachmentsClear,
   chatHistoryClear,
@@ -61,6 +63,7 @@ import { State } from '../redux-reducers';
 import { Attachment, ChatEntry, Tool } from '../types';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
+import ChangeTimelinePanel from './ChangeTimelinePanel';
 import EvidenceTourPanel from './EvidenceTourPanel';
 import ImportAction from './ImportAction';
 import LivingResourcesPanel from './LivingResourcesPanel';
@@ -174,11 +177,23 @@ const ChatHistoryEntry = React.memo(
     const [isDarkTheme] = useIsDarkTheme();
 
     const isAiEntry = entry?.who === 'ai';
+    const changeTimeline = useChangeTimeline(
+      isAiEntry && !entry.isStreaming && !entry.error && modelsLoaded,
+      query,
+      aiTools,
+      isAiEntry ? entry.text : undefined,
+      k8sModels,
+    );
+    const timelineExpandKey =
+      changeTimeline.showTimeline && changeTimeline.anchor
+        ? resourceRefKey(changeTimeline.anchor)
+        : undefined;
     const messageSources = useMessageSources({
       enabled: isAiEntry && !entry.isStreaming && !entry.error && modelsLoaded,
       k8sModels,
       references: isAiEntry ? entry.references : undefined,
       responseText: isAiEntry ? entry.text : undefined,
+      timelineExpandKey,
       tools: aiTools,
     });
     const displayContent =
@@ -302,6 +317,11 @@ const ChatHistoryEntry = React.memo(
                     sources={messageSources.clusterSources}
                   />
                 )}
+                {changeTimeline.showTimeline &&
+                  changeTimeline.anchor &&
+                  !messageSources.clusterSources && (
+                    <ChangeTimelinePanel anchor={changeTimeline.anchor} k8sModels={k8sModels} />
+                  )}
                 {entry.error && (
                   <Alert
                     isExpandable={!!entry.error.moreInfo}

@@ -9,12 +9,14 @@ import {
 import { Spinner, Stack, StackItem } from '@patternfly/react-core';
 
 import { buildLivingMetrics } from '../livingResponse';
+import { isTimelineEligibleAnchor } from '../changeTimeline';
 import { LivingMetricDef } from '../resourceLivingMetrics';
 import { getModelKindName, K8sModelRef } from '../pageContext';
 import { ResourceRef } from '../resourceRefs';
 import { getResourceLiveDetails } from '../resourceLiveDetails';
 import { getResourceStatusSummaryForRef } from '../resourceStatus';
 import LiveFieldGrid from './LiveFieldGrid';
+import ChangeTimelinePanel from './ChangeTimelinePanel';
 import LivingMetricSparkline from './LivingMetricSparkline';
 import ResourceLiveDetailsView from './ResourceLiveDetailsView';
 
@@ -70,12 +72,14 @@ type LivingResourceCardProps = {
   k8sModels: Record<string, K8sModelRef>;
   onUnavailable?: () => void;
   resourceRef: ResourceRef;
+  showTimeline?: boolean;
 };
 
 const LivingResourceCard: React.FC<LivingResourceCardProps> = ({
   k8sModels,
   onUnavailable,
   resourceRef,
+  showTimeline = false,
 }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
   const model = k8sModels[resourceRef.kind];
@@ -125,6 +129,11 @@ const LivingResourceCard: React.FC<LivingResourceCardProps> = ({
           {metrics.length > 0 && (
             <StackItem>
               <LivingMetricFields metrics={metrics} prometheusNamespace={prometheusNamespace} />
+            </StackItem>
+          )}
+          {showTimeline && isTimelineEligibleAnchor(resourceRef, k8sModels) && (
+            <StackItem>
+              <ChangeTimelinePanel anchor={resourceRef} embedded k8sModels={k8sModels} />
             </StackItem>
           )}
         </Stack>

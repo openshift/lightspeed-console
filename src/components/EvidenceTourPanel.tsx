@@ -16,10 +16,11 @@ import { useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 import { evidenceTourClose, evidenceTourNext, evidenceTourPrev } from '../redux-actions';
 import { State } from '../redux-reducers';
 import { EvidenceTourStep, EvidenceTourState } from '../types';
-import LivingResourceCard from './LivingResourceCard';
 import EvidenceTourStepTitle from './EvidenceTourStepTitle';
+import LivingResourceCard from './LivingResourceCard';
 
 import './evidence-tour.css';
+import './change-timeline.css';
 import './living-response.css';
 
 type EvidenceTourPanelProps = {
@@ -141,7 +142,11 @@ const EvidenceTourPanel: React.FC<EvidenceTourPanelProps> = ({ 'aria-label': ari
           resourceRef={currentStep.resourceRef}
         />
         {showLiveResource && currentStep.resourceRef && (
-          <LivingResourceCard k8sModels={resolvedModels} resourceRef={currentStep.resourceRef} />
+          <LivingResourceCard
+            k8sModels={resolvedModels}
+            resourceRef={currentStep.resourceRef}
+            showTimeline
+          />
         )}
         {showNarration && (
           <Content className="ols-plugin__guided-tour-narration" component="p">

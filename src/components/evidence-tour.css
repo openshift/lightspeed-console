@@ -18,6 +18,16 @@
   overflow-y: auto;
 }
 
+.ols-plugin__guided-tour-content .ols-plugin__living-resource,
+.ols-plugin__guided-tour-content .ols-plugin__change-timeline {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.ols-plugin__guided-tour-content .ols-plugin__living-resource {
+  padding-top: 0;
+}
+
 .ols-plugin__guided-tour-heading {
   margin-bottom: 0;
 }
@@ -82,4 +92,5 @@
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
