@@ -6,6 +6,7 @@
 .playwright-mcp
 CLAUDE.local.md
 dist/
+dist-test-*/
 gui_test_screenshots/
 node_modules/
 tests/.auth/

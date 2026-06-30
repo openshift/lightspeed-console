@@ -1,0 +1,101 @@
+.ols-plugin__change-timeline {
+  border-top: var(--pf-t--global--border--width--regular) solid
+    var(--pf-t--global--border--color--default);
+  margin-top: var(--pf-t--global--spacer--sm);
+  max-width: 100%;
+  min-width: 0;
+  padding-top: var(--pf-t--global--spacer--sm);
+}
+
+.ols-plugin__change-timeline-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--xs);
+  margin-bottom: var(--pf-t--global--spacer--sm);
+}
+
+.ols-plugin__change-timeline-title {
+  font-size: var(--pf-t--global--font--size--body--default);
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+  margin: 0;
+}
+
+.ols-plugin__change-timeline-subtitle {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  margin: 0;
+}
+
+.ols-plugin__change-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ols-plugin__change-timeline-item {
+  display: grid;
+  gap: var(--pf-t--global--spacer--xs) var(--pf-t--global--spacer--sm);
+  grid-template-columns: minmax(4.5rem, auto) auto 1fr;
+  min-width: 0;
+}
+
+.ols-plugin__change-timeline-time {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  white-space: nowrap;
+}
+
+.ols-plugin__change-timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--xs);
+  min-width: 0;
+}
+
+.ols-plugin__change-timeline-entry-title {
+  font-size: var(--pf-t--global--font--size--body--default);
+  text-align: left;
+}
+
+.ols-plugin__change-timeline-detail {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ols-plugin__change-timeline--embedded {
+  border-top: none;
+  margin-top: var(--pf-t--global--spacer--xs);
+  padding-top: 0;
+}
+
+.ols-plugin__living-resource-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--xs);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ols-plugin__living-resource-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--xs);
+  min-width: 0;
+}
+
+.ols-plugin__living-resource-timeline-toggle {
+  align-self: flex-start;
+  padding-left: 0;
+}
+
+.ols-plugin__change-timeline-empty,
+.ols-plugin__change-timeline-error {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  margin: 0;
+}

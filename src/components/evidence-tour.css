@@ -1,0 +1,96 @@
+.ols-plugin__guided-tour {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--lg);
+  min-height: 0;
+  padding: var(--pf-t--global--spacer--lg);
+}
+
+.ols-plugin__guided-tour-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--sm);
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.ols-plugin__guided-tour-content .ols-plugin__living-resource,
+.ols-plugin__guided-tour-content .ols-plugin__change-timeline {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.ols-plugin__guided-tour-content .ols-plugin__living-resource {
+  padding-top: 0;
+}
+
+.ols-plugin__guided-tour-heading {
+  margin-bottom: 0;
+}
+
+.ols-plugin__guided-tour-step-count {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--body--sm);
+  margin: 0;
+}
+
+.ols-plugin__guided-tour-label {
+  margin-bottom: 0;
+}
+
+.ols-plugin__guided-tour-resource-link {
+  font-size: inherit;
+  font-weight: inherit;
+  vertical-align: baseline;
+}
+
+.ols-plugin__guided-tour-narration {
+  color: var(--pf-t--global--text--color--subtle);
+  margin: 0;
+  white-space: pre-line;
+}
+
+.ols-plugin__guided-tour-actions {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.ols-plugin__guide-me-action {
+  margin-top: var(--pf-t--global--spacer--sm);
+}
+
+.ols-plugin--guided-tour-active .ols-plugin__guided-tour-content-host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ols-plugin--guided-tour-active .ols-plugin__guided-tour {
+  height: 100%;
+}
+
+.ols-plugin--guided-tour-active.pf-v6-c-chatbot {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ols-plugin--guided-tour-active .pf-v6-c-chatbot__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ols-plugin--guided-tour-active .pf-v6-c-chatbot__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}

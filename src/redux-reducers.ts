@@ -28,6 +28,12 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       context: null,
       contextEvents: [],
       conversationID: null,
+      evidenceTour: {
+        chatEntryId: null,
+        currentIndex: 0,
+        isActive: false,
+        steps: [],
+      },
       hidePrompt: false,
       isContextEventsLoading: false,
       isOpen: false,
@@ -72,7 +78,12 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
     }
 
     case ActionType.ChatHistoryClear:
-      return state.set('chatHistory', ImmutableList());
+      return state.set('chatHistory', ImmutableList()).set('evidenceTour', {
+        chatEntryId: null,
+        currentIndex: 0,
+        isActive: false,
+        steps: [],
+      });
 
     case ActionType.ChatHistoryUpdateByID: {
       const index = state
@@ -101,7 +112,12 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
       return state.set('contextEvents', []);
 
     case ActionType.CloseOLS:
-      return state.set('isOpen', false).set('hidePrompt', false);
+      return state.set('isOpen', false).set('hidePrompt', false).set('evidenceTour', {
+        chatEntryId: null,
+        currentIndex: 0,
+        isActive: false,
+        steps: [],
+      });
 
     case ActionType.OpenAttachmentClear:
       return state.set('openAttachment', null);
@@ -111,6 +127,34 @@ const reducer = (state: OLSState, action: OLSAction): OLSState => {
 
     case ActionType.OpenOLS:
       return state.set('isOpen', true);
+
+    case ActionType.EvidenceTourStart:
+      return state.set('evidenceTour', {
+        chatEntryId: action.payload.chatEntryId,
+        currentIndex: 0,
+        isActive: true,
+        steps: action.payload.steps,
+      });
+
+    case ActionType.EvidenceTourNext: {
+      const tour = state.get('evidenceTour');
+      const nextIndex = Math.min(tour.currentIndex + 1, tour.steps.length - 1);
+      return state.set('evidenceTour', { ...tour, currentIndex: nextIndex });
+    }
+
+    case ActionType.EvidenceTourPrev: {
+      const tour = state.get('evidenceTour');
+      const prevIndex = Math.max(tour.currentIndex - 1, 0);
+      return state.set('evidenceTour', { ...tour, currentIndex: prevIndex });
+    }
+
+    case ActionType.EvidenceTourClose:
+      return state.set('evidenceTour', {
+        chatEntryId: null,
+        currentIndex: 0,
+        isActive: false,
+        steps: [],
+      });
 
     case ActionType.SetAutoSubmit:
       return state.set('autoSubmit', action.payload.autoSubmit);

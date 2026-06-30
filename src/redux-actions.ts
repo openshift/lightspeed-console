@@ -1,6 +1,6 @@
 import { action, ActionType as Action } from 'typesafe-actions';
 
-import { Attachment, ChatEntry, CodeBlock, Tool } from './types';
+import { Attachment, ChatEntry, CodeBlock, EvidenceTourStep, Tool } from './types';
 
 export enum ActionType {
   AddContextEvent = 'addContextEvent',
@@ -29,6 +29,10 @@ export enum ActionType {
   UserFeedbackOpen = 'userFeedbackOpen',
   UserFeedbackSetSentiment = 'userFeedbackSetSentiment',
   UserFeedbackSetText = 'userFeedbackSetText',
+  EvidenceTourClose = 'evidenceTourClose',
+  EvidenceTourNext = 'evidenceTourNext',
+  EvidenceTourPrev = 'evidenceTourPrev',
+  EvidenceTourStart = 'evidenceTourStart',
   ImportCodeBlock = 'importCodeBlock',
 }
 
@@ -117,6 +121,15 @@ export const userFeedbackSetText = (entryIndex: number, text: string) =>
 
 export const importCodeBlock = (code: CodeBlock) => action(ActionType.ImportCodeBlock, { code });
 
+export const evidenceTourStart = (chatEntryId: string, steps: EvidenceTourStep[]) =>
+  action(ActionType.EvidenceTourStart, { chatEntryId, steps });
+
+export const evidenceTourNext = () => action(ActionType.EvidenceTourNext);
+
+export const evidenceTourPrev = () => action(ActionType.EvidenceTourPrev);
+
+export const evidenceTourClose = () => action(ActionType.EvidenceTourClose);
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actions = {
   addContextEvent,
@@ -129,6 +142,10 @@ const actions = {
   chatHistoryUpdateTool,
   clearContextEvents,
   closeOLS,
+  evidenceTourClose,
+  evidenceTourNext,
+  evidenceTourPrev,
+  evidenceTourStart,
   importCodeBlock,
   openAttachmentClear,
   openAttachmentSet,

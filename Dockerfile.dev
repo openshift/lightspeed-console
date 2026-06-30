@@ -1,0 +1,38 @@
+# Local development image: builds only the current (main) plugin variant.
+# No git submodules required — use instead of Dockerfile for CRC / single-version clusters.
+#
+#   docker build -f Dockerfile.dev -t quay.io/jpinsonn/lightspeed-console-plugin:dev .
+#   docker push quay.io/jpinsonn/lightspeed-console-plugin:dev
+
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:latest AS build
+USER root
+WORKDIR /usr/src/app
+COPY package.json package-lock.json ./
+RUN NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=dev --omit=optional --ignore-scripts --no-fund
+COPY console-extensions.json LICENSE tsconfig.json types.d.ts webpack.config.ts ./
+COPY locales ./locales
+COPY src ./src
+RUN npm run build
+
+FROM registry.access.redhat.com/ubi9-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
+USER 0
+
+RUN microdnf install -y nginx && microdnf clean all
+
+COPY --from=build /usr/src/app/dist /builds/main
+
+RUN mkdir -p /licenses
+COPY --from=build /usr/src/app/LICENSE /licenses/LICENSE
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+RUN rm -rf /usr/share/nginx/html && \
+    ln -s /tmp/nginx/html /usr/share/nginx/html && \
+    mkdir -p /tmp/nginx && \
+    chgrp -R 0 /var/log/nginx /var/lib/nginx /tmp/nginx /builds && \
+    chmod -R g=u /var/log/nginx /var/lib/nginx /tmp/nginx /builds
+
+USER 1001
+
+ENTRYPOINT ["/entrypoint.sh"]
