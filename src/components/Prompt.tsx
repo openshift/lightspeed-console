@@ -46,6 +46,7 @@ import { getFetchErrorMessage } from '../error';
 import { getRequestInitWithAuthHeader } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
 import { useLocationContext } from '../hooks/useLocationContext';
+import { useToolUIMapping } from '../hooks/useToolUIMapping';
 import { buildPageContext } from '../pageContext';
 import { alertingRuleID } from '../validation';
 import {
@@ -150,6 +151,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
 
   const location = useLocation();
   const [kind, name, namespace] = useLocationContext();
+  const [toolUIMapping, toolUIResolved] = useToolUIMapping();
+  const availableToolUIIDs = React.useMemo(() => Object.keys(toolUIMapping), [toolUIMapping]);
 
   const pageContext = React.useMemo(
     () => buildPageContext(kind, name, namespace),
@@ -627,6 +630,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     const requestJSON = {
       attachments: attachments.valueSeq().map(toOLSAttachment),
       // eslint-disable-next-line camelcase
+      ...(toolUIResolved && { available_tool_ui_ids: availableToolUIIDs }),
+      // eslint-disable-next-line camelcase
       conversation_id: conversationID,
       // eslint-disable-next-line camelcase
       media_type: 'application/json',
@@ -810,6 +815,8 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
     textareaRef.current?.focus();
   }, [
     attachments,
+    availableToolUIIDs,
+    toolUIResolved,
     conversationID,
     dispatch,
     hidePrompt,
