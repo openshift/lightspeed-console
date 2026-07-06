@@ -24,7 +24,7 @@ const LinkedResourceStatus: React.FC<LinkedResourceStatusProps> = ({ k8sModels, 
 
   const [resource, loaded, loadError] = useK8sWatchResource<K8sResourceKind>(watchProps);
 
-  const hasMatchingResource = matchesResourceRef(resource, resourceRef);
+  const hasMatchingResource = matchesResourceRef(resource, resourceRef, k8sModels);
 
   if (!watchProps) {
     return null;
@@ -34,7 +34,7 @@ const LinkedResourceStatus: React.FC<LinkedResourceStatusProps> = ({ k8sModels, 
     return null;
   }
 
-  if (!loaded || !hasMatchingResource) {
+  if (!loaded) {
     return <Spinner aria-label={t('Loading resource status')} isInline size="sm" />;
   }
 

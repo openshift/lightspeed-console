@@ -1,10 +1,16 @@
-import { getModelKindName, K8sModelRef, resolveRefModelKey, resolveRefModelKeyOrKind } from './pageContext';
+import {
+  getModelKindName,
+  K8sModelRef,
+  resolveRefModelKey,
+  resolveRefModelKeyOrKind,
+} from './pageContext';
 import { hasBulkResourceListTool } from './resourceListParsing';
 import {
   extractResourceRefs,
   getMentionedResourceNames,
   isPlausibleResourceName,
   ResourceRef,
+  resourceRefKey,
 } from './resourceRefs';
 import { Tool } from './types';
 
@@ -26,20 +32,24 @@ export const prioritizeLinkedResources = (
     return refs;
   }
 
-  const byName = new Map(refs.map((ref) => [ref.name.toLowerCase(), ref]));
   const prioritized: ResourceRef[] = [];
   const used = new Set<string>();
 
   for (const name of mentionedNames) {
-    const ref = byName.get(name);
-    if (ref) {
-      prioritized.push(ref);
-      used.add(name);
+    for (const ref of refs) {
+      if (ref.name.toLowerCase() !== name) {
+        continue;
+      }
+      const key = resourceRefKey(ref);
+      if (!used.has(key)) {
+        prioritized.push(ref);
+        used.add(key);
+      }
     }
   }
 
   for (const ref of refs) {
-    const key = ref.name.toLowerCase();
+    const key = resourceRefKey(ref);
     if (!used.has(key)) {
       prioritized.push(ref);
     }
@@ -115,7 +125,8 @@ export const getLinkedResourceOverflow = (
   models: Record<string, K8sModelRef>,
 ): { shown: number; total: number } => {
   const linkable = extractLinkableResourceRefs(tools, responseText, models);
-  const shown = extractLinkedResources(tools, responseText, models).length;
+  const limit = resolveLinkedResourceLimit(tools, linkable.length);
+  const shown = prioritizeLinkedResources(linkable, responseText, tools).slice(0, limit).length;
   return { shown, total: linkable.length };
 };
 

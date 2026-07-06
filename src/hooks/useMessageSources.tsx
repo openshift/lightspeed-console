@@ -7,7 +7,7 @@ import { ReferencedDoc } from '../types';
 const isURL = (value: string): boolean => {
   try {
     const url = new URL(value);
-    return !!(url.protocol && url.host);
+    return url.protocol === 'http:' || url.protocol === 'https:';
   } catch {
     return false;
   }

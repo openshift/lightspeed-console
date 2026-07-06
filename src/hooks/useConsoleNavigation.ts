@@ -15,7 +15,11 @@ export const useConsoleNavigation = (): ((path: string) => void) => {
       try {
         navigate(path);
       } catch {
-        navigateToConsolePath(path);
+        try {
+          navigateToConsolePath(path);
+        } catch {
+          // Fail closed: navigation is best-effort from the Lightspeed modal.
+        }
       }
     },
     [navigate],

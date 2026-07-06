@@ -5,7 +5,7 @@ import LinkedResourceStatus from './LinkedResourceStatus';
 import ResourceIcon from './ResourceIcon';
 import { buildResourceConsolePath, getResourceIconKind, K8sModelRef } from '../pageContext';
 import { shouldShowLinkedResourceStatus } from '../linkedResourceWatch';
-import { ResourceRef, resourceRefKey } from '../resourceRefs';
+import { ResourceRef } from '../resourceRefs';
 
 import './linked-resources.css';
 
@@ -32,6 +32,7 @@ const InlineLinkedResource: React.FC<InlineLinkedResourceProps> = ({
     >
       <Button
         className="ols-plugin__inline-linked-resource-link"
+        isAriaDisabled={!path}
         isInline
         onClick={(event) => {
           event.preventDefault();
@@ -39,7 +40,7 @@ const InlineLinkedResource: React.FC<InlineLinkedResourceProps> = ({
             navigate(path);
           }
         }}
-        variant="link"
+        variant={path ? 'link' : 'plain'}
       >
         <span className="ols-plugin__inline-linked-resource-content">
           <ResourceIcon className="ols-plugin__inline-linked-resource-kind-icon" kind={iconKind} />
@@ -47,11 +48,7 @@ const InlineLinkedResource: React.FC<InlineLinkedResourceProps> = ({
         </span>
       </Button>
       {shouldShowLinkedResourceStatus(resourceRef, k8sModels) && (
-        <LinkedResourceStatus
-          k8sModels={k8sModels}
-          key={resourceRefKey(resourceRef)}
-          resourceRef={resourceRef}
-        />
+        <LinkedResourceStatus k8sModels={k8sModels} resourceRef={resourceRef} />
       )}
     </span>
   );

@@ -9,6 +9,7 @@ import {
   hasBulkResourceListTool,
   isResourceListToolName,
   isVerticalListNoiseLine,
+  K8S_NODE_NAME_RE,
   toNamespaceRef,
 } from './resourceListParsing';
 import { Tool } from './types';
@@ -110,8 +111,6 @@ export const isPlausibleResourceName = (
   }
   return true;
 };
-
-const K8S_NODE_NAME_RE = /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/;
 
 export const extractNodesFromTopContent = (content: string): ResourceRef[] => {
   const refs: ResourceRef[] = [];
@@ -246,12 +245,12 @@ const extractRefsFromStructuredListItems = (
 const listElementKind = (listKind: string): string | undefined =>
   listKind.endsWith('List') ? listKind.slice(0, -4) : undefined;
 
-const extractRefFromObject = (obj: unknown): ResourceRef | null => {
+const extractRefFromObject = (obj: unknown, defaultKind?: string): ResourceRef | null => {
   if (!obj || typeof obj !== 'object') {
     return null;
   }
   const record = obj as { kind?: string; metadata?: { name?: string; namespace?: string } };
-  const kind = record.kind;
+  const kind = record.kind ?? defaultKind;
   const name = record.metadata?.name;
   const namespace = record.metadata?.namespace;
   if (kind && name) {
@@ -323,12 +322,12 @@ const extractRefsFromListDocument = (
   const defaultKind = parsed.kind ? listElementKind(parsed.kind) : undefined;
   const refs: ResourceRef[] = [];
   for (const item of parsed.items) {
-    const ref = extractRefFromObject(item);
+    const ref = extractRefFromObject(item, defaultKind);
     if (!ref) {
       continue;
     }
     refs.push({
-      kind: ref.kind ?? defaultKind ?? 'Pod',
+      kind: ref.kind,
       name: ref.name,
       namespace: ref.namespace ?? fallbackNamespace,
     });

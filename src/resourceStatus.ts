@@ -120,7 +120,10 @@ const workloadReplicaStatus = (resource: K8sResourceKind): StatusSummary => {
     resource.status?.replicas ??
     ready;
   const label = `${ready}/${total} ready`;
-  if (ready === total && total > 0) {
+  if (total === 0) {
+    return { label, variant: 'info' };
+  }
+  if (ready === total) {
     return { label, variant: 'success' };
   }
   if (ready > 0) {

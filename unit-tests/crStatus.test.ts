@@ -60,4 +60,17 @@ describe('getGenericResourceStatus', () => {
     strictEqual(summary.label, 'Failed (ComponentUnhealthy)');
     strictEqual(summary.variant, 'danger');
   });
+
+  it('prefers Degraded over Available when both are True', () => {
+    const summary = getGenericResourceStatus({
+      status: {
+        conditions: [
+          { type: 'Available', status: 'True', reason: 'MinimumReplicasAvailable' },
+          { type: 'Degraded', status: 'True', reason: 'RolloutStalled' },
+        ],
+      },
+    });
+    strictEqual(summary.label, 'RolloutStalled');
+    strictEqual(summary.variant, 'danger');
+  });
 });

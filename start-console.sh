@@ -48,6 +48,10 @@ resolve_bearer_token() {
   fi
 
   # Plain Kubernetes clusters (e.g. kind) often use client certs; mint a dev token instead.
+  if [ "${MOCK_ALLOW_DEV_TOKEN_MINT:-}" != "1" ]; then
+    echo "error: no bearer token in kubeconfig. Set MOCK_ALLOW_DEV_TOKEN_MINT=1 to create a cluster-admin dev ServiceAccount." >&2
+    return 1
+  fi
   if ! kubectl get serviceaccount "$CONSOLE_DEV_SA_NAME" -n "$CONSOLE_DEV_SA_NAMESPACE" >/dev/null 2>&1; then
     kubectl create serviceaccount "$CONSOLE_DEV_SA_NAME" -n "$CONSOLE_DEV_SA_NAMESPACE" >/dev/null
   fi
@@ -61,17 +65,21 @@ resolve_bearer_token() {
 
 echo "Starting local OpenShift console..."
 
-if ! command -v oc >/dev/null 2>&1 && ! command -v kubectl >/dev/null 2>&1; then
+if command -v oc >/dev/null 2>&1; then
+  PREFERRED_CLI=oc
+elif command -v kubectl >/dev/null 2>&1; then
+  PREFERRED_CLI=kubectl
+else
   echo "error: neither oc nor kubectl found in PATH." >&2
   exit 1
 fi
 
-if command -v oc >/dev/null 2>&1 && ! oc whoami >/dev/null 2>&1; then
+if [ "$PREFERRED_CLI" = oc ] && ! oc whoami >/dev/null 2>&1; then
   echo "error: not logged in to a cluster. Run 'oc login' (or point KUBECONFIG at a running cluster) and retry." >&2
   exit 1
 fi
 
-if command -v kubectl >/dev/null 2>&1 && ! kubectl cluster-info >/dev/null 2>&1; then
+if [ "$PREFERRED_CLI" = kubectl ] && ! kubectl cluster-info >/dev/null 2>&1; then
   echo "error: cannot reach the Kubernetes API. Is your cluster running?" >&2
   echo "  Try: kubectl cluster-info" >&2
   exit 1

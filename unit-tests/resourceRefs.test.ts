@@ -421,6 +421,18 @@ describe('extractResourcesFromToolContent', () => {
     strictEqual(refs[0].name, 'api');
   });
 
+  it('uses list kind when items omit kind', () => {
+    const refs = extractResourcesFromToolContent(
+      JSON.stringify({
+        kind: 'PodList',
+        items: [{ metadata: { name: 'api', namespace: 'payments' } }],
+      }),
+    );
+    strictEqual(refs.length, 1);
+    strictEqual(refs[0].kind, 'Pod');
+    strictEqual(refs[0].name, 'api');
+  });
+
   it('parses nodes_top metrics table rows', () => {
     const refs = extractResourcesFromToolContent(
       `NAME       CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)

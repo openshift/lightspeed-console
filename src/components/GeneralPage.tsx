@@ -171,12 +171,13 @@ const ChatHistoryEntry = React.memo(
     const [isDarkTheme] = useIsDarkTheme();
 
     const isAiEntry = entry?.who === 'ai';
+    const isAiResponseReady = isAiEntry && !entry.isStreaming && !entry.error;
     const messageSources = useMessageSources({
-      enabled: isAiEntry && !entry.isStreaming && !entry.error && modelsLoaded,
+      enabled: isAiResponseReady,
       references: isAiEntry ? entry.references : undefined,
     });
     const linkedResourceMarkdown = useLinkedResourceMarkdown({
-      enabled: isAiEntry && !entry.isStreaming && !entry.error && modelsLoaded,
+      enabled: isAiResponseReady && modelsLoaded,
       k8sModels,
       responseText: isAiEntry ? entry.text : undefined,
       tools: aiTools,

@@ -186,6 +186,23 @@ describe('getResourceStatusSummary', () => {
     strictEqual(summary.variant, 'success');
   });
 
+  it('reports scaled-to-zero workloads as neutral', () => {
+    const summary = getResourceStatusSummary('Deployment', {
+      status: { replicas: 0, readyReplicas: 0 },
+    });
+    strictEqual(summary.label, '0/0 ready');
+    strictEqual(summary.variant, 'info');
+  });
+
+  it('reports ready LoadBalancer services', () => {
+    const summary = getResourceStatusSummary('Service', {
+      spec: { type: 'LoadBalancer' },
+      status: { loadBalancer: { ingress: [{ ip: '10.0.0.1' }] } },
+    });
+    strictEqual(summary.label, 'LoadBalancer ready');
+    strictEqual(summary.variant, 'success');
+  });
+
   it('returns em dash for status-less resources like ConfigMap', () => {
     const summary = getResourceStatusSummary('ConfigMap', {
       metadata: { name: 'app-config' },

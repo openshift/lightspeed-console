@@ -43,6 +43,13 @@ describe('toConsoleStatusKey', () => {
     });
   });
 
+  it('maps LoadBalancer ready before generic replica labels', () => {
+    deepStrictEqual(
+      toConsoleStatusKey({ label: 'LoadBalancer ready', variant: 'success' }, 'Service'),
+      { status: 'Ready', useIcon: true },
+    );
+  });
+
   it('maps replica counts to console workload icons', () => {
     deepStrictEqual(toConsoleStatusKey({ label: '1/1 ready', variant: 'success' }, 'Deployment'), {
       status: 'Running',

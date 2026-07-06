@@ -970,7 +970,7 @@ const server = createServer(async (req, res) => {
       // ignore parse errors; still return a mock stream
     }
 
-    const { body, scenarioKey, conversationId } = buildStreamBody(query);
+    const { body, scenarioKey } = buildStreamBody(query);
     // eslint-disable-next-line no-console
     console.log(`[mock-ols] streaming_query scenario=${scenarioKey} query=${JSON.stringify(query)}`);
 

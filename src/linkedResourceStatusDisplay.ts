@@ -62,12 +62,12 @@ export const toConsoleStatusKey = (
     return withIcon(label);
   }
 
-  if (label.endsWith(' ready')) {
-    return withIcon(mapReplicaLabel(summary));
-  }
-
   if (label === 'LoadBalancer ready') {
     return withIcon('Ready');
+  }
+
+  if (label.endsWith(' ready')) {
+    return withIcon(mapReplicaLabel(summary));
   }
 
   if (kindName === 'Job') {

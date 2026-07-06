@@ -36,6 +36,18 @@ describe('matchesResourceRef', () => {
       matchesResourceRef(
         { metadata: { name: 'default' } },
         { kind: 'Namespace', name: 'kube-system' },
+        testK8sModels,
+      ),
+      false,
+    );
+  });
+
+  it('rejects stale watch data for a different kind', () => {
+    strictEqual(
+      matchesResourceRef(
+        { kind: 'Pod', metadata: { name: 'api-1', namespace: 'payments' } },
+        { kind: 'Deployment', name: 'api-1', namespace: 'payments' },
+        testK8sModels,
       ),
       false,
     );
@@ -46,6 +58,7 @@ describe('matchesResourceRef', () => {
       matchesResourceRef(
         { metadata: { name: 'payments' } },
         { kind: 'Namespace', name: 'payments', useProjectRoute: true },
+        testK8sModels,
       ),
       true,
     );

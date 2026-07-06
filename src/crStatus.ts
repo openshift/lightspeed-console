@@ -1,6 +1,6 @@
 import { K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
 
-import { StatusSummary } from './resourceStatus';
+import type { StatusSummary } from './resourceStatus';
 
 type GenericCondition = {
   lastTransitionTime?: string;
@@ -136,7 +136,7 @@ const getStandardConditionStatus = (conditions: GenericCondition[]): StatusSumma
     return null;
   }
 
-  const priority = ['Ready', 'Available', 'Progressing', 'Degraded', 'Failure'];
+  const priority = ['Degraded', 'Failure', 'Ready', 'Available', 'Progressing'];
   for (const type of priority) {
     const condition = standard.find((entry) => entry.type === type);
     if (!condition) {

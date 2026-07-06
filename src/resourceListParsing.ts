@@ -1,7 +1,7 @@
 import { ResourceRef } from './pageContext';
 import { Tool } from './types';
 
-const K8S_NODE_NAME_RE = /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/;
+export const K8S_NODE_NAME_RE = /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/;
 
 const RESOURCE_AGE_LINE = /^\d+([wdhms]\d*)+$/i;
 
