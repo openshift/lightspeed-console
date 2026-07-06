@@ -11,6 +11,10 @@ OLS_PORT=${OLS_PORT:=8080}
 CONSOLE_DEV_SA_NAME=${CONSOLE_DEV_SA_NAME:=lightspeed-console-dev}
 CONSOLE_DEV_SA_NAMESPACE=${CONSOLE_DEV_SA_NAMESPACE:=kube-system}
 
+dev_token_mint_allowed() {
+  [ "${ALLOW_DEV_TOKEN_MINT:-}" = "1" ] || [ "${MOCK_ALLOW_DEV_TOKEN_MINT:-}" = "1" ]
+}
+
 resolve_api_server() {
   if command -v oc >/dev/null 2>&1 && oc whoami >/dev/null 2>&1; then
     oc whoami --show-server
@@ -48,8 +52,11 @@ resolve_bearer_token() {
   fi
 
   # Plain Kubernetes clusters (e.g. kind) often use client certs; mint a dev token instead.
-  if [ "${MOCK_ALLOW_DEV_TOKEN_MINT:-}" != "1" ]; then
-    echo "error: no bearer token in kubeconfig. Set MOCK_ALLOW_DEV_TOKEN_MINT=1 to create a cluster-admin dev ServiceAccount." >&2
+  if ! dev_token_mint_allowed; then
+    echo "error: no bearer token in kubeconfig (common with kind/minikube client-cert auth)." >&2
+    echo "  Run: ALLOW_DEV_TOKEN_MINT=1 npm run start-console" >&2
+    echo "   or: npm run start-console-kind" >&2
+    echo "  This creates a temporary cluster-admin ServiceAccount (${CONSOLE_DEV_SA_NAMESPACE}/${CONSOLE_DEV_SA_NAME})." >&2
     return 1
   fi
   if ! kubectl get serviceaccount "$CONSOLE_DEV_SA_NAME" -n "$CONSOLE_DEV_SA_NAMESPACE" >/dev/null 2>&1; then
@@ -91,8 +98,9 @@ BRIDGE_K8S_AUTH_BEARER_TOKEN=$(resolve_bearer_token || true)
 if [ -z "$BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT" ] || [ -z "$BRIDGE_K8S_AUTH_BEARER_TOKEN" ]; then
   echo "error: could not read API server or bearer token." >&2
   echo "  server: ${BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT:-<empty>}" >&2
-  echo "  OpenShift: run 'oc whoami --show-token'." >&2
-  echo "  kind/k8s: ensure 'kubectl create token' works, or log in with a kubeconfig that includes a user token." >&2
+  echo "  OpenShift: run 'oc login', then 'oc whoami --show-token'." >&2
+  echo "  kind/minikube: npm run start-console-kind" >&2
+  echo "    (sets ALLOW_DEV_TOKEN_MINT=1 to mint a dev ServiceAccount token)" >&2
   exit 1
 fi
 

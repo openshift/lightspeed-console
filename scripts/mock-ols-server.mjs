@@ -13,7 +13,7 @@
  *
  * No OpenShift cluster? Use a local kind cluster:
  *   kind create cluster
- *   npm run start-console   # start-console.sh mints a dev token for plain Kubernetes
+ *   npm run start-console-kind   # mints a dev token (ALLOW_DEV_TOKEN_MINT=1)
  *
  * Then open http://localhost:9000, open Lightspeed, and try e.g.:
  *   - "show pods"                  → pods in MOCK_NAMESPACE
