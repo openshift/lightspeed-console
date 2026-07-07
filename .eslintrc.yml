@@ -87,3 +87,6 @@ overrides:
       - scripts/**/*.mjs
     env:
       node: true
+    rules:
+      camelcase: off
+      no-console: off

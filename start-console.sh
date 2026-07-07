@@ -28,7 +28,7 @@ resolve_api_server() {
 }
 
 resolve_bearer_token() {
-  local token user
+  local token user cluster_name cluster_server
 
   if command -v oc >/dev/null 2>&1; then
     token=$(oc whoami --show-token 2>/dev/null || true)
@@ -59,6 +59,20 @@ resolve_bearer_token() {
     echo "  This creates a temporary cluster-admin ServiceAccount (${CONSOLE_DEV_SA_NAMESPACE}/${CONSOLE_DEV_SA_NAME})." >&2
     return 1
   fi
+  if ! kubectl get serviceaccount "$CONSOLE_DEV_SA_NAME" -n "$CONSOLE_DEV_SA_NAMESPACE" >/dev/null 2>&1 ||
+    ! kubectl get clusterrolebinding "$CONSOLE_DEV_SA_NAME" >/dev/null 2>&1; then
+    cluster_name=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}' 2>/dev/null || echo '<unknown>')
+    cluster_server=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2>/dev/null || echo '<unknown>')
+    echo "WARNING: About to create cluster-admin dev credentials on this cluster." >&2
+    echo "  Cluster: ${cluster_name} (${cluster_server})" >&2
+    echo "  Resources: ServiceAccount ${CONSOLE_DEV_SA_NAMESPACE}/${CONSOLE_DEV_SA_NAME}" >&2
+    echo "           ClusterRoleBinding ${CONSOLE_DEV_SA_NAME} -> cluster-admin" >&2
+    echo "  Verify KUBECONFIG points at your intended local cluster before continuing." >&2
+    echo "  Cleanup when done:" >&2
+    echo "    kubectl delete clusterrolebinding ${CONSOLE_DEV_SA_NAME}" >&2
+    echo "    kubectl delete serviceaccount ${CONSOLE_DEV_SA_NAME} -n ${CONSOLE_DEV_SA_NAMESPACE}" >&2
+    echo "" >&2
+  fi
   if ! kubectl get serviceaccount "$CONSOLE_DEV_SA_NAME" -n "$CONSOLE_DEV_SA_NAMESPACE" >/dev/null 2>&1; then
     kubectl create serviceaccount "$CONSOLE_DEV_SA_NAME" -n "$CONSOLE_DEV_SA_NAMESPACE" >/dev/null
   fi
@@ -72,17 +86,17 @@ resolve_bearer_token() {
 
 echo "Starting local OpenShift console..."
 
-if command -v oc >/dev/null 2>&1; then
+if command -v oc >/dev/null 2>&1 && oc whoami >/dev/null 2>&1; then
   PREFERRED_CLI=oc
 elif command -v kubectl >/dev/null 2>&1; then
   PREFERRED_CLI=kubectl
 else
-  echo "error: neither oc nor kubectl found in PATH." >&2
-  exit 1
-fi
-
-if [ "$PREFERRED_CLI" = oc ] && ! oc whoami >/dev/null 2>&1; then
-  echo "error: not logged in to a cluster. Run 'oc login' (or point KUBECONFIG at a running cluster) and retry." >&2
+  if command -v oc >/dev/null 2>&1; then
+    echo "error: oc is installed but not logged in, and kubectl was not found." >&2
+    echo "  Run 'oc login' or install kubectl for kind/minikube." >&2
+  else
+    echo "error: neither oc nor kubectl found in PATH." >&2
+  fi
   exit 1
 fi
 
@@ -92,7 +106,7 @@ if [ "$PREFERRED_CLI" = kubectl ] && ! kubectl cluster-info >/dev/null 2>&1; the
   exit 1
 fi
 
-BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT=$(resolve_api_server)
+BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT=$(resolve_api_server || true)
 BRIDGE_K8S_AUTH_BEARER_TOKEN=$(resolve_bearer_token || true)
 
 if [ -z "$BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT" ] || [ -z "$BRIDGE_K8S_AUTH_BEARER_TOKEN" ]; then

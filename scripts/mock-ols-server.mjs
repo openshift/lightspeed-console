@@ -66,8 +66,7 @@ const parseListLimit = (value, fallback) => {
 const DEFAULT_LIST_LIMIT = parseListLimit(process.env.MOCK_LIST_LIMIT, 4);
 const POD_LIST_LIMIT = parseListLimit(process.env.MOCK_POD_LIMIT, 0);
 const MOCK_DIVERSE_POD_STATUSES =
-  process.env.MOCK_DIVERSE_POD_STATUSES === '1' ||
-  process.env.MOCK_DIVERSE_POD_STATUSES === 'true';
+  process.env.MOCK_DIVERSE_POD_STATUSES === '1' || process.env.MOCK_DIVERSE_POD_STATUSES === 'true';
 
 /** Demo statuses for MCP table + assistant prose (icons still come from live cluster watch). */
 const DIVERSE_POD_STATUS_PRESETS = [
@@ -180,15 +179,12 @@ const snapshotWithPreset = (name, index, useDiverseStatuses) => {
 const resolvePodSnapshots = (namespace) => {
   const fromEnv = splitEnvList(process.env.MOCK_PODS);
   if (fromEnv.length > 0) {
-    return fromEnv.map((name, index) =>
-      snapshotWithPreset(name, index, MOCK_DIVERSE_POD_STATUSES),
-    );
+    return fromEnv.map((name, index) => snapshotWithPreset(name, index, MOCK_DIVERSE_POD_STATUSES));
   }
 
   const list = tryOcJson(['get', 'pods', '-n', namespace, '-o', 'json']);
   if (list?.items?.length > 0) {
-    const items =
-      POD_LIST_LIMIT > 0 ? list.items.slice(0, POD_LIST_LIMIT) : list.items;
+    const items = POD_LIST_LIMIT > 0 ? list.items.slice(0, POD_LIST_LIMIT) : list.items;
     const snapshots = items.map(snapshotFromPod);
     if (MOCK_DIVERSE_POD_STATUSES) {
       return snapshots.map((snapshot, index) => ({
@@ -207,7 +203,13 @@ const resolvePodSnapshots = (namespace) => {
   );
 };
 
-const resolveNames = ({ envVar, ocArgs, ocFallbackArgs, placeholders, limit = DEFAULT_LIST_LIMIT }) => {
+const resolveNames = ({
+  envVar,
+  ocArgs,
+  ocFallbackArgs,
+  placeholders,
+  limit = DEFAULT_LIST_LIMIT,
+}) => {
   const fromEnv = splitEnvList(process.env[envVar]);
   if (fromEnv.length > 0) {
     return fromEnv;
@@ -240,12 +242,8 @@ const defaultListTokens = (kindLabel, { namespace, names, primary, namespaced })
   ];
 };
 
-const workloadTable =
-  (apiVersion, kind) =>
-  (namespace, names) =>
-    names
-      .map((name) => `${namespace} ${apiVersion} ${kind} ${name} 1/1 1 1 5m app=mock`)
-      .join('\n');
+const workloadTable = (apiVersion, kind) => (namespace, names) =>
+  names.map((name) => `${namespace} ${apiVersion} ${kind} ${name} 1/1 1 1 5m app=mock`).join('\n');
 
 const WORKLOAD_TABLE_HEADER =
   'NAMESPACE APIVERSION KIND NAME READY UP-TO-DATE AVAILABLE AGE LABELS';
@@ -364,8 +362,7 @@ const LIST_RESOURCE_DEFS = [
     namespaced: true,
     apiVersion: 'v1',
     placeholders: ['mock-rc-a'],
-    detect: (q) =>
-      /\breplicationcontrollers?\b/.test(q) || /\breplication controllers?\b/.test(q),
+    detect: (q) => /\breplicationcontrollers?\b/.test(q) || /\breplication controllers?\b/.test(q),
     tableHeader: 'NAMESPACE APIVERSION KIND NAME DESIRED CURRENT READY AGE SELECTOR LABELS',
     buildTable: (namespace, names) =>
       names
@@ -379,8 +376,7 @@ const LIST_RESOURCE_DEFS = [
     namespaced: true,
     apiVersion: 'apps.openshift.io/v1',
     placeholders: ['mock-dc-a', 'mock-dc-b'],
-    detect: (q) =>
-      /\bdeploymentconfigs?\b/.test(q) || /\bdeployment configs?\b/.test(q),
+    detect: (q) => /\bdeploymentconfigs?\b/.test(q) || /\bdeployment configs?\b/.test(q),
     tableHeader: 'NAMESPACE APIVERSION KIND NAME REVISION DESIRED CURRENT TRIGGERED BY LABELS',
     buildTable: (namespace, names) =>
       names
@@ -443,9 +439,7 @@ const LIST_RESOURCE_DEFS = [
     detect: (q) => /\broutes?\b/.test(q),
     tableHeader: 'NAMESPACE APIVERSION KIND NAME AGE LABELS',
     buildTable: (namespace, names) =>
-      names
-        .map((name) => `${namespace} route.openshift.io/v1 Route ${name} 5m <none>`)
-        .join('\n'),
+      names.map((name) => `${namespace} route.openshift.io/v1 Route ${name} 5m <none>`).join('\n'),
   },
   {
     key: 'persistentvolumeclaims',
@@ -479,7 +473,8 @@ const LIST_RESOURCE_DEFS = [
       /\bpersistentvolumes?\b/.test(q) ||
       /\bpersistent volumes?\b/.test(q) ||
       (/\bpvs?\b/.test(q) && !/\bpvcs?\b/.test(q)),
-    tableHeader: 'APIVERSION KIND NAME CAPACITY ACCESS MODES RECLAIM POLICY STATUS CLAIM STORAGECLASS',
+    tableHeader:
+      'APIVERSION KIND NAME CAPACITY ACCESS MODES RECLAIM POLICY STATUS CLAIM STORAGECLASS',
     buildTable: (_namespace, names) =>
       names
         .map((name) => `v1 PersistentVolume ${name} 1Gi RWO Delete Bound default/${name} mock-sc`)
@@ -590,8 +585,7 @@ const LIST_RESOURCE_DEFS = [
     namespaced: false,
     apiVersion: 'machineconfiguration.openshift.io/v1',
     placeholders: ['worker', 'master'],
-    detect: (q) =>
-      /\bmachineconfigpools?\b/.test(q) || /\bmachine config pools?\b/.test(q),
+    detect: (q) => /\bmachineconfigpools?\b/.test(q) || /\bmachine config pools?\b/.test(q),
     tableHeader: 'APIVERSION KIND NAME CONFIG UPDATED UPDATING DEGRADED MACHINECOUNT',
     buildTable: (_namespace, names) =>
       names
@@ -608,8 +602,7 @@ const LIST_RESOURCE_DEFS = [
     namespaced: false,
     apiVersion: 'operator.openshift.io/v1',
     placeholders: ['default'],
-    detect: (q) =>
-      /\bingresscontrollers?\b/.test(q) || /\bingress controllers?\b/.test(q),
+    detect: (q) => /\bingresscontrollers?\b/.test(q) || /\bingress controllers?\b/.test(q),
     tableHeader: 'APIVERSION KIND NAME DOMAIN AVAILABLE PROGRESSING DEGRADED',
     buildTable: (_namespace, names) =>
       names
@@ -665,8 +658,14 @@ const DEPLOYMENT_NAME = (() => {
     return process.env.MOCK_DEPLOYMENT;
   }
   return (
-    tryOc(['get', 'deployments', '-n', MOCK_NAMESPACE, '-o', 'jsonpath={.items[0].metadata.name}']) ||
-    'mock-deployment'
+    tryOc([
+      'get',
+      'deployments',
+      '-n',
+      MOCK_NAMESPACE,
+      '-o',
+      'jsonpath={.items[0].metadata.name}',
+    ]) || 'mock-deployment'
   );
 })();
 
@@ -967,12 +966,13 @@ const server = createServer(async (req, res) => {
       const body = raw ? JSON.parse(raw) : {};
       query = body.query ?? '';
     } catch {
-      // ignore parse errors; still return a mock stream
+      // Ignore parse errors; still return a mock stream.
     }
 
     const { body, scenarioKey } = buildStreamBody(query);
-    // eslint-disable-next-line no-console
-    console.log(`[mock-ols] streaming_query scenario=${scenarioKey} query=${JSON.stringify(query)}`);
+    console.log(
+      `[mock-ols] streaming_query scenario=${scenarioKey} query=${JSON.stringify(query)}`,
+    );
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -983,52 +983,36 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // eslint-disable-next-line no-console
   console.log(`[mock-ols] ${method} ${url} → 404`);
   json(res, 404, { detail: `Not found: ${method} ${url}` });
 });
 
-server.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Mock OLS listening on http://localhost:${PORT}`);
-  // eslint-disable-next-line no-console
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`Mock OLS listening on http://127.0.0.1:${PORT}`);
   console.log(`  namespace:    ${MOCK_NAMESPACE}`);
-  // eslint-disable-next-line no-console
   console.log(`  scenarios:    ${SCENARIO_HINTS}`);
-  // eslint-disable-next-line no-console
-  console.log(`  pods:         ${POD_SNAPSHOTS.map((pod) => `${pod.name}(${pod.status})`).join(', ')}`);
+  console.log(
+    `  pods:         ${POD_SNAPSHOTS.map((pod) => `${pod.name}(${pod.status})`).join(', ')}`,
+  );
   if (MOCK_DIVERSE_POD_STATUSES) {
-    // eslint-disable-next-line no-console
-    console.log('  note:         MOCK_DIVERSE_POD_STATUSES overrides tool-output status (icons use live watch)');
+    console.log(
+      '  note:         MOCK_DIVERSE_POD_STATUSES overrides tool-output status (icons use live watch)',
+    );
   }
-  // eslint-disable-next-line no-console
   console.log(`  projects:     ${PROJECT_NAMES.join(', ')}`);
-  // eslint-disable-next-line no-console
   console.log(`  namespaces:   ${NAMESPACE_NAMES.join(', ')}`);
-  // eslint-disable-next-line no-console
   console.log(`  nodes:        ${NODE_NAMES.join(', ')}`);
   for (const { key, names } of listResourceRuntime) {
-    // eslint-disable-next-line no-console
     console.log(`  ${key.padEnd(13)} ${names.join(', ')}`);
   }
-  // eslint-disable-next-line no-console
   console.log('');
-  // eslint-disable-next-line no-console
   console.log('Try in Lightspeed: "list secrets", "list routes", "list statefulsets", …');
-  // eslint-disable-next-line no-console
   console.log('Force a scenario: MOCK_OLS_SCENARIO=routes npm run start-mock-ols');
-  // eslint-disable-next-line no-console
   console.log('');
-  // eslint-disable-next-line no-console
   console.log('Next: npm run start  (terminal 2)');
-  // eslint-disable-next-line no-console
   console.log('');
-  // eslint-disable-next-line no-console
   console.log('Then: oc login && npm run start-console  (terminal 3)');
-  // eslint-disable-next-line no-console
   console.log('      or: kind create cluster && npm run start-console  (no OpenShift needed)');
-  // eslint-disable-next-line no-console
   console.log('');
-  // eslint-disable-next-line no-console
   console.log('Finally: open http://localhost:9000');
 });
