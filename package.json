@@ -71,6 +71,7 @@
     "webpack-dev-server": "5.2.5"
   },
   "overrides": {
+    "brace-expansion": "5.0.7",
     "dompurify": "3.4.11",
     "js-cookie": "3.0.8",
     "monaco-editor": "0.55.1",
