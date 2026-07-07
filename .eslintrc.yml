@@ -82,3 +82,8 @@ rules:
 settings:
   react:
     version: detect
+overrides:
+  - files:
+      - scripts/**/*.mjs
+    env:
+      node: true
