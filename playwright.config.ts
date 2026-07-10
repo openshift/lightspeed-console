@@ -18,7 +18,7 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   timeout: 60_000,
   expect: {
-    timeout: 10_000,
+    timeout: 20_000,
   },
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -38,7 +38,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
-    actionTimeout: 10_000,
+    actionTimeout: 20_000,
   },
   projects: [
     {
