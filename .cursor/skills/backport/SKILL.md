@@ -21,9 +21,11 @@ components.
 ## Workflow
 
 1. Determine the target release branch. If the user doesn't specify, ask.
-2. Create a branch off the target release branch with a short prefix derived
-   from the branch name (e.g. `pf5-<topic>` for pattern-fly-5, `4.19-<topic>` for
-   release-4.19).
+2. Switch to the local target release branch (`git checkout <branch>`) and
+   create a new branch from it (`git checkout -b <name>`) with a short prefix
+   derived from the branch name (e.g. `pf5-<topic>` for pattern-fly-5,
+   `4.19-<topic>` for release-4.19). Do not branch off a remote ref directly
+   — that sets unwanted upstream tracking.
 3. Read the source commit (`git show <commit>`) to understand the intent.
 4. Attempt `git cherry-pick <commit>`. If conflicts are trivial, resolve them.
    If the cherry-pick fails badly, abort (`git cherry-pick --abort`) and
