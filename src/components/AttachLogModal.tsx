@@ -329,7 +329,6 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
     [],
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const loadPreview = React.useMemo(
     () =>
       debounce((url: string) => {
@@ -349,6 +348,7 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
             setPreviewError(err.message || t('Failed to fetch logs'));
           });
       }, 500),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
