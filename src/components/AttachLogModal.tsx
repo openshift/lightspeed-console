@@ -313,39 +313,42 @@ const AttachLogModal: React.FC<AttachLogModalProps> = ({ isOpen, onClose, resour
 
   // When the resource changes, reset the default pod (and container) options
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     changePod(kind === 'Pod' ? resource : undefined);
   }, [kind, resource]);
 
   // When the pods are loaded, use the first pod as the default pod value
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     changePod(podsLoaded && pods ? pods[0] : undefined);
   }, [pods, podsLoaded]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onLinesChange = React.useCallback(
-    throttle((_e: SliderOnChangeEvent, value: number) => setLines(value), 50),
+  const onLinesChange = React.useMemo(
+    () => throttle((_e: SliderOnChangeEvent, value: number) => setLines(value), 50),
     [],
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const loadPreview = React.useCallback(
-    debounce((url: string) => {
-      setIsPreviewLoading(true);
-      setPreviewError(undefined);
-      consoleFetchText(url)
-        .then((response) => {
-          if (isEmpty(response) || typeof response !== 'string') {
-            setPreviewError(t('No logs found'));
-          } else {
-            setPreview(response);
-          }
-          setIsPreviewLoading(false);
-        })
-        .catch((err) => {
-          setIsPreviewLoading(false);
-          setPreviewError(err.message || t('Failed to fetch logs'));
-        });
-    }, 500),
+  const loadPreview = React.useMemo(
+    () =>
+      debounce((url: string) => {
+        setIsPreviewLoading(true);
+        setPreviewError(undefined);
+        consoleFetchText(url)
+          .then((response) => {
+            if (isEmpty(response) || typeof response !== 'string') {
+              setPreviewError(t('No logs found'));
+            } else {
+              setPreview(response);
+            }
+            setIsPreviewLoading(false);
+          })
+          .catch((err) => {
+            setIsPreviewLoading(false);
+            setPreviewError(err.message || t('Failed to fetch logs'));
+          });
+      }, 500),
     [],
   );
 
