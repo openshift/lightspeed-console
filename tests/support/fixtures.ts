@@ -45,6 +45,19 @@ data: {"event": "approval_required", "data": {"approval_id": "abc", "tool_name":
 data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
 `;
 
+export const MOCK_STREAMED_RESPONSE_WITH_TOOL_ERROR_BODY = `data: {"event": "start", "data": {"conversation_id": "${CONVERSATION_ID}"}}
+
+data: {"event": "token", "data": {"id": 0, "token": "Mock"}}
+
+data: {"event": "token", "data": {"id": 1, "token": " response"}}
+
+data: {"event": "tool_call", "data": {"id": "tool-err-1", "name": "failing_tool", "args": {"key": "value"}}}
+
+data: {"event": "tool_result", "data": {"id": "tool-err-1", "content": "Something went wrong", "status": "error"}}
+
+data: {"event": "end", "data": {"referenced_documents": [], "truncated": false}}
+`;
+
 export const MOCK_MCP_STREAMED_RESPONSE_BODY_TEMPLATE = `data: {"event": "start", "data": {"conversation_id": "CONVERSATION_ID"}}
 
 data: {"event": "token", "data": {"id": 0, "token": "Here"}}

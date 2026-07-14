@@ -9,6 +9,7 @@ import {
   MOCK_STREAMED_RESPONSE_BODY,
   MOCK_STREAMED_RESPONSE_WITH_APPROVAL_BODY,
   MOCK_STREAMED_RESPONSE_WITH_ERROR_BODY,
+  MOCK_STREAMED_RESPONSE_WITH_TOOL_ERROR_BODY,
   test,
 } from '../support/fixtures';
 
@@ -370,6 +371,33 @@ test.describe('OLS UI', () => {
       await expect(m).toContainText('mock_tool');
       await expect(m).not.toContainText('Status');
       await expect(m).not.toContainText('Content');
+      await m.locator('button.ols-plugin__popover-close').click();
+    });
+  });
+
+  test.describe.serial('Tool error modal', { tag: ['@tool-error'] }, () => {
+    test('Test tool error modal shows error status and tool details', async ({ page }) => {
+      await page.goto('/search/all-namespaces');
+      await expect(page.locator('h1').filter({ hasText: 'Search' })).toBeVisible();
+      await openPopover(page);
+
+      await page.route(`**/v1/streaming_query`, async (route) => {
+        await route.fulfill({ body: MOCK_STREAMED_RESPONSE_WITH_TOOL_ERROR_BODY });
+      });
+
+      await page.locator(promptInput).fill(PROMPT_SUBMITTED);
+      await page.locator(promptInput).press('Enter');
+
+      await expect(page.locator(toolLabel).filter({ hasText: 'failing_tool' })).toBeVisible();
+      await page.locator(toolLabel).filter({ hasText: 'failing_tool' }).click();
+
+      const m = page.locator(attachmentModal);
+      await expect(m).toContainText('Tool output');
+      await expect(m).toContainText('failing_tool');
+      await expect(m).toContainText('Status');
+      await expect(m).toContainText('error');
+      await expect(m).toContainText('Something went wrong');
+      await expect(m).not.toContainText('Tool call rejected');
       await m.locator('button.ols-plugin__popover-close').click();
     });
   });
