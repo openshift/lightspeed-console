@@ -55,7 +55,7 @@
     "webpack-cli": "^7.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "1.61.0",
+    "@playwright/test": "1.61.1",
     "@types/lodash": "4.17.24",
     "@types/node": "^22.20.0",
     "@types/react": "^17.0.91",
