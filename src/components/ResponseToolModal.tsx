@@ -83,16 +83,6 @@ const ToolModal: React.FC = () => {
         </>
       }
     >
-      {!isDenied && status === 'error' && (
-        <Alert
-          className="ols-plugin__alert"
-          isInline
-          title={t('An unexpected error occurred')}
-          variant="danger"
-        >
-          {t('Please retry or contact support if the issue persists.')}
-        </Alert>
-      )}
       <p>
         {isDenied ? (
           argsFormatted ? (
