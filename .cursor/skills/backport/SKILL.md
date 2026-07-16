@@ -34,12 +34,14 @@ components.
    target branch for equivalents when needed. See the branch-specific notes
    below for known differences.
 6. Verify no conflict markers remain.
-7. Run the following **in order**, fixing any errors _you introduced_ before
+7. Run `npm ci` — release branches have different dependency versions,
+   so a clean install from the lockfile is required before linting or building.
+8. Run the following **in order**, fixing any errors _you introduced_ before
    moving on (ignore pre-existing build failures):
    1. `npm run lint-fix`
    2. `npm run i18n`
    3. `npm run build`
-8. Prefix the final commit title to identify the target branch (e.g. "PF5: " for
+9. Prefix the final commit title to identify the target branch (e.g. "PF5: " for
    pattern-fly-5, "4.19: " for release-4.19):
    - If cherry-pick succeeded: amend the commit message title (e.g.
      `git commit --amend`).
