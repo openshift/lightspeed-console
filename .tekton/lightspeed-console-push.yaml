@@ -8,7 +8,29 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: '3'
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push" &&
+      (".dockerignore".pathChanged() ||
+      ".npmrc".pathChanged() ||
+      ".tekton/***".pathChanged() ||
+      "branches/***".pathChanged() ||
+      "console-extensions.json".pathChanged() ||
+      "Dockerfile".pathChanged() ||
+      "entrypoint.sh".pathChanged() ||
+      "i18n-scripts/***".pathChanged() ||
+      "LICENSE".pathChanged() ||
+      "locales/***".pathChanged() ||
+      "package*".pathChanged() ||
+      "playwright.*".pathChanged() ||
+      "rpms.in.yaml".pathChanged() ||
+      "rpms.lock.yaml".pathChanged() ||
+      "src/***".pathChanged() ||
+      "tests/***".pathChanged() ||
+      "tsconfig.json".pathChanged() ||
+      "types.d.ts".pathChanged() ||
+      "ubi.repo".pathChanged() ||
+      "unit-tests/***".pathChanged() ||
+      "webpack.config.ts".pathChanged())
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: ols
