@@ -35,9 +35,9 @@ const goToPodsList = async (page: Page, ns: string | null = null) => {
 const goToPodDetails = async (page: Page, ns: string, podName: string) => {
   await goToPodsList(page, ns);
   await filterByName(page, podName);
-  const link = page.locator(resourceRows).filter({ hasText: podName });
-  await expect(link.first()).toBeVisible({ timeout: 30_000 });
-  await link.first().click();
+  const link = page.locator(resourceRows).filter({ hasText: podName }).first();
+  await expect(link).toBeVisible({ timeout: 30_000 });
+  await link.click();
 };
 
 const popover = '[data-test="ols-plugin__popover"]';
