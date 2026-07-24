@@ -121,9 +121,10 @@ interactive MCP App UIs and OLS-native tool visualizations.
 ### OLS Tool UI Extensions
 
 24. Other console plugins can register tool UI components via the
-    `ols.tool-ui` extension type. When a tool result includes an
-    `olsToolUiID` in its `tool_meta`, the plugin must look up the
-    registered component by ID and render it.
+    `ols.tool-ui` extension type. When a tool result includes a
+    `tool_meta.olsUi.id` field, the plugin must look up the registered
+    component by that ID and render it. (The plugin stores this value
+    internally as `olsToolUiID` on the `Tool` object after extraction.)
 
 25. Each OLS tool UI component receives the full `Tool` object as a prop.
 
