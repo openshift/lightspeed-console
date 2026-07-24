@@ -63,19 +63,29 @@ product is being rebranded to "Red Hat OpenShift Intelligent Assistant."
     product logo, an introductory message, authentication status alerts, and
     a privacy notice.
 
+13. A `ReadinessAlert` component is displayed in the chat content area when
+    the OLS service is not ready or unavailable. It shows a warning to the
+    user that the service is temporarily unavailable. The alert disappears
+    when service readiness is restored.
+
 ### Query Modes
 
-13. The plugin supports two query modes: **Ask** (default) and
+14. The plugin supports two query modes: **Ask** (default) and
     **Troubleshooting**. The mode is selected via the attachment menu and sent
     with each query request. Ask mode provides general product guidance.
     Troubleshooting mode enables deeper diagnostic and remediation analysis.
 
-14. When Troubleshooting mode is active, a removable label is displayed in
+15. When Troubleshooting mode is active, a removable label is displayed in
     the message bar. Removing the label switches back to Ask mode.
+
+16. [PLANNED: OLS-2700] The plugin will support an interaction mode selector
+    (PF6 only) allowing users to choose between `ask`, `troubleshooting`,
+    and `agent` modes. The `agent` mode enables full tool-calling / agentic
+    behavior. The mode selector control is visible only in the PF6 build.
 
 ### Deployment Model
 
-15. The plugin is shipped as a single container image containing UI builds
+17. The plugin is shipped as a single container image containing UI builds
     for all supported OCP versions (4.16+). The operator sets an
     `OCP_VERSION` environment variable on the container, and the entrypoint
     script serves the correct build at startup. This replaces the previous
@@ -83,31 +93,31 @@ product is being rebranded to "Red Hat OpenShift Intelligent Assistant."
 
 ### Relationship to OLS Service
 
-16. The plugin is a pure UI client of the OLS backend service. It has no
+18. The plugin is a pure UI client of the OLS backend service. It has no
     local AI processing, no local conversation storage, and no direct LLM
     communication. All intelligence comes from the service.
 
-17. The plugin sends queries to the streaming endpoint and processes
+19. The plugin sends queries to the streaming endpoint and processes
     server-sent events (SSE) for incremental response rendering.
 
-18. The plugin sends conversation IDs with requests to maintain multi-turn
+20. The plugin sends conversation IDs with requests to maintain multi-turn
     context. The service manages conversation history; the plugin maintains
     only the current session's chat entries in Redux state.
 
 ### Internationalization
 
-19. All user-facing strings must be wrapped in translation calls using the
+21. All user-facing strings must be wrapped in translation calls using the
     `plugin__lightspeed-console-plugin` namespace.
 
-20. Locale files must be updated when UI text changes.
+22. Locale files must be updated when UI text changes.
 
 ### Theme Support
 
-21. The plugin must support both light and dark console themes. Theme
+23. The plugin must support both light and dark console themes. Theme
     detection uses the user's console theme setting, falling back to the
     OS-level `prefers-color-scheme` media query when set to system default.
 
-22. Theme-dependent assets (logos, avatars) must switch based on the active
+24. Theme-dependent assets (logos, avatars) must switch based on the active
     theme.
 
 ## Configuration Surface
