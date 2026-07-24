@@ -53,6 +53,8 @@ and first-time user experience.
    | `tool_result` | `id`, `content`, `status`, `server_name`, `structured_content`, `tool_meta` | Update tool with execution result |
    | `history_compression_start` | (none) | Show compression-in-progress indicator |
    | `history_compression_end` | `duration_ms` | Show compression-complete indicator with duration |
+   | `reasoning` | `reasoning` | Chain-of-thought chunk; consumed but not rendered in the UI |
+   | `skill_selected` | `name` | Skill matched to query; consumed but not rendered in the UI |
    | `error` | error details | Display error alert, stop streaming |
 
 9. Token updates to the UI must be throttled to prevent excessive re-renders
@@ -112,6 +114,9 @@ and first-time user experience.
 22. The "Copy conversation" button must copy all visible (non-hidden) chat
     entries to the clipboard in a `You: ... / OpenShift Lightspeed: ...`
     text format. A brief visual indicator must confirm the copy.
+    [PLANNED: OLS-2743] When the rebrand to "Red Hat OpenShift Intelligent
+    Assistant" ships, this format string must be updated to match the new
+    product name.
 
 23. A per-response copy button must copy that individual response's text
     to the clipboard.

@@ -51,8 +51,8 @@ exposes hooks and extension points for other plugins to interact with OLS.
    other console plugins to register tool visualization components.
 
 9. Each `ols.tool-ui` extension must declare:
-   - `id`: A string identifier matching the `olsToolUiID` value in tool
-     metadata from the service.
+   - `id`: A string identifier matching the `tool_meta.olsUi.id` value
+     in tool results from the service.
    - `component`: A code reference to a React component.
 
 10. The plugin discovers registered `ols.tool-ui` extensions using the
