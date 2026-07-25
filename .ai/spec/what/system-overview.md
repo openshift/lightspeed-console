@@ -151,9 +151,11 @@ Environment variables (development only):
 1. **Console-only deployment.** The plugin runs exclusively inside the
    OpenShift web console. It cannot function as a standalone application.
 
-2. **Proxy-only API access.** All OLS API communication goes through the
-   console's plugin proxy. The plugin never connects directly to the OLS
-   service.
+2. **Proxy-only API access.** In production, all OLS API communication
+   goes through the console's plugin proxy. The plugin never connects
+   directly to the OLS service. (Exception: development mode allows
+   direct API access via bearer token for local testing — see auth.md
+   rule 7.)
 
 3. **No persistent client-side storage.** The plugin uses Redux for
    in-session state only. Chat history, conversation data, and feedback are
