@@ -56,6 +56,9 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
   `console-extensions.json`
 - End-to-end tests live in `tests/`
 - Unit tests live in `unit-tests/`
+- `branches/` contains git submodules for release branches — never modify files
+  under `branches/` directly; changes to those repos must be made in their own
+  repositories
 
 ### Coding style
 
