@@ -67,7 +67,8 @@
     {
       "groupName": "test",
       "matchPackageNames": ["@playwright/*", "mcr.microsoft.com/playwright"],
-      "minimumReleaseAge": "14 days"
+      "minimumReleaseAge": "14 days",
+      "schedule": ["* 6 1,15 * *"]
     }
   ]
 }
