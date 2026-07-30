@@ -58,7 +58,8 @@
         "prettier",
         "stylelint",
         "stylelint-*"
-      ]
+      ],
+      "schedule": ["* 6 1,15 * *"]
     },
     {
       "groupName": "patternfly",
