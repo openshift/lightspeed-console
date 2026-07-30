@@ -139,7 +139,7 @@ spec:
               echo "---------------------------------------------"
               npm run lint
               echo "---------------------------------------------"
-              npm run test:unit
+              npm run test-unit
               echo "---------------------------------------------"
               npm run i18n
     - name: ols-e2e-tests
