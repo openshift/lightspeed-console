@@ -118,7 +118,7 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 ### Unit tests
 
 - Unit tests live in `unit-tests/` and use Node's built-in test runner
-- To run: `npm run test:unit`
+- To run: `npm run test-unit`
 
 ### Keeping tests up to date
 
@@ -136,7 +136,7 @@ end-to-end tests (`tests/`) to cover new or changed functionality.
 - Apply lint rules: `npm run lint-fix`
 - Update i18n strings: `npm run i18n`
 - Ensure build works: `npm run build`
-- Ensure unit tests pass: `npm run test:unit`
+- Ensure unit tests pass: `npm run test-unit`
 - Ensure tests pass: `npm run test-headless`
 
 ## Git and PR Workflow
