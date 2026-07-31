@@ -8,8 +8,27 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "release-4.19"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "pull_request" &&
+      (".dockerignore".pathChanged() ||
+      ".npmrc".pathChanged() ||
+      ".tekton/***".pathChanged() ||
+      "console-extensions.json".pathChanged() ||
+      "Dockerfile".pathChanged() ||
+      "i18n-scripts/***".pathChanged() ||
+      "LICENSE".pathChanged() ||
+      "locales/***".pathChanged() ||
+      "package*".pathChanged() ||
+      "playwright.*".pathChanged() ||
+      "rpms.in.yaml".pathChanged() ||
+      "rpms.lock.yaml".pathChanged() ||
+      "src/***".pathChanged() ||
+      "tests/***".pathChanged() ||
+      "tsconfig.json".pathChanged() ||
+      "types.d.ts".pathChanged() ||
+      "ubi.repo".pathChanged() ||
+      "unit-tests/***".pathChanged() ||
+      "webpack.config.ts".pathChanged())
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: ols
