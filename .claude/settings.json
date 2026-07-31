@@ -9,7 +9,7 @@
       "Bash(npm run i18n)",
       "Bash(npm run lint-fix)",
       "Bash(npm run lint)",
-      "Bash(npm run test:unit)",
+      "Bash(npm run test-unit)",
       "Bash(npm view*)",
       "Bash(SKIP_OLS_SETUP='true' npm run test-headless*)",
       "Bash(SKIP_OLS_SETUP='true' npm run test*)",
