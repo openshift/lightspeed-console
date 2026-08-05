@@ -134,6 +134,9 @@ unrecognized or missing version defaults to the main build (latest).
 | `.tekton/lightspeed-console-push.yaml` | Konflux/Tekton pipeline for push events |
 | `.tekton/lightspeed-console-pull-request.yaml` | Konflux/Tekton pipeline for pull request events |
 | `.tekton/integration-tests/lightspeed-console-pre-commit.yaml` | Integration test pipeline: provisions an ephemeral cluster, installs the operator, runs lint/unit tests and Playwright e2e tests |
+| `.tekton/integration-tests/coo-periodic/coo-lightspeed-periodic.yaml` | Periodic pipeline: provisions a cluster, installs COO and OLS, runs monitoring-plugin's Cypress test for OLS + Perses chart integration |
+| `.tekton/integration-tests/coo-periodic/reporting.yaml` | Weekly reporting pipeline for COO periodic test results |
+| `.tekton/integration-tests/reporting/reporting.yaml` | Weekly reporting pipeline for e2e console test results |
 
 The push and pull-request pipelines use `git-clone-oci-ta` with `submodules:
 "true"` to fetch the git submodules. The Cachi2 `prefetch-input` includes npm paths for all three
