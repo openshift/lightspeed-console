@@ -75,7 +75,7 @@
     "webpack-dev-server": "5.2.6"
   },
   "overrides": {
-    "brace-expansion": "1.1.16",
+    "brace-expansion": "1.1.17",
     "fast-uri": "3.1.4",
     "webpack": "5.109.2",
     "ws": "8.21.1"
