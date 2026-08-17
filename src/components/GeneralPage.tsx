@@ -3,7 +3,7 @@ import { defer } from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
+import { consoleFetchJSON, useK8sModels } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Alert,
   Badge,
@@ -41,7 +41,10 @@ import { toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
 import { copyToClipboard } from '../clipboard';
 import { ErrorType, getFetchErrorMessage } from '../error';
+import { K8sModelRef } from '../pageContext';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
+import { useLinkedResourceMarkdown } from '../hooks/useLinkedResourceMarkdown';
+import { useMessageSources } from '../hooks/useMessageSources';
 import { useBoolean } from '../hooks/useBoolean';
 import { useFirstTimeUser } from '../hooks/useFirstTimeUser';
 import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
@@ -55,7 +58,7 @@ import {
   userFeedbackSetText,
 } from '../redux-actions';
 import { State } from '../redux-reducers';
-import { Attachment, ChatEntry, ReferencedDoc, Tool } from '../types';
+import { Attachment, ChatEntry, Tool } from '../types';
 import AttachmentLabel from './AttachmentLabel';
 import AttachmentsSizeAlert from './AttachmentsSizeAlert';
 import ImportAction from './ImportAction';
@@ -83,15 +86,6 @@ const ExternalLink: React.FC<ExternalLinkProps> = ({ children, href }) => (
     {children} <ExternalLinkAltIcon />
   </a>
 );
-
-const isURL = (s: string): boolean => {
-  try {
-    const url = new URL(s);
-    return !!(url.protocol && url.host);
-  } catch {
-    return false;
-  }
-};
 
 const ImportCodeBlockAction: React.FC = () => {
   const containerRef = React.useRef<HTMLSpanElement | null>(null);
@@ -124,307 +118,325 @@ const THUMBS_UP = 1;
 type ChatHistoryEntryProps = {
   conversationID: string;
   entryIndex: number;
+  k8sModels: Record<string, K8sModelRef>;
+  modelsLoaded: boolean;
 };
 
-const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistoryEntryProps) => {
-  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+const ChatHistoryEntry = React.memo(
+  ({ conversationID, entryIndex, k8sModels, modelsLoaded }: ChatHistoryEntryProps) => {
+    const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  const [feedbackError, setFeedbackError] = React.useState<ErrorType>();
-  const [feedbackSubmitted, setFeedbackSubmitted] = React.useState(false);
-  const [isContextExpanded, toggleContextExpanded] = useBoolean(false);
+    const [feedbackError, setFeedbackError] = React.useState<ErrorType>();
+    const [feedbackSubmitted, setFeedbackSubmitted] = React.useState(false);
+    const [isContextExpanded, toggleContextExpanded] = useBoolean(false);
 
-  const entryMap = useSelector((s: State) => s.plugins?.ols?.getIn(['chatHistory', entryIndex]));
-  const entry = entryMap.toJS() as ChatEntry;
+    const entryMap = useSelector((s: State) => s.plugins?.ols?.getIn(['chatHistory', entryIndex]));
+    const entry = entryMap?.toJS() as ChatEntry;
+    const toolsMap = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'tools']),
+    ) as ImmutableMap<string, ImmutableMap<string, unknown>> | undefined;
 
-  const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
-    s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
-  );
-  const isFeedbackOpen: boolean = useSelector((s: State) =>
-    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'isOpen']),
-  );
-  const query: string = useSelector((s: State) =>
-    s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
-  );
-  const response: string = useSelector((s: State) =>
-    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'text']),
-  );
-
-  const isUserFeedbackEnabled = useSelector((s: State) =>
-    s.plugins?.ols?.get('isUserFeedbackEnabled'),
-  );
-  const sentiment: number = useSelector((s: State) =>
-    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
-  );
-  const feedbackText: string = useSelector((s: State) =>
-    s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'text']),
-  );
-
-  const [isDarkTheme] = useIsDarkTheme();
-
-  const onThumbsDown = React.useCallback(() => {
-    dispatch(userFeedbackOpen(entryIndex));
-    dispatch(userFeedbackSetSentiment(entryIndex, THUMBS_DOWN));
-    setFeedbackSubmitted(false);
-  }, [dispatch, entryIndex]);
-
-  const onThumbsUp = React.useCallback(() => {
-    dispatch(userFeedbackOpen(entryIndex));
-    dispatch(userFeedbackSetSentiment(entryIndex, THUMBS_UP));
-    setFeedbackSubmitted(false);
-  }, [dispatch, entryIndex]);
-
-  const onFeedbackClose = React.useCallback(() => {
-    dispatch(userFeedbackClose(entryIndex));
-  }, [dispatch, entryIndex]);
-
-  const onFeedbackTextChange = React.useCallback(
-    (_event: React.ChangeEvent<HTMLTextAreaElement>, value: string) => {
-      dispatch(userFeedbackSetText(entryIndex, value));
-    },
-    [dispatch, entryIndex],
-  );
-
-  const onFeedbackSubmit = React.useCallback(() => {
-    const userQuestion = attachments
-      ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
-      : query;
-
-    /* eslint-disable camelcase */
-    const requestJSON = {
-      conversation_id: conversationID,
-      llm_response: response,
-      sentiment,
-      user_feedback: feedbackText ?? '',
-      user_question: userQuestion,
-    };
-    /* eslint-enable camelcase */
-
-    consoleFetchJSON
-      .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
-      .then(() => {
-        setFeedbackSubmitted(true);
-      })
-      .catch((err) => {
-        setFeedbackError(getFetchErrorMessage(err, t));
-        setFeedbackSubmitted(false);
-      });
-  }, [conversationID, query, attachments, response, sentiment, feedbackText, t]);
-
-  if (entry.who === 'user' && entry.hidden) {
-    return null;
-  }
-
-  if (entry.who === 'ai') {
-    const thumbsUpTooltip = t('Good response');
-    const thumbsDownTooltip = t('Bad response');
-    const actions = entry.error
-      ? undefined
-      : {
-          copy: { onClick: () => copyToClipboard(entry.text) },
-          ...(isUserFeedbackEnabled && {
-            positive: {
-              clickedTooltipContent: thumbsUpTooltip,
-              onClick: onThumbsUp,
-              tooltipContent: thumbsUpTooltip,
-            },
-            negative: {
-              clickedTooltipContent: thumbsDownTooltip,
-              onClick: onThumbsDown,
-              tooltipContent: thumbsDownTooltip,
-            },
-          }),
-        };
-
-    let sources: SourcesCardProps | undefined;
-    if (Array.isArray(entry.references)) {
-      const references: ReferencedDoc[] = entry.references.filter(
-        (r) =>
-          r && typeof r.doc_title === 'string' && typeof r.doc_url === 'string' && isURL(r.doc_url),
-      );
-      if (references.length > 0) {
-        sources = {
-          sources: references.map((r) => ({
-            isExternal: true,
-            title: r.doc_title,
-            link: r.doc_url,
-          })),
-        };
+    const aiTools = React.useMemo((): Record<string, Tool> | undefined => {
+      if (!toolsMap || toolsMap.size === 0) {
+        return undefined;
       }
+      return toolsMap.toJS() as Record<string, Tool>;
+    }, [toolsMap]);
+
+    const attachments: ImmutableMap<string, Attachment> = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'attachments']),
+    );
+    const isFeedbackOpen: boolean = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'isOpen']),
+    );
+    const query: string = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex - 1, 'text']),
+    );
+    const response: string = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'text']),
+    );
+
+    const isUserFeedbackEnabled = useSelector((s: State) =>
+      s.plugins?.ols?.get('isUserFeedbackEnabled'),
+    );
+    const sentiment: number = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'sentiment']),
+    );
+    const feedbackText: string = useSelector((s: State) =>
+      s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'userFeedback', 'text']),
+    );
+
+    const [isDarkTheme] = useIsDarkTheme();
+
+    const isAiEntry = entry?.who === 'ai';
+    const isAiResponseReady = isAiEntry && !entry.isStreaming && !entry.error;
+    const messageSources = useMessageSources({
+      enabled: isAiResponseReady,
+      references: isAiEntry ? entry.references : undefined,
+    });
+    const linkedResourceMarkdown = useLinkedResourceMarkdown({
+      enabled: isAiResponseReady && modelsLoaded,
+      k8sModels,
+      responseText: isAiEntry ? entry.text : undefined,
+      tools: aiTools,
+    });
+    const displayContent = isAiEntry ? linkedResourceMarkdown.content : entry?.text;
+
+    const onThumbsDown = React.useCallback(() => {
+      dispatch(userFeedbackOpen(entryIndex));
+      dispatch(userFeedbackSetSentiment(entryIndex, THUMBS_DOWN));
+      setFeedbackSubmitted(false);
+    }, [dispatch, entryIndex]);
+
+    const onThumbsUp = React.useCallback(() => {
+      dispatch(userFeedbackOpen(entryIndex));
+      dispatch(userFeedbackSetSentiment(entryIndex, THUMBS_UP));
+      setFeedbackSubmitted(false);
+    }, [dispatch, entryIndex]);
+
+    const onFeedbackClose = React.useCallback(() => {
+      dispatch(userFeedbackClose(entryIndex));
+    }, [dispatch, entryIndex]);
+
+    const onFeedbackTextChange = React.useCallback(
+      (_event: React.ChangeEvent<HTMLTextAreaElement>, value: string) => {
+        dispatch(userFeedbackSetText(entryIndex, value));
+      },
+      [dispatch, entryIndex],
+    );
+
+    const onFeedbackSubmit = React.useCallback(() => {
+      const userQuestion = attachments
+        ? `${query}\n---\nThe attachments that were sent with the prompt are shown below.\n${JSON.stringify(attachments.valueSeq().map(toOLSAttachment), null, 2)}`
+        : query;
+
+      /* eslint-disable camelcase */
+      const requestJSON = {
+        conversation_id: conversationID,
+        llm_response: response,
+        sentiment,
+        user_feedback: feedbackText ?? '',
+        user_question: userQuestion,
+      };
+      /* eslint-enable camelcase */
+
+      consoleFetchJSON
+        .post(USER_FEEDBACK_ENDPOINT, requestJSON, getRequestInitWithAuthHeader(), REQUEST_TIMEOUT)
+        .then(() => {
+          setFeedbackSubmitted(true);
+        })
+        .catch((err) => {
+          setFeedbackError(getFetchErrorMessage(err, t));
+          setFeedbackSubmitted(false);
+        });
+    }, [conversationID, query, attachments, response, sentiment, feedbackText, t]);
+
+    if (!entry) {
+      return null;
     }
 
-    const pendingApprovalTools = entry.tools
-      ? Object.entries(entry.tools as unknown as { [key: string]: Tool }).filter(
-          ([, tool]) => tool.isUserApproval && !tool.isApproved && !tool.isDenied,
-        )
-      : [];
+    if (entry.who === 'user' && entry.hidden) {
+      return null;
+    }
 
-    const historyCompressedAlert = (
-      <Alert
-        className="ols-plugin__history-compressed"
-        customIcon={<CheckIcon />}
-        isInline
-        isPlain
-        title={t('History compressed')}
-        variant="success"
-      />
-    );
+    if (entry.who === 'ai') {
+      const thumbsUpTooltip = t('Good response');
+      const thumbsDownTooltip = t('Bad response');
+      const actions = entry.error
+        ? undefined
+        : {
+            copy: { onClick: () => copyToClipboard(entry.text) },
+            ...(isUserFeedbackEnabled && {
+              positive: {
+                clickedTooltipContent: thumbsUpTooltip,
+                onClick: onThumbsUp,
+                tooltipContent: thumbsUpTooltip,
+              },
+              negative: {
+                clickedTooltipContent: thumbsDownTooltip,
+                onClick: onThumbsDown,
+                tooltipContent: thumbsDownTooltip,
+              },
+            }),
+          };
 
-    return (
-      <Message
-        actions={actions}
-        avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
-        codeBlockProps={{
-          customActions: entry.isStreaming ? undefined : <ImportCodeBlockAction />,
-          isExpandable: true,
-        }}
-        content={entry.text}
-        data-test="ols-plugin__chat-entry-ai"
-        extraContent={{
-          afterMainContent: (
-            <>
-              {entry.error && (
-                <Alert
-                  isExpandable={!!entry.error.moreInfo}
-                  isInline
-                  title={
-                    entry.error.moreInfo
-                      ? entry.error.message
-                      : t('Error querying OpenShift Lightspeed service')
-                  }
-                  variant="danger"
-                >
-                  {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
-                </Alert>
-              )}
-              {entry.historyCompression?.status === 'compressing' && !entry.isCancelled && (
-                <Alert
-                  customIcon={<Spinner isInline size="md" />}
-                  isInline
-                  isPlain
-                  title={t('Compressing history...')}
-                  variant="info"
-                />
-              )}
-              {entry.historyCompression?.status === 'done' &&
-                (entry.historyCompression.durationMs === undefined ? (
-                  historyCompressedAlert
-                ) : (
-                  <Tooltip
-                    content={t('Compressed in {{seconds}} seconds', {
-                      seconds: (entry.historyCompression.durationMs / 1000).toFixed(2),
-                    })}
+      const sources: SourcesCardProps | undefined = messageSources.messageSources;
+
+      const pendingApprovalTools = aiTools
+        ? Object.entries(aiTools).filter(
+            ([, tool]) => tool.isUserApproval && !tool.isApproved && !tool.isDenied,
+          )
+        : [];
+
+      const historyCompressedAlert = (
+        <Alert
+          className="ols-plugin__history-compressed"
+          customIcon={<CheckIcon />}
+          isInline
+          isPlain
+          title={t('History compressed')}
+          variant="success"
+        />
+      );
+
+      return (
+        <Message
+          actions={actions}
+          avatar={isDarkTheme ? aiAvatarDark : aiAvatar}
+          codeBlockProps={{
+            customActions: entry.isStreaming ? undefined : <ImportCodeBlockAction />,
+            isExpandable: true,
+          }}
+          content={displayContent}
+          data-test="ols-plugin__chat-entry-ai"
+          extraContent={{
+            afterMainContent: (
+              <>
+                {entry.error && (
+                  <Alert
+                    isExpandable={!!entry.error.moreInfo}
+                    isInline
+                    title={
+                      entry.error.moreInfo
+                        ? entry.error.message
+                        : t('Error querying OpenShift Lightspeed service')
+                    }
+                    variant="danger"
                   >
-                    {historyCompressedAlert}
-                  </Tooltip>
+                    {entry.error.moreInfo ? entry.error.moreInfo : entry.error.message}
+                  </Alert>
+                )}
+                {entry.historyCompression?.status === 'compressing' && !entry.isCancelled && (
+                  <Alert
+                    customIcon={<Spinner isInline size="md" />}
+                    isInline
+                    isPlain
+                    title={t('Compressing history...')}
+                    variant="info"
+                  />
+                )}
+                {entry.historyCompression?.status === 'done' &&
+                  (entry.historyCompression.durationMs === undefined ? (
+                    historyCompressedAlert
+                  ) : (
+                    <Tooltip
+                      content={t('Compressed in {{seconds}} seconds', {
+                        seconds: (entry.historyCompression.durationMs / 1000).toFixed(2),
+                      })}
+                    >
+                      {historyCompressedAlert}
+                    </Tooltip>
+                  ))}
+                {entry.isTruncated && (
+                  <Alert isInline title={t('History truncated')} variant="warning">
+                    {t('Conversation history has been truncated to fit within context window.')}
+                  </Alert>
+                )}
+                {entry.isCancelled && (
+                  <Alert
+                    className="ols-plugin__chat-entry-cancelled"
+                    isInline
+                    isPlain
+                    title={t('Cancelled')}
+                    variant="info"
+                  />
+                )}
+                {pendingApprovalTools.map(([toolID, tool]) => (
+                  <ToolApproval chatEntryID={entry.id} key={toolID} tool={tool} toolID={toolID} />
                 ))}
-              {entry.isTruncated && (
-                <Alert isInline title={t('History truncated')} variant="warning">
-                  {t('Conversation history has been truncated to fit within context window.')}
-                </Alert>
-              )}
-              {entry.isCancelled && (
-                <Alert
-                  className="ols-plugin__chat-entry-cancelled"
-                  isInline
-                  isPlain
-                  title={t('Cancelled')}
-                  variant="info"
-                />
-              )}
-              {pendingApprovalTools.map(([toolID, tool]) => (
-                <ToolApproval chatEntryID={entry.id} key={toolID} tool={tool} toolID={toolID} />
-              ))}
-              {entry.tools && <ResponseTools entryIndex={entryIndex} />}
-            </>
-          ),
-          endContent: feedbackError ? (
-            <Alert
-              className="ols-plugin__alert"
-              isExpandable={!!feedbackError.moreInfo}
-              isInline
-              title={
-                feedbackError.moreInfo ? feedbackError.message : t('Error submitting feedback')
-              }
-              variant="danger"
-            >
-              {feedbackError.moreInfo ? feedbackError.moreInfo : feedbackError.message}
-            </Alert>
-          ) : undefined,
-        }}
-        hasRoundAvatar={false}
-        isCompact
-        isLoading={!entry.text && !entry.isCancelled && !entry.error}
-        name="OpenShift Lightspeed"
-        role="bot"
-        sources={sources}
-        timestamp=" "
-        userFeedbackComplete={
-          isFeedbackOpen && feedbackSubmitted ? { onClose: onFeedbackClose } : undefined
-        }
-        userFeedbackForm={
-          isFeedbackOpen && !feedbackSubmitted && sentiment !== undefined
-            ? {
-                className: 'ols-plugin__feedback',
-                hasTextArea: true,
-                headingLevel: 'h6',
-                onClose: onFeedbackClose,
-                onSubmit: onFeedbackSubmit,
-                onTextAreaChange: onFeedbackTextChange,
-                submitWord: t('Submit'),
-                textAreaProps: { value: feedbackText ?? '' },
-                title: t(
-                  "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
-                ),
-              }
-            : undefined
-        }
-      />
-    );
-  }
+                {aiTools && <ResponseTools entryIndex={entryIndex} />}
+              </>
+            ),
+            endContent: feedbackError ? (
+              <Alert
+                className="ols-plugin__alert"
+                isExpandable={!!feedbackError.moreInfo}
+                isInline
+                title={
+                  feedbackError.moreInfo ? feedbackError.message : t('Error submitting feedback')
+                }
+                variant="danger"
+              >
+                {feedbackError.moreInfo ? feedbackError.moreInfo : feedbackError.message}
+              </Alert>
+            ) : undefined,
+          }}
+          hasRoundAvatar={false}
+          isCompact
+          isLoading={!entry.text && !entry.isCancelled && !entry.error}
+          name="OpenShift Lightspeed"
+          reactMarkdownProps={linkedResourceMarkdown.reactMarkdownProps}
+          role="bot"
+          sources={sources}
+          timestamp=" "
+          userFeedbackComplete={
+            isFeedbackOpen && feedbackSubmitted ? { onClose: onFeedbackClose } : undefined
+          }
+          userFeedbackForm={
+            isFeedbackOpen && !feedbackSubmitted && sentiment !== undefined
+              ? {
+                  className: 'ols-plugin__feedback',
+                  hasTextArea: true,
+                  headingLevel: 'h6',
+                  onClose: onFeedbackClose,
+                  onSubmit: onFeedbackSubmit,
+                  onTextAreaChange: onFeedbackTextChange,
+                  submitWord: t('Submit'),
+                  textAreaProps: { value: feedbackText ?? '' },
+                  title: t(
+                    "Do not include personal information or other sensitive information in your feedback. Feedback may be used to improve Red Hat's products or services.",
+                  ),
+                }
+              : undefined
+          }
+        />
+      );
+    }
 
-  if (entry.who === 'user') {
-    return (
-      <Message
-        avatar={userAvatar}
-        avatarProps={{ className: 'ols-plugin__avatar', isBordered: true }}
-        data-test="ols-plugin__chat-entry-user"
-        extraContent={{
-          afterMainContent: (
-            <>
-              <div>{entry.text}</div>
-              {entry.attachments && Object.keys(entry.attachments).length > 0 && (
-                <ExpandableSection
-                  displaySize="lg"
-                  isExpanded={isContextExpanded}
-                  onToggle={toggleContextExpanded}
-                  toggleContent={
-                    <>
-                      {t('Context')} <Badge>{Object.keys(entry.attachments).length}</Badge>
-                    </>
-                  }
-                >
-                  {Object.keys(entry.attachments).map((key: string) => {
-                    const attachment: Attachment = entry.attachments[key];
-                    return <AttachmentLabel attachment={attachment} key={key} />;
-                  })}
-                </ExpandableSection>
-              )}
-            </>
-          ),
-        }}
-        hasRoundAvatar={false}
-        isCompact
-        name="You"
-        role="user"
-        timestamp=" "
-      />
-    );
-  }
+    if (entry.who === 'user') {
+      return (
+        <Message
+          avatar={userAvatar}
+          avatarProps={{ className: 'ols-plugin__avatar', isBordered: true }}
+          data-test="ols-plugin__chat-entry-user"
+          extraContent={{
+            afterMainContent: (
+              <>
+                <div>{entry.text}</div>
+                {entry.attachments && Object.keys(entry.attachments).length > 0 && (
+                  <ExpandableSection
+                    displaySize="lg"
+                    isExpanded={isContextExpanded}
+                    onToggle={toggleContextExpanded}
+                    toggleContent={
+                      <>
+                        {t('Context')} <Badge>{Object.keys(entry.attachments).length}</Badge>
+                      </>
+                    }
+                  >
+                    {Object.keys(entry.attachments).map((key: string) => {
+                      const attachment: Attachment = entry.attachments[key];
+                      return <AttachmentLabel attachment={attachment} key={key} />;
+                    })}
+                  </ExpandableSection>
+                )}
+              </>
+            ),
+          }}
+          hasRoundAvatar={false}
+          isCompact
+          name="You"
+          role="user"
+          timestamp=" "
+        />
+      );
+    }
 
-  return null;
-});
+    return null;
+  },
+);
 ChatHistoryEntry.displayName = 'ChatHistoryEntry';
 
 type AuthAlertProps = {
@@ -493,6 +505,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
   );
 
   const conversationID: string = useSelector((s: State) => s.plugins?.ols?.get('conversationID'));
+
+  const [k8sModels, modelsInFlight] = useK8sModels();
+  const modelsLoaded = modelsInFlight === false;
 
   const [authStatus] = useAuth();
   const [isFirstTimeUser] = useFirstTimeUser();
@@ -638,7 +653,9 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
               <ChatHistoryEntry
                 conversationID={conversationID}
                 entryIndex={i}
+                k8sModels={k8sModels}
                 key={(entry.get('id') as string) ?? i}
+                modelsLoaded={modelsLoaded}
               />
             ))
             .toArray()}
