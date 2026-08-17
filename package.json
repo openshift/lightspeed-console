@@ -76,7 +76,7 @@
     "brace-expansion": "1.1.18",
     "browserslist": "4.28.7",
     "dompurify": "3.4.9",
-    "fast-uri": "3.1.4",
+    "fast-uri": "3.1.5",
     "js-cookie": "3.0.8",
     "monaco-editor": "0.56.0",
     "react": "17.0.2",
