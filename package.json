@@ -76,7 +76,7 @@
   },
   "overrides": {
     "brace-expansion": "1.1.18",
-    "browserslist": "4.28.7",
+    "browserslist": "4.28.8",
     "fast-uri": "3.1.5",
     "webpack": "5.109.2",
     "ws": "8.21.2"
