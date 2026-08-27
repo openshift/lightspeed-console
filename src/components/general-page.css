@@ -18,6 +18,7 @@
 .ols-plugin__code-block-code {
   max-height: 10rem;
   overflow: auto;
+  padding-bottom: var(--pf-t--global--spacer--md);
   white-space: pre;
 }
 
