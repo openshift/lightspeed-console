@@ -37,11 +37,15 @@
         "@types/react",
         "@patternfly/*",
         "eslint",
-        "node",
         "react-markdown",
         "remark-gfm"
       ],
       "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["node"],
+      "matchDepTypes": ["engines"],
       "enabled": false
     },
     {
