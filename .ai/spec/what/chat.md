@@ -53,9 +53,10 @@ and first-time user experience.
    | `tool_result` | `id`, `content`, `status`, `server_name`, `structured_content`, `tool_meta` | Update tool with execution result |
    | `history_compression_start` | (none) | Show compression-in-progress indicator |
    | `history_compression_end` | `duration_ms` | Show compression-complete indicator with duration |
-   | `reasoning` | `reasoning` | Chain-of-thought chunk; consumed with no-op handling — payload is never rendered, logged, or passed to `console.warn` |
-   | `skill_selected` | `name` | Skill matched to query; consumed with no-op handling — payload is never rendered, logged, or passed to `console.warn` |
    | `error` | error details | Display error alert, stop streaming |
+
+   Any event type not listed above is unrecognized and logged via
+   `console.warn` (see `how/streaming.md`).
 
 9. Token updates to the UI must be throttled to prevent excessive re-renders
    during streaming. Updates must use trailing-edge throttling so the final
