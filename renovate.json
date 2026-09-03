@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "schedule": ["* 6 * * *"],
+  "prHourlyLimit": 5,
   "timezone": "UTC",
   "rangeStrategy": "pin",
   "lockFileMaintenance": {
