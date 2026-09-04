@@ -78,6 +78,7 @@
     "brace-expansion": "1.1.18",
     "browserslist": "4.28.8",
     "webpack": "5.109.2",
+    "qs": "6.16.0",
     "ws": "8.21.3"
   },
   "consolePlugin": {
