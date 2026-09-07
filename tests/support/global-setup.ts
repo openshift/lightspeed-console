@@ -20,6 +20,7 @@ const globalSetup = async (config: FullConfig) => {
   oc(['adm', 'policy', 'add-cluster-role-to-user', 'cluster-admin', username]);
   oc(['adm', 'policy', 'add-cluster-role-to-user', 'lightspeed-operator-query-access', username]);
 
+  let oauthOrigin: string | undefined;
   try {
     const oauthResult = oc([
       'get',
@@ -29,7 +30,7 @@ const globalSetup = async (config: FullConfig) => {
       'go-template',
       '--template={{index .redirectURIs 0}}',
     ]);
-    const oauthOrigin = new URL(oauthResult.trim().replace(/"/g, '')).origin;
+    oauthOrigin = new URL(oauthResult.trim().replace(/"/g, '')).origin;
     console.log(`OAuth origin: ${oauthOrigin}`);
   } catch {
     console.log('oauthclient not available on this cluster, skipping OAuth origin lookup');
@@ -56,6 +57,11 @@ spec:
   ols:
     defaultModel: gpt-4o-mini
     defaultProvider: openai
+    # The released operator bundle configures the MCP server with the removed
+    # metrics toolset, while its current MCP image only accepts
+    # observability/metrics. Disable introspection for console UI tests until
+    # the bundle and MCP image are published as a compatible pair.
+    introspectionEnabled: false
     logLevel: INFO`;
 
   // Check if operator is already installed
@@ -245,29 +251,99 @@ spec:
     ]);
   }
 
-  // Log in via browser and save storageState
+  // Log in via browser and save storageState. The ephemeral-cluster task only
+  // guarantees an admin kubeconfig; unlike the legacy EaaS task, it does not
+  // guarantee a kubeadmin password. Its kubeconfig can be client-certificate
+  // based, in which case `oc whoami --show-token` has no token to return.
+  // Create a short-lived, cluster-admin service-account token for OAuth in
+  // that case instead of relying on an unsupported secret key.
+  let kubeToken: string;
+  try {
+    kubeToken = oc(['whoami', '--show-token']).trim();
+  } catch {
+    const serviceAccount = 'playwright-e2e';
+    try {
+      oc(['create', 'serviceaccount', serviceAccount, '-n', OLS_NAMESPACE]);
+    } catch {
+      // The account may have been created by an earlier setup attempt.
+    }
+    oc([
+      'adm',
+      'policy',
+      'add-cluster-role-to-user',
+      'cluster-admin',
+      `system:serviceaccount:${OLS_NAMESPACE}:${serviceAccount}`,
+    ]);
+    kubeToken = oc([
+      'create',
+      'token',
+      serviceAccount,
+      '-n',
+      OLS_NAMESPACE,
+      '--duration=1h',
+    ]).trim();
+  }
+  const consoleOrigin = new URL(baseURL).origin;
   const browser = await chromium.launch();
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
-  const page = await context.newPage();
 
-  await page.goto(baseURL);
-
-  // Perform login
-  const idp = process.env.LOGIN_IDP || 'kube:admin';
-  const password = process.env.LOGIN_PASSWORD!;
-
-  // Select IDP if the login page shows identity provider selection
-  const idpLink = page.locator(`a:has-text("${idp}")`);
-  if (await idpLink.isVisible({ timeout: 10_000 }).catch(() => false)) {
-    await idpLink.click();
+  // Do not apply the admin token to every browser request: the console can
+  // load third-party resources. It is only needed by the console and OAuth
+  // origins while the authorization code and console session are established.
+  if (kubeToken) {
+    await context.route('**/*', async (route) => {
+      const request = route.request();
+      const origin = new URL(request.url()).origin;
+      if (origin !== consoleOrigin && origin !== oauthOrigin) {
+        await route.continue();
+        return;
+      }
+      await route.continue({
+        headers: { ...request.headers(), authorization: `Bearer ${kubeToken}` },
+      });
+    });
   }
 
-  await page.locator('#inputUsername').fill(username);
-  await page.locator('#inputPassword').fill(password);
-  await page.locator('button[type=submit]').click();
+  const page = await context.newPage();
+  await page.goto(baseURL);
 
-  // Wait for console to load
-  await page.waitForURL('**/');
+  // A hosted-control-plane OAuth flow can return users directly to a console
+  // sub-page rather than the root path. Do not consider the OAuth callback to
+  // be loaded: it still needs to exchange the authorization code for the
+  // console session.
+  const waitForConsole = () =>
+    page.waitForURL(
+      (url) =>
+        url.origin === consoleOrigin &&
+        !url.pathname.startsWith('/oauth') &&
+        !url.pathname.startsWith('/auth') &&
+        !url.pathname.startsWith('/login'),
+      { timeout: 2 * MINUTE, waitUntil: 'domcontentloaded' },
+    );
+
+  // Retain password login for callers that explicitly provide it, but the
+  // ephemeral-cluster pipeline authenticates with the kubeconfig token above.
+  const usernameInput = page.locator('#inputUsername');
+  if (await usernameInput.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    const password = process.env.LOGIN_PASSWORD;
+    if (!password) {
+      throw new Error('OAuth bearer-token login did not succeed and LOGIN_PASSWORD is not set');
+    }
+
+    const idp = process.env.LOGIN_IDP || 'kube:admin';
+    const idpLink = page.locator(`a:has-text("${idp}")`);
+    if (await idpLink.isVisible({ timeout: 10_000 }).catch(() => false)) {
+      await idpLink.click();
+    }
+
+    await usernameInput.fill(username);
+    await page.locator('#inputPassword').fill(password);
+    const consoleNavigation = waitForConsole();
+    await page.locator('button[type=submit]').click();
+    await consoleNavigation;
+  } else {
+    await waitForConsole();
+  }
 
   // Dismiss guided tour and set localStorage to prevent it reappearing
   const tourSettings = {
