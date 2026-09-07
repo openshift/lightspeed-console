@@ -8,9 +8,9 @@ All stream processing logic lives in `src/components/Prompt.tsx` within the
 
 | Path | Purpose |
 |---|---|
-| `src/components/Prompt.tsx` | Stream initiation, SSE reading, event parsing, Redux dispatch for all event types |
+| `src/components/Prompt.tsx` | Stream initiation, SSE reading, event parsing, Redux dispatch for all event types. Defines the `QUERY_ENDPOINT` constant (`getApiUrl('/v1/streaming_query')`) |
 | `src/redux-actions.ts` | Actions dispatched during streaming: `setConversationID`, `chatHistoryUpdateByID`, `chatHistoryUpdateTool` |
-| `src/config.ts` | `QUERY_ENDPOINT` constant built from `getApiUrl()` |
+| `src/config.ts` | `getApiUrl(path)` helper used to build `QUERY_ENDPOINT` |
 | `src/error.ts` | `getFetchErrorMessage()` for error extraction |
 
 ## Data Flow

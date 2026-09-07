@@ -230,6 +230,7 @@ In development, `start-console.sh` configures an additional proxy from the conso
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/authorized` | Authorization check |
+| GET | `/readiness` | Service readiness poll (drives `ReadinessAlert`); returns JSON `{ ready: boolean }` |
 | POST | `/v1/streaming_query` | Submit query, receive SSE stream |
 | GET | `/v1/feedback/status` | Check if feedback is enabled |
 | POST | `/v1/feedback` | Submit user feedback |
