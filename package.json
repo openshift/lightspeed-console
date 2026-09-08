@@ -35,7 +35,7 @@
     "css-loader": "7.1.4",
     "dompurify": "3.4.14",
     "immutable": "3.8.4",
-    "js-yaml": "4.3.1",
+    "js-yaml": "4.3.2",
     "lodash": "4.18.1",
     "marked": "14.1.4",
     "murmurhash-js": "1.0.0",
