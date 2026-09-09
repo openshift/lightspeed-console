@@ -28,7 +28,7 @@ COPY locales ./locales
 COPY src ./src
 RUN npm run build
 
-FROM registry.access.redhat.com/ubi9-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
+FROM registry.access.redhat.com/ubi9-minimal@sha256:6aa59f704742d12328aa43379048f951c052dfb684c22b79080baf34c1f92368
 USER 0
 
 RUN microdnf install -y nginx && microdnf clean all
