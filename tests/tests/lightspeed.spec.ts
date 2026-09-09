@@ -647,6 +647,7 @@ test.describe('OLS UI', () => {
       );
 
       await page.locator(responseAction).nth(0).click();
+      await expect(page.locator(popover)).toContainText(USER_FEEDBACK_TEXT);
       await page.locator(userFeedbackInput).fill(USER_FEEDBACK_SUBMITTED);
       await page.locator(userFeedbackSubmit).click();
       await feedbackPromise;
