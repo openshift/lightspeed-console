@@ -53,9 +53,9 @@ spec:
           name: openai-api-keys
         url: https://api.openai.com/v1
         models:
-          - name: gpt-4o-mini
+          - name: gpt-5.4-mini
   ols:
-    defaultModel: gpt-4o-mini
+    defaultModel: gpt-5.4-mini
     defaultProvider: openai
     # The released operator bundle configures the MCP server with the removed
     # metrics toolset, while its current MCP image only accepts
@@ -307,19 +307,7 @@ spec:
   const page = await context.newPage();
   await page.goto(baseURL);
 
-  // A hosted-control-plane OAuth flow can return users directly to a console
-  // sub-page rather than the root path. Do not consider the OAuth callback to
-  // be loaded: it still needs to exchange the authorization code for the
-  // console session.
-  const waitForConsole = () =>
-    page.waitForURL(
-      (url) =>
-        url.origin === consoleOrigin &&
-        !url.pathname.startsWith('/oauth') &&
-        !url.pathname.startsWith('/auth') &&
-        !url.pathname.startsWith('/login'),
-      { timeout: 2 * MINUTE, waitUntil: 'domcontentloaded' },
-    );
+  const waitForConsole = () => page.waitForURL('**/');
 
   // Retain password login for callers that explicitly provide it, but the
   // ephemeral-cluster pipeline authenticates with the kubeconfig token above.

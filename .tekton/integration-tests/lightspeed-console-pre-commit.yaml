@@ -57,7 +57,7 @@ spec:
         - name: clusterProfile
           value: aws-konflux-prod
         - name: env
-          value: '{"COMPUTE_NODE_TYPE": "m5.2xlarge", "HYPERSHIFT_NODE_COUNT": "1"}'
+          value: '{"COMPUTE_NODE_TYPE": "m5.2xlarge", "HYPERSHIFT_NODE_COUNT": "3"}'
         - name: releases
           value: |
             {"latest":{"release":{"channel":"stable","version":"4.19","architecture":"multi"}}} 
