@@ -185,7 +185,7 @@ export const interceptQuery = async (
   query: string,
   conversationId: string | null = null,
   attachments: Attachment[] = [],
-): Promise<void> => {
+): Promise<{ received: Promise<void> }> => {
   const { promise, resolve, reject } = Promise.withResolvers<void>();
   const pattern = `**${getApiUrl('/v1/streaming_query')}`;
 
@@ -214,7 +214,7 @@ export const interceptQuery = async (
     { times: 1 },
   );
 
-  return promise;
+  return { received: promise };
 };
 
 export const interceptFeedback = async (
@@ -223,7 +223,7 @@ export const interceptFeedback = async (
   sentiment: number,
   userFeedback: string,
   userQuestionStartsWith: string,
-): Promise<void> => {
+): Promise<{ received: Promise<void> }> => {
   const { promise, resolve, reject } = Promise.withResolvers<void>();
   const pattern = `**${getApiUrl('/v1/feedback')}`;
 
@@ -254,7 +254,7 @@ export const interceptFeedback = async (
     { times: 1 },
   );
 
-  return promise;
+  return { received: promise };
 };
 
 // Custom test fixture that captures browser console errors/warnings and prints
