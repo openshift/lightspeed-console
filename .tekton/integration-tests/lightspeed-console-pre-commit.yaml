@@ -53,21 +53,14 @@ spec:
         - name: ownerUid
           value: $(context.pipelineRun.uid) # Internal usage only, use always this value here
         - name: workflow
-          value: generic-claim
-        - name: clusterClaim
+          value: hypershift-hostedcluster-workflow
+        - name: clusterProfile
+          value: aws-konflux-prod
+        - name: env
+          value: '{"COMPUTE_NODE_TYPE": "m5.2xlarge", "HYPERSHIFT_NODE_COUNT": "3"}'
+        - name: releases
           value: |
-            {
-              "architecture": "amd64",
-              "cloud": "aws",
-              "labels": {
-                "region": "us-east-1",
-                "variant": "fips"
-              },
-              "owner": "obs",
-              "product": "ocp",
-              "timeout": "3h0m0s",
-              "version": "4.22"
-            }
+            {"latest":{"release":{"channel":"stable","version":"4.22","architecture":"multi"}}}
       runAfter:
         - eaas-provision-space
         - lint
@@ -160,7 +153,8 @@ spec:
             secret:
               secretName: openai
           - name: credentials
-            emptyDir: {}
+            secret:
+              secretName: $(params.clusterCredentialsSecretRef)
           - name: ols-konflux-artifacts-bot-creds
             secret:
               secretName: ols-konflux-artifacts-bot
@@ -181,11 +175,6 @@ spec:
             env:
               - name: KUBECONFIG_PATH
                 value: "/credentials/kubeconfig"
-              - name: KUBECONFIG_VALUE
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.clusterCredentialsSecretRef)
-                    key: kubeconfig
               - name: LOGIN_IDP
                 value: "kube:admin"
               - name: LLM_TOKEN_PATH
@@ -204,15 +193,17 @@ spec:
                 memory: 8Gi
             image: mcr.microsoft.com/playwright:v1.62.1-noble
             script: |
-              echo "$KUBECONFIG_VALUE" > /credentials/kubeconfig
-              echo "COMMIT_SHA: ${COMMIT_SHA}"
-              echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
-              echo "KUBECONFIG_PATH: ${KUBECONFIG_PATH}"
-              echo "---------------------------------------------"
               wget --no-verbose -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
                   && tar -xvzf oc.tar.gz \
                   && chmod +x kubectl oc \
                   && mv oc kubectl /usr/local/bin/
+              oc --kubeconfig "$KUBECONFIG_PATH" get secret "$(params.clusterCredentialsSecretRef)" \
+                  -o go-template='{{range $key, $_ := .data}}{{println $key}}{{end}}'
+              echo "---------------------------------------------"
+              echo "$LOGIN_PASSWORD"
+              echo "COMMIT_SHA: ${COMMIT_SHA}"
+              echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
+              echo "KUBECONFIG_PATH: ${KUBECONFIG_PATH}"
               echo "---------------------------------------------"
               export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
               echo "BASE_URL: ${BASE_URL}"
