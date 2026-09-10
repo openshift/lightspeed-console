@@ -430,7 +430,7 @@ test.describe('OLS UI', () => {
 
       // Negative feedback with no comment
       await page.unroute('**/v1/feedback');
-      const negativeFeedbackPromise = interceptFeedback(
+      const negativeFeedback = await interceptFeedback(
         page,
         CONVERSATION_ID,
         THUMBS_DOWN,
@@ -441,7 +441,7 @@ test.describe('OLS UI', () => {
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_TEXT);
       await page.locator(userFeedbackInput).clear();
       await page.locator(userFeedbackSubmit).click();
-      await negativeFeedbackPromise;
+      await negativeFeedback.received;
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_RECEIVED_TEXT);
     });
   });
@@ -630,15 +630,15 @@ test.describe('OLS UI', () => {
       await previewModal.locator('button').filter({ hasText: 'Dismiss' }).click();
 
       /* eslint-disable camelcase */
-      const queryPromise = interceptQuery(page, PROMPT_SUBMITTED, null, [
+      const query = await interceptQuery(page, PROMPT_SUBMITTED, null, [
         { attachment_type: 'event', content_type: 'application/yaml' },
       ]);
       /* eslint-enable camelcase */
       await page.locator(promptInput).fill(PROMPT_SUBMITTED);
       await page.locator(promptInput).press('Enter');
-      await queryPromise;
+      await query.received;
 
-      const feedbackPromise = interceptFeedback(
+      const feedback = await interceptFeedback(
         page,
         CONVERSATION_ID,
         THUMBS_UP,
@@ -650,7 +650,7 @@ test.describe('OLS UI', () => {
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_TEXT);
       await page.locator(userFeedbackInput).fill(USER_FEEDBACK_SUBMITTED);
       await page.locator(userFeedbackSubmit).click();
-      await feedbackPromise;
+      await feedback.received;
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_RECEIVED_TEXT);
     });
 
@@ -676,13 +676,13 @@ test.describe('OLS UI', () => {
       await previewModal.locator('button').filter({ hasText: 'Dismiss' }).click();
 
       /* eslint-disable camelcase */
-      const queryPromise = interceptQuery(page, PROMPT_SUBMITTED, null, [
+      const query = await interceptQuery(page, PROMPT_SUBMITTED, null, [
         { attachment_type: 'log', content_type: 'text/plain' },
       ]);
       /* eslint-enable camelcase */
       await page.locator(promptInput).fill(PROMPT_SUBMITTED);
       await page.locator(promptInput).press('Enter');
-      await queryPromise;
+      await query.received;
     });
 
     test('Test file upload', async ({ page }) => {
@@ -836,14 +836,14 @@ metadata:
       await m.locator('button').filter({ hasText: 'Dismiss' }).click();
 
       /* eslint-disable camelcase */
-      const queryPromise = interceptQuery(page, PROMPT_SUBMITTED, null, [
+      const query = await interceptQuery(page, PROMPT_SUBMITTED, null, [
         { attachment_type: 'yaml', content_type: 'application/yaml' },
         { attachment_type: 'yaml', content_type: 'application/yaml' },
       ]);
       /* eslint-enable camelcase */
       await page.locator(promptInput).fill(PROMPT_SUBMITTED);
       await page.locator(promptInput).press('Enter');
-      await queryPromise;
+      await query.received;
     });
 
     test.skip('Test ManagedCluster attachment error handling', async ({ page }) => {
