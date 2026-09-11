@@ -52,10 +52,11 @@ spec:
           name: openai-api-keys
         url: https://api.openai.com/v1
         models:
-          - name: gpt-4o-mini
+          - name: gpt-5.4-mini
   ols:
-    defaultModel: gpt-4o-mini
+    defaultModel: gpt-5.4-mini
     defaultProvider: openai
+    introspectionEnabled: false
     logLevel: INFO`;
 
   // Check if operator is already installed
