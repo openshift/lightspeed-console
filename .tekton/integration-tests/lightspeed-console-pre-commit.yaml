@@ -183,19 +183,14 @@ spec:
                 value: "$(params.console-image)"
               - name: COMMIT_SHA
                 value: "$(params.commit)"
-              - name: LOGIN_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.clusterCredentialsSecretRef)
-                    key: kubeAdminPassword
             resources:
               limits:
                 memory: 8Gi
             image: mcr.microsoft.com/playwright:v1.62.1-noble
             script: |
+              #!/usr/bin/env bash
               ls /credentials
               echo "---------------------------------------------"
-              echo "$LOGIN_PASSWORD"
               echo "COMMIT_SHA: ${COMMIT_SHA}"
               echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
               echo "KUBECONFIG_PATH: ${KUBECONFIG_PATH}"
@@ -206,6 +201,14 @@ spec:
               echo "---------------------------------------------"
               export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
               echo "BASE_URL: ${BASE_URL}"
+              cd /home
+              rm -rf lightspeed-console
+              git clone https://github.com/openshift/lightspeed-console.git
+              cd lightspeed-console
+              git fetch origin "${COMMIT_SHA}"
+              git config advice.detachedHead false
+              git checkout "${COMMIT_SHA}"
+              . ./.tekton/integration-tests/scripts/setup-ui-login.sh
               export OPERATOR_SDK_VERSION=1.36.1
               export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
               export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}
@@ -217,15 +220,6 @@ spec:
               mkdir -pv ~/.cache/xdgr
               export XDG_RUNTIME_DIR=$PATH:~/.cache/xdgr
               echo "---------------------------------------------"
-              cd /home
-              rm -rf lightspeed-console
-              git clone https://github.com/openshift/lightspeed-console.git
-              cd lightspeed-console
-              git config --global user.email olsci@redhat.com
-              git config --global user.name olsci
-              git fetch origin "${COMMIT_SHA}"
-              git config advice.detachedHead false
-              git checkout "${COMMIT_SHA}"
               echo "---------------------------------------------"
               echo "node version: $(node -v)"
               echo "npm version: $(npm -v)"
