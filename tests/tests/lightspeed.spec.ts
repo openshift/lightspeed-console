@@ -160,6 +160,19 @@ test.describe('OLS UI', () => {
       await expect(pop).toBeVisible();
       const expandedBox = await pop.boundingBox();
       expect(viewportWidth - expandedBox!.width).toBeLessThan(250);
+      const expandedAlpha = await pop.evaluate((el) => {
+        const color = getComputedStyle(el).backgroundColor;
+        if (!color || color === 'transparent') {
+          return 0;
+        }
+        const match = color.match(/rgba?\(([^)]+)\)/);
+        if (!match) {
+          return 1;
+        }
+        const parts = match[1].split(',').map((part) => parseFloat(part.trim()));
+        return parts.length === 4 ? parts[3] : 1;
+      });
+      expect(expandedAlpha).toBeGreaterThanOrEqual(0.99);
       await expect(pop).toContainText(FOOTER_TEXT);
       await expect(pop).toContainText(PRIVACY_TEXT);
       await expect(pop).toContainText(READINESS_TITLE);
