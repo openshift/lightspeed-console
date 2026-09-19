@@ -45,6 +45,16 @@
 }
 
 .ols-plugin__popover--expanded {
+  /* Primitive colors stay opaque when console Contrast mode is Glass.
+     PatternFly Chatbot fullscreen uses secondary/floating/glass tokens, which
+     become translucent and let the page show through the expanded chat. */
+  --ols-plugin__expanded-bg: var(--pf-t--color--white);
+  --pf-t--global--background--color--floating--secondary--default: var(--ols-plugin__expanded-bg);
+  --pf-t--global--background--color--glass--primary--default: var(--ols-plugin__expanded-bg);
+  --pf-t--global--background--color--secondary--default: var(--ols-plugin__expanded-bg);
+
+  backdrop-filter: none;
+  background-color: var(--ols-plugin__expanded-bg);
   border-radius: var(--pf-t--global--border--radius--medium);
   box-shadow: var(--pf-t--global--box-shadow--lg);
   height: calc(100% - var(--popover-bottom) - var(--popover-margin));
@@ -52,6 +62,10 @@
   margin-right: var(--popover-margin);
   overflow: hidden;
   width: calc(100% - 2*var(--popover-margin));
+}
+
+.ols-plugin__popover--dark.ols-plugin__popover--expanded {
+  --ols-plugin__expanded-bg: var(--pf-t--color--gray--95, var(--pf-t--global--dark--background--color--100));
 }
 
 button.ols-plugin__popover-button {
