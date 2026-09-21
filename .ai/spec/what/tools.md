@@ -151,8 +151,6 @@ interactive MCP App UIs and OLS-native tool visualizations.
 
 ## Planned Changes
 
-| Jira Key | Summary |
-|---|---|
-| OLS-2722 | OLS Tool UI extensibility from external plugins |
-| OLS-2598 | MCP Apps support in OLS console |
-| OLS-1556 | Display info about tools called while generating OLS response |
+None currently planned. Tool call display (OLS-1556), MCP Apps support
+(OLS-2598), and OLS Tool UI extensibility (OLS-2722) have all shipped and
+are documented as current behavior above.

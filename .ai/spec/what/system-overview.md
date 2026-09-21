@@ -65,12 +65,13 @@ product is being rebranded to "Red Hat OpenShift Intelligent Assistant."
 
 13. A `ReadinessAlert` component is displayed in the chat content area when
     the OLS service is not ready or unavailable. Readiness is determined
-    globally (not per-response) via the `/readyz` endpoint, polled
-    periodically by the plugin. The alert appears when the endpoint returns
-    a non-2xx status or is unreachable. It disappears when a subsequent poll
-    returns a 2xx response (readiness restored). Request-level errors during
-    streaming do not control the `ReadinessAlert`; those surface as inline
-    alerts on the affected response entry instead.
+    globally (not per-response) via the `/readiness` endpoint, which returns
+    a JSON body with a `ready` boolean. The plugin polls the endpoint and
+    shows the alert while the response is not `ready` (or the request fails
+    or is unreachable), re-polling every 10 seconds until readiness is
+    reported. Once `ready` is `true` the alert is hidden. Request-level
+    errors during streaming do not control the `ReadinessAlert`; those
+    surface as inline alerts on the affected response entry instead.
 
 ### Query Modes
 
@@ -176,10 +177,6 @@ Environment variables (development only):
 | Jira Key | Summary |
 |---|---|
 | OLS-2743 | Rebranding to "Red Hat OpenShift Intelligent Assistant" |
-| OLS-2598 | MCP Apps support in OLS console |
 | OLS-2700 | Allow users to choose agent mode (PF6 only) |
-| OLS-2722 | OLS Tool UI extensibility from external plugins |
 | OLS-2608 | Embed PromQL QueryBrowser in OLS responses |
 | OLS-2609 | Embed PromQL scalar values in OLS responses |
-| OLS-2816 | Option to immediately submit prompt when opening OLS programmatically |
-| OLS-2826 | Hide the initial prompt when opening OLS programmatically |
