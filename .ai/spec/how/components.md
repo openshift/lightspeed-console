@@ -22,7 +22,7 @@ PatternFly 6 and the PatternFly AI Chatbot library.
 | `AttachLogModal.tsx` | Modal | Log selection for attachment |
 | `AttachmentsSizeAlert.tsx` | Alert | Warning for large attachments |
 | `ErrorBoundary.tsx` | Utility | React error boundary |
-| `ConfirmationModal.tsx` | Utility | Generic confirmation dialog (used by `ImportAction`) |
+| `ConfirmationModal.tsx` | Utility | Import navigation confirmation dialog (used by `ImportAction`) |
 
 ## Data Flow
 
