@@ -9,15 +9,15 @@ rules:
   # PatternFly CSS vars don't conform to stylelint's regex. Disable this rule.
   custom-property-pattern: null
   function-disallowed-list:
-    - rgb
-    - rgba
     - hsl
     - hsla
-    - oklch
-    - oklch
     - hwb
     - lab
     - lch
+    - oklab
+    - oklch
+    - rgb
+    - rgba
   media-feature-range-notation: null
   no-descending-specificity: null
   # Disable the standard rule to allow BEM-style classnames with underscores.
