@@ -7,8 +7,8 @@ spec:
   description: |
     This pipeline automates the process of running end-to-end tests for OpenShift Lightspeed
     using a ROSA (Red Hat OpenShift Service on AWS) cluster. The pipeline provisions
-    the ROSA cluster, installs the OpenShift Lightspeed operator using the installer, runs the tests, collects artifacts,
-    and finally deprovisions the ROSA cluster.
+    the ROSA cluster, installs the OpenShift Lightspeed operator using the installer,
+    runs the tests, and collects artifacts.
   params:
     - name: SNAPSHOT
       description: 'The JSON string representing the snapshot of the application under test.'
@@ -339,18 +339,3 @@ spec:
           value: "quay.io/openshift-lightspeed/ols-console-artifacts"
         - name: artifact-credentials-secret
           value: ols-konflux-artifacts-bot
-    - name: deprovision-ephemeral-cluster
-      taskRef:
-        resolver: git
-        params:
-        - name: url
-          value: https://github.com/openshift/konflux-tasks
-        - name: revision
-          value: main
-        - name: pathInRepo
-          value: tasks/deprovision-ephemeral-cluster/0.1/deprovision-ephemeral-cluster.yaml
-      params:
-      - name: testPlatformClusterClaimName
-        value: $(tasks.provision-ephemeral-cluster.results.testPlatformClusterClaimName)
-      - name: testPlatformClusterClaimNamespace
-        value: $(tasks.provision-ephemeral-cluster.results.testPlatformClusterClaimNamespace)
