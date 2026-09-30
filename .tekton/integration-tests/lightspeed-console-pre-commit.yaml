@@ -5,10 +5,8 @@ metadata:
   name: ols-console-pre-commits
 spec:
   description: |
-    This pipeline automates the process of running end-to-end tests for OpenShift Lightspeed
-    using a ROSA (Red Hat OpenShift Service on AWS) cluster. The pipeline provisions
-    the ROSA cluster, installs the OpenShift Lightspeed operator using the installer,
-    runs the tests, and collects artifacts.
+    This pipeline automates end-to-end tests for OpenShift Lightspeed using an ephemeral
+    OpenShift cluster. It provisions the cluster, runs the tests, and collects artifacts.
   params:
     - name: SNAPSHOT
       description: 'The JSON string representing the snapshot of the application under test.'
@@ -20,23 +18,6 @@ spec:
       description: 'Namespace to run tests in'
       default: 'openshift-lightspeed'
   tasks:
-    - name: eaas-provision-space
-      taskRef:
-        resolver: git
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/build-definitions.git
-          - name: revision
-            value: main
-          - name: pathInRepo
-            value: task/eaas-provision-space/0.1/eaas-provision-space.yaml
-      params:
-        - name: ownerKind
-          value: PipelineRun
-        - name: ownerName
-          value: $(context.pipelineRun.name)
-        - name: ownerUid
-          value: $(context.pipelineRun.uid)
     - name: provision-ephemeral-cluster
       taskRef:
         resolver: git
@@ -62,12 +43,9 @@ spec:
           value: |
             {"latest":{"release":{"channel":"stable","version":"4.22","architecture":"multi"}}}
       runAfter:
-        - eaas-provision-space
         - lint
     - name: extract-snapshot-metadata
       description: Extract console image and commit from SNAPSHOT input
-      runAfter:
-        - eaas-provision-space
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
@@ -194,8 +172,6 @@ spec:
             image: mcr.microsoft.com/playwright:v1.62.1-noble
             script: |
               #!/usr/bin/env bash
-              ls /credentials
-              echo "---------------------------------------------"
               echo "COMMIT_SHA: ${COMMIT_SHA}"
               echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
               echo "KUBECONFIG_PATH: ${KUBECONFIG_PATH}"
@@ -208,7 +184,7 @@ spec:
               oc --kubeconfig "$KUBECONFIG_PATH" get secret/kubeadmin -n kube-system \
                 -o go-template='{{range $key, $_ := .data}}{{println $key}}{{end}}'
               if [ -z "$LOGIN_PASSWORD" ]; then
-                echo "The kubeadmin secret's kubeadmin key is empty" >&2
+                echo "kubeAdminPassword is empty in the cluster credentials secret produced by provision-ephemeral-cluster" >&2
                 exit 1
               fi
               export BASE_URL=https://$(oc --kubeconfig "$KUBECONFIG_PATH" get route console -n openshift-console -o go-template --template="{{.spec.host}}")
