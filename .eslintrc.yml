@@ -18,6 +18,7 @@ plugins:
   - prettier
   - react
   - '@typescript-eslint'
+root: true
 rules:
   array-callback-return: ['error', { checkForEach: true }]
   arrow-body-style: 'error'
