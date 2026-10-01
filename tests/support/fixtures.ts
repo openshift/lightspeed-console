@@ -272,9 +272,44 @@ export const interceptFeedback = async (
   return { received: () => waitForIntercept(promise, pattern) };
 };
 
-// Custom test fixture that captures browser console errors/warnings and prints
-// them only when the test fails, keeping passing test output clean.
-export const test = base.extend<{ captureConsoleLogs: void; dismissGuidedTour: void }>({
+// Custom test fixture that captures browser console errors/warnings and OLS API traffic, and
+// prints them only when the test fails, keeping passing test output clean.
+export const test = base.extend<{
+  captureApiTraffic: void;
+  captureConsoleLogs: void;
+  dismissGuidedTour: void;
+}>({
+  captureApiTraffic: [
+    async ({ page }, use, testInfo) => {
+      const startedAt = Date.now();
+      const events: string[] = [];
+      const at = (): string => `+${Date.now() - startedAt}ms`;
+
+      page.on('request', (request) => {
+        if (request.url().includes(API_BASE_URL)) {
+          events.push(`${at()} --> ${request.method()} ${request.url()}`);
+        }
+      });
+
+      page.on('response', (response) => {
+        if (response.url().includes(API_BASE_URL)) {
+          events.push(
+            `${at()} <-- ${response.status()} ${response.request().method()} ${response.url()}`,
+          );
+        }
+      });
+
+      await use();
+
+      if (testInfo.status !== testInfo.expectedStatus && events.length > 0) {
+        events.forEach((event) => {
+          // eslint-disable-next-line no-console
+          console.log(`[api] ${event}`);
+        });
+      }
+    },
+    { auto: true },
+  ],
   dismissGuidedTour: [
     async ({ page }, use) => {
       await page.addLocatorHandler(
