@@ -45,6 +45,7 @@
 }
 
 .ols-plugin__popover--expanded {
+  background-color: var(--pf-t--global--background--color--floating--default);
   border-radius: var(--pf-t--global--border--radius--medium);
   box-shadow: var(--pf-t--global--box-shadow--lg);
   height: calc(100% - var(--popover-bottom) - var(--popover-margin));
