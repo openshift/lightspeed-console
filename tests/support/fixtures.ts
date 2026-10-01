@@ -180,41 +180,57 @@ export function gatherClusterArtifacts(): void {
   console.log(`Cluster artifacts gathered in ${clusterDir}`);
 }
 
+const INTERCEPT_TIMEOUT = 20_000;
+
+const waitForIntercept = (promise: Promise<void>, pattern: string): Promise<void> => {
+  const { promise: timeout, reject } = Promise.withResolvers<void>();
+  const timer = setTimeout(
+    () =>
+      reject(
+        new Error(
+          `Timed out after ${INTERCEPT_TIMEOUT}ms waiting to intercept "${pattern}" (request never routed to mock API)`,
+        ),
+      ),
+    INTERCEPT_TIMEOUT,
+  );
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+};
+
 export const interceptQuery = async (
   page: Page,
   query: string,
   conversationId: string | null = null,
   attachments: Attachment[] = [],
-): Promise<{ received: Promise<void> }> => {
+): Promise<{ received: () => Promise<void> }> => {
   const { promise, resolve, reject } = Promise.withResolvers<void>();
   const pattern = `**${getApiUrl('/v1/streaming_query')}`;
 
+  // Mark as handled so an intercept the test never awaits can't fail an unrelated later test
+  promise.catch(() => {});
+
   await page.unroute(pattern);
-  await page.route(
-    pattern,
-    async (route) => {
-      try {
-        const body = route.request().postDataJSON();
-        expect(body.media_type).toBe('application/json');
-        expect(body.conversation_id).toBe(conversationId);
-        expect(body.query).toContain(query);
-        expect(body.attachments).toHaveLength(attachments.length);
-        attachments.forEach((a, i) => {
-          expect(body.attachments[i].attachment_type).toBe(a.attachment_type);
-          expect(body.attachments[i].content_type).toBe(a.content_type);
-        });
+  await page.route(pattern, async (route) => {
+    try {
+      const body = route.request().postDataJSON();
+      expect(body.media_type).toBe('application/json');
+      expect(body.conversation_id).toBe(conversationId);
+      expect(body.query).toContain(query);
+      expect(body.attachments).toHaveLength(attachments.length);
+      attachments.forEach((a, i) => {
+        expect(body.attachments[i].attachment_type).toBe(a.attachment_type);
+        expect(body.attachments[i].content_type).toBe(a.content_type);
+      });
 
-        await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
-        resolve();
-      } catch (err) {
-        await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
-        reject(err);
-      }
-    },
-    { times: 1 },
-  );
+      await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
+      resolve();
+    } catch (err) {
+      await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
+      reject(err);
+    }
+  });
 
-  return { received: promise };
+  return { received: () => waitForIntercept(promise, pattern) };
 };
 
 export const interceptFeedback = async (
@@ -223,38 +239,37 @@ export const interceptFeedback = async (
   sentiment: number,
   userFeedback: string,
   userQuestionStartsWith: string,
-): Promise<{ received: Promise<void> }> => {
+): Promise<{ received: () => Promise<void> }> => {
   const { promise, resolve, reject } = Promise.withResolvers<void>();
   const pattern = `**${getApiUrl('/v1/feedback')}`;
 
-  await page.unroute(pattern);
-  await page.route(
-    pattern,
-    async (route) => {
-      try {
-        const body = route.request().postDataJSON();
-        expect(body.conversation_id).toBe(conversationId);
-        expect(body.sentiment).toBe(sentiment);
-        expect(body.user_feedback).toBe(userFeedback);
-        expect(body.llm_response).toBe('Mock OLS response');
-        expect(body.user_question.startsWith(userQuestionStartsWith)).toBe(true);
-        await route.fulfill({
-          status: 200,
-          body: JSON.stringify({ message: 'Feedback received' }),
-        });
-        resolve();
-      } catch (err) {
-        await route.fulfill({
-          status: 200,
-          body: JSON.stringify({ message: 'Feedback received' }),
-        });
-        reject(err);
-      }
-    },
-    { times: 1 },
-  );
+  // Mark as handled so an intercept the test never awaits can't fail an unrelated later test
+  promise.catch(() => {});
 
-  return { received: promise };
+  await page.unroute(pattern);
+  await page.route(pattern, async (route) => {
+    try {
+      const body = route.request().postDataJSON();
+      expect(body.conversation_id).toBe(conversationId);
+      expect(body.sentiment).toBe(sentiment);
+      expect(body.user_feedback).toBe(userFeedback);
+      expect(body.llm_response).toBe('Mock OLS response');
+      expect(body.user_question.startsWith(userQuestionStartsWith)).toBe(true);
+      await route.fulfill({
+        status: 200,
+        body: JSON.stringify({ message: 'Feedback received' }),
+      });
+      resolve();
+    } catch (err) {
+      await route.fulfill({
+        status: 200,
+        body: JSON.stringify({ message: 'Feedback received' }),
+      });
+      reject(err);
+    }
+  });
+
+  return { received: () => waitForIntercept(promise, pattern) };
 };
 
 // Custom test fixture that captures browser console errors/warnings and prints
