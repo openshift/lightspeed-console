@@ -441,7 +441,7 @@ test.describe('OLS UI', () => {
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_TEXT);
       await page.locator(userFeedbackInput).clear();
       await page.locator(userFeedbackSubmit).click();
-      await negativeFeedback.received;
+      await negativeFeedback.received();
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_RECEIVED_TEXT);
     });
   });
@@ -636,7 +636,7 @@ test.describe('OLS UI', () => {
       /* eslint-enable camelcase */
       await page.locator(promptInput).fill(PROMPT_SUBMITTED);
       await page.locator(promptInput).press('Enter');
-      await query.received;
+      await query.received();
 
       const feedback = await interceptFeedback(
         page,
@@ -650,7 +650,7 @@ test.describe('OLS UI', () => {
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_TEXT);
       await page.locator(userFeedbackInput).fill(USER_FEEDBACK_SUBMITTED);
       await page.locator(userFeedbackSubmit).click();
-      await feedback.received;
+      await feedback.received();
       await expect(page.locator(popover)).toContainText(USER_FEEDBACK_RECEIVED_TEXT);
     });
 
@@ -682,7 +682,7 @@ test.describe('OLS UI', () => {
       /* eslint-enable camelcase */
       await page.locator(promptInput).fill(PROMPT_SUBMITTED);
       await page.locator(promptInput).press('Enter');
-      await query.received;
+      await query.received();
     });
 
     test('Test file upload', async ({ page }) => {
@@ -843,7 +843,7 @@ metadata:
       /* eslint-enable camelcase */
       await page.locator(promptInput).fill(PROMPT_SUBMITTED);
       await page.locator(promptInput).press('Enter');
-      await query.received;
+      await query.received();
     });
 
     test.skip('Test ManagedCluster attachment error handling', async ({ page }) => {
