@@ -1,6 +1,6 @@
 import * as React from 'react';
 
 // TODO: Dynamically get the current plugin version instead of hard-coding it here
-const OverviewDetail: React.FC = () => <>1.1.4</>;
+const OverviewDetail: React.FC = () => <>1.1.5</>;
 
 export default OverviewDetail;
