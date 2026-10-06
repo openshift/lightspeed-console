@@ -190,29 +190,25 @@ export const interceptQuery = async (
   const pattern = `**${getApiUrl('/v1/streaming_query')}`;
 
   await page.unroute(pattern);
-  await page.route(
-    pattern,
-    async (route) => {
-      try {
-        const body = route.request().postDataJSON();
-        expect(body.media_type).toBe('application/json');
-        expect(body.conversation_id).toBe(conversationId);
-        expect(body.query).toContain(query);
-        expect(body.attachments).toHaveLength(attachments.length);
-        attachments.forEach((a, i) => {
-          expect(body.attachments[i].attachment_type).toBe(a.attachment_type);
-          expect(body.attachments[i].content_type).toBe(a.content_type);
-        });
+  await page.route(pattern, async (route) => {
+    try {
+      const body = route.request().postDataJSON();
+      expect(body.media_type).toBe('application/json');
+      expect(body.conversation_id).toBe(conversationId);
+      expect(body.query).toContain(query);
+      expect(body.attachments).toHaveLength(attachments.length);
+      attachments.forEach((a, i) => {
+        expect(body.attachments[i].attachment_type).toBe(a.attachment_type);
+        expect(body.attachments[i].content_type).toBe(a.content_type);
+      });
 
-        await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
-        resolve();
-      } catch (err) {
-        await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
-        reject(err);
-      }
-    },
-    { times: 1 },
-  );
+      await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
+      resolve();
+    } catch (err) {
+      await route.fulfill({ body: MOCK_STREAMED_RESPONSE_BODY });
+      reject(err);
+    }
+  });
 
   return { received: promise };
 };
@@ -228,31 +224,27 @@ export const interceptFeedback = async (
   const pattern = `**${getApiUrl('/v1/feedback')}`;
 
   await page.unroute(pattern);
-  await page.route(
-    pattern,
-    async (route) => {
-      try {
-        const body = route.request().postDataJSON();
-        expect(body.conversation_id).toBe(conversationId);
-        expect(body.sentiment).toBe(sentiment);
-        expect(body.user_feedback).toBe(userFeedback);
-        expect(body.llm_response).toBe('Mock OLS response');
-        expect(body.user_question.startsWith(userQuestionStartsWith)).toBe(true);
-        await route.fulfill({
-          status: 200,
-          body: JSON.stringify({ message: 'Feedback received' }),
-        });
-        resolve();
-      } catch (err) {
-        await route.fulfill({
-          status: 200,
-          body: JSON.stringify({ message: 'Feedback received' }),
-        });
-        reject(err);
-      }
-    },
-    { times: 1 },
-  );
+  await page.route(pattern, async (route) => {
+    try {
+      const body = route.request().postDataJSON();
+      expect(body.conversation_id).toBe(conversationId);
+      expect(body.sentiment).toBe(sentiment);
+      expect(body.user_feedback).toBe(userFeedback);
+      expect(body.llm_response).toBe('Mock OLS response');
+      expect(body.user_question.startsWith(userQuestionStartsWith)).toBe(true);
+      await route.fulfill({
+        status: 200,
+        body: JSON.stringify({ message: 'Feedback received' }),
+      });
+      resolve();
+    } catch (err) {
+      await route.fulfill({
+        status: 200,
+        body: JSON.stringify({ message: 'Feedback received' }),
+      });
+      reject(err);
+    }
+  });
 
   return { received: promise };
 };
