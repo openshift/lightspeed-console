@@ -78,7 +78,7 @@
     "js-cookie": "3.0.8",
     "monaco-editor": "0.57.0",
     "qs": "6.16.0",
-    "ws": "8.21.3"
+    "ws": "8.22.0"
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
