@@ -79,7 +79,7 @@
     "browserslist": "4.29.1",
     "webpack": "5.111.1",
     "qs": "6.16.0",
-    "ws": "8.21.3"
+    "ws": "8.22.0"
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
