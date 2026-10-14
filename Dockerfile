@@ -50,7 +50,7 @@ RUN rm -rf /usr/share/nginx/html && \
     chmod -R g=u /var/log/nginx /var/lib/nginx /tmp/nginx /builds
 
 LABEL name="openshift-lightspeed/lightspeed-console-plugin-rhel9" \
-      cpe="cpe:/a:redhat:openshift_lightspeed:1::el9" \
+      cpe="cpe:/a:redhat:openshift_lightspeed:2::el9" \
       com.redhat.component="openshift-lightspeed" \
       io.k8s.display-name="OpenShift Lightspeed Console" \
       summary="OpenShift Lightspeed Console provides OCP console plugin for OpenShift Lightspeed Service" \
