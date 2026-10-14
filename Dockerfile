@@ -29,7 +29,7 @@ RUN mkdir -p /tmp/nginx && \
     chmod -R g=u /var/log/nginx /var/lib/nginx /usr/share/nginx/html /tmp/nginx
 
 LABEL name="openshift-lightspeed/lightspeed-console-plugin-419-rhel9" \
-      cpe="cpe:/a:redhat:openshift_lightspeed:1::el9" \
+      cpe="cpe:/a:redhat:openshift_lightspeed:2::el9" \
       com.redhat.component="openshift-lightspeed" \
       io.k8s.display-name="OpenShift Lightspeed Console" \
       summary="OpenShift Lightspeed Console provides OCP console plugin for OpenShift Lightspeed Service" \
