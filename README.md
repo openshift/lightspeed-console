@@ -49,6 +49,16 @@ If your Lightspeed service is running locally on `http://localhost:8080`, the
 `start-console.sh` script includes a proxy configuration that routes requests
 through the console, avoiding CORS issues.
 
+`start-console.sh` uses `quay.io/openshift/origin-console:4.22` by default to
+match this plugin's SDK version. If the Lightspeed chat icon is missing, check
+the browser console for plugin errors and try pinning the image explicitly:
+`CONSOLE_TAG=4.22 npm run start-console`.
+
+**kind / plain Kubernetes:** kubeconfigs often use client certificates instead of
+bearer tokens. Use `npm run start-console-kind` (or
+`ALLOW_DEV_TOKEN_MINT=1 npm run start-console`) to mint a temporary dev
+ServiceAccount token. This creates cluster-admin credentials for local use only.
+
 #### Running start-console with Apple silicon and podman
 
 If you are using podman on a Mac with Apple silicon, `npm run start-console`
