@@ -150,7 +150,7 @@ end-to-end tests (`tests/`) to cover new or changed functionality.
 - `pattern-fly-5` — supports OpenShift 4.16 – 4.18
 
 ### Commit Messages
-- Start with the Jira ticket reference: `OLS-XXXX description`
+- Start with the Jira ticket reference: `OLS-XXXX: description`
 - Keep the first line under 72 characters
 - Use imperative mood
 
@@ -165,7 +165,7 @@ PRs.
    git push <your-fork-remote> <branch>
    gh pr create --repo openshift/lightspeed-console --head <your-github-user>:<branch> --base main
    ```
-3. **PR title** must start with the Jira reference: `OLS-XXXX description`
+3. **PR title** must start with the Jira reference: `OLS-XXXX: description`
 4. **Squash commits** before pushing -- one logical commit per PR unless the PR explicitly tracks multiple independent changes
 
 ### Branch Completion
