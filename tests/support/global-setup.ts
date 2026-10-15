@@ -4,11 +4,56 @@ import { execFileSync, execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import {
+  buildConsoleImagePatch,
+  CLASSIC_OPERATOR_DEPLOYMENT,
+  CONSOLE_PLUGIN_CONTAINER,
+  CONSOLE_PLUGIN_DEPLOYMENT,
+} from './csv';
 import { oc } from './fixtures';
 
 const MINUTE = 60 * 1000;
 const AUTH_DIR = path.join(__dirname, '..', '.auth');
 const STATE_FILE = path.join(AUTH_DIR, 'state.json');
+
+// Confirms the operator actually reconciled the candidate image, so a substitution that silently
+// did nothing fails the run instead of testing the published image
+const waitForConsolePluginImage = (expectedImage: string, namespace: string) => {
+  const deadline = Date.now() + 5 * MINUTE;
+  let lastSeen = 'deployment not found';
+
+  while (Date.now() < deadline) {
+    try {
+      const deployment = JSON.parse(
+        oc([
+          'get',
+          'deployment',
+          CONSOLE_PLUGIN_DEPLOYMENT,
+          '--namespace',
+          namespace,
+          '-o',
+          'json',
+        ]),
+      );
+      const container = deployment.spec.template.spec.containers.find(
+        ({ name }: { name: string }) => name === CONSOLE_PLUGIN_CONTAINER,
+      );
+      if (container?.image === expectedImage) {
+        console.log(`Console plugin is running the candidate image ${expectedImage}`);
+        return;
+      }
+      lastSeen = container?.image ?? `no ${CONSOLE_PLUGIN_CONTAINER} container`;
+    } catch {
+      lastSeen = 'deployment not found';
+    }
+    execSync('sleep 5');
+  }
+
+  throw new Error(
+    `Console plugin did not adopt CONSOLE_IMAGE ${expectedImage} within 5 minutes ` +
+      `(last seen: ${lastSeen})`,
+  );
+};
 
 const globalSetup = async (config: FullConfig) => {
   const baseURL = config.projects[0].use.baseURL!;
@@ -70,6 +115,13 @@ spec:
   }
 
   if (operatorAlreadyInstalled) {
+    if (process.env.CONSOLE_IMAGE) {
+      throw new Error(
+        `Operator is already installed in ${OLS_NAMESPACE}, so CONSOLE_IMAGE cannot be injected ` +
+          'into the CSV. The tests would exercise the published console image instead of the ' +
+          'candidate one.',
+      );
+    }
     console.log(`Operator already installed in ${OLS_NAMESPACE}. Skipping installation.`);
   } else {
     console.log('Operator not found. Proceeding with installation.');
@@ -128,53 +180,16 @@ spec:
       oc([
         'scale',
         '--replicas=0',
-        'deployment/lightspeed-operator-controller-manager',
+        `deployment/${CLASSIC_OPERATOR_DEPLOYMENT}`,
         '--namespace',
         OLS_NAMESPACE,
       ]);
 
       const csvJson = oc(['get', csvName, '--namespace', OLS_NAMESPACE, '-o', 'json']);
-      const csv = JSON.parse(csvJson);
-
-      const argToRelatedImage: Record<string, string> = {
-        '--console-image-pf5': 'lightspeed-console-plugin-pf5',
-        '--console-image-4-19': 'lightspeed-console-plugin-4-19',
-        '--console-image=': 'lightspeed-console-plugin',
-      };
-
-      const args = csv.spec.install.spec.deployments[0].spec.template.spec.containers[0].args;
-      const relatedImages = csv.spec.relatedImages;
-
-      const relatedImageOps: { op: string; path: string; value: string }[] = [];
-      for (const arg of args) {
-        for (const [prefix, riName] of Object.entries(argToRelatedImage)) {
-          if (arg.startsWith(prefix)) {
-            const idx = relatedImages.findIndex((ri: { name: string }) => ri.name === riName);
-            if (idx !== -1) {
-              relatedImageOps.push({
-                op: 'replace',
-                path: `/spec/relatedImages/${idx}/image`,
-                value: process.env.CONSOLE_IMAGE!,
-              });
-            }
-          }
-        }
-      }
-
-      const updatedArgs = args.map((arg: string) =>
-        arg.startsWith('--console-image')
-          ? arg.replace(/=.*/, `=${process.env.CONSOLE_IMAGE}`)
-          : arg,
+      const patch = JSON.stringify(
+        buildConsoleImagePatch(JSON.parse(csvJson), process.env.CONSOLE_IMAGE),
       );
 
-      const patch = JSON.stringify([
-        ...relatedImageOps,
-        {
-          op: 'replace',
-          path: '/spec/install/spec/deployments/0/spec/template/spec/containers/0/args',
-          value: updatedArgs,
-        },
-      ]);
       const patchFile = '/tmp/ols-csv-patch.json';
       fs.writeFileSync(patchFile, patch);
       oc([
@@ -189,7 +204,7 @@ spec:
       oc([
         'scale',
         '--replicas=1',
-        'deployment/lightspeed-operator-controller-manager',
+        `deployment/${CLASSIC_OPERATOR_DEPLOYMENT}`,
         '--namespace',
         OLS_NAMESPACE,
       ]);
@@ -244,6 +259,11 @@ spec:
       '-n',
       OLS_NAMESPACE,
     ]);
+  }
+
+  // The operator only creates the console plugin once an OLSConfig exists, so verify here
+  if (process.env.CONSOLE_IMAGE) {
+    waitForConsolePluginImage(process.env.CONSOLE_IMAGE, OLS_NAMESPACE);
   }
 
   // Log in via browser and save storageState
