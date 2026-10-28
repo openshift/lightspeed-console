@@ -64,7 +64,7 @@
         "stylelint",
         "stylelint-*"
       ],
-      "schedule": ["* 6 1,15 * *"]
+      "schedule": ["* * * * 1,3,5"]
     },
     {
       "groupName": "patternfly",
@@ -74,7 +74,7 @@
       "groupName": "test",
       "matchPackageNames": ["@playwright/*", "mcr.microsoft.com/playwright"],
       "minimumReleaseAge": "14 days",
-      "schedule": ["* 6 1,15 * *"]
+      "schedule": ["* * * * 1,3,5"]
     }
   ]
 }
