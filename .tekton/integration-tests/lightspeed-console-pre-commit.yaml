@@ -89,7 +89,7 @@ spec:
             env:
               - name: COMMIT_SHA
                 value: $(params.commit)
-            image: mcr.microsoft.com/playwright:v1.62.1-noble
+            image: mcr.microsoft.com/playwright:v1.64.1-noble
             resources:
               limits:
                 memory: 4Gi
@@ -169,7 +169,7 @@ spec:
             resources:
               limits:
                 memory: 8Gi
-            image: mcr.microsoft.com/playwright:v1.62.1-noble
+            image: mcr.microsoft.com/playwright:v1.64.1-noble
             script: |
               #!/usr/bin/env bash
               echo "COMMIT_SHA: ${COMMIT_SHA}"
