@@ -37,6 +37,7 @@ export const useLocationContext = () => {
           const modelKey = resolveModelKey(urlMatches[2], models);
           // Exclude Secret details pages to avoid accidentally including secrets with prompt
           if (modelKey && models[modelKey]?.kind !== 'Secret') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setKind(modelKey);
             setName(urlMatches[3]);
             setNamespace(urlMatches[1]);
