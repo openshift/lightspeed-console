@@ -834,6 +834,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
   React.useEffect(() => {
     if (autoSubmit) {
       dispatch(setAutoSubmit(false));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       onSubmit();
     }
   }, [autoSubmit, dispatch, onSubmit]);
