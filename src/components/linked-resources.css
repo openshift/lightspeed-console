@@ -1,0 +1,42 @@
+.ols-plugin__inline-linked-resource {
+  align-items: center;
+  display: inline-flex;
+  white-space: normal;
+}
+
+.ols-plugin__inline-linked-resource-link {
+  font-weight: inherit;
+  padding: 0;
+  vertical-align: baseline;
+}
+
+.ols-plugin__inline-linked-resource-content {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--pf-t--global--spacer--xs);
+}
+
+.ols-plugin__inline-linked-resource-kind-icon {
+  margin-inline-end: 0;
+}
+
+.ols-plugin__inline-linked-resource-name {
+  display: inline;
+}
+
+.ols-plugin__inline-linked-resource > * + * {
+  margin-inline-start: var(--pf-t--global--spacer--xs);
+  vertical-align: middle;
+}
+
+.ols-plugin__inline-linked-resource .ols-plugin__linked-resource-status-icon {
+  display: inline-flex;
+}
+
+.ols-plugin__linked-resource-status {
+  font-size: var(--pf-t--global--font--size--sm);
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
