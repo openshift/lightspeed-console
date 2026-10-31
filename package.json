@@ -75,10 +75,7 @@
     "webpack-dev-server": "5.2.6"
   },
   "overrides": {
-    "browserslist": "4.29.3",
-    "webpack": "5.112.0",
-    "qs": "6.16.1",
-    "ws": "8.22.0"
+    "webpack": "5.112.0"
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
