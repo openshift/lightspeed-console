@@ -1,3 +1,11 @@
+---
+name: test
+description: >-
+  Run end-to-end tests filtered by tag. Use when the user asks to run tests,
+  run Playwright, or test a specific feature tag like @core or @attach.
+argument-hint: "[tag | all]"
+---
+
 Run end-to-end tests filtered by tag.
 
 Arguments: [tag] - Optional tag to filter by (@core, @attach, etc.) or "all" to

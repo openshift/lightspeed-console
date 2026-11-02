@@ -22,9 +22,9 @@ npx ts-unused-exports@11.0.1 unit-tests/tsconfig.json \
 
 Some exports are consumed externally by the OpenShift console framework, not by
 imports within this repo. Read `package.json` → `consolePlugin.exposedModules`
-and `console-extensions.json` → `$codeRef` values to identify them. Exclude any
-finding that is a default export of an exposed module or is named in a
-`$codeRef`.
+and `console-extensions.json` → `$codeRef` values to identify them. Exclude
+exposed modules from the completely unused files list, and exclude any finding
+that is a default export of an exposed module or is named in a `$codeRef`.
 
 ## Step 3: Report findings
 

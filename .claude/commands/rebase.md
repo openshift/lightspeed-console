@@ -12,7 +12,7 @@ Rebase the current branch onto its base branch.
 
 ## Step 1 — Determine the base branch
 
-Read [release-branches.md](release-branches.md) to get the list of
+Read the "Release branches" section of `AGENTS.md` to get the list of
 branches. For each branch, compute the merge-base with HEAD and count the
 commits between them:
 
