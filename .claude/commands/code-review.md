@@ -1,1 +1,0 @@
-../../.cursor/skills/code-review/SKILL.md

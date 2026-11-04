@@ -1,1 +1,0 @@
-../../.cursor/skills/update-version/SKILL.md
