@@ -7,7 +7,7 @@ description: >-
 
 # Release
 
-For each branch in [release-branches.md](release-branches.md):
+For each branch in the "Release branches" section of `AGENTS.md`:
 
 1. `git checkout <branch>`
 2. `git checkout -b version-bump-<new-version>-<branch>`

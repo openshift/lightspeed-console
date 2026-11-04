@@ -25,7 +25,7 @@ Extract the remote and PR number from the URL.
 Then fetch and diff:
 
 ```sh
-git fetch <remote> pull/<number>/head:pr-<number>
+git fetch <remote> +pull/<number>/head:pr-<number>
 git diff <remote>/main...pr-<number>
 ```
 
@@ -34,15 +34,15 @@ git diff <remote>/main...pr-<number>
 Assume the PR is on **upstream** (`openshift/lightspeed-console`).
 
 ```sh
-git fetch upstream pull/<number>/head:pr-<number>
+git fetch upstream +pull/<number>/head:pr-<number>
 git diff upstream/main...pr-<number>
 ```
 
 ### C) Branch name
 
-The branch already exists locally. Determine its base branch by reading
-[release-branches.md](release-branches.md) for the list of branches.
-For each branch, compute the merge-base and count the commits between them:
+The branch already exists locally. Determine its base branch by reading the
+"Release branches" section of `AGENTS.md` for the list of branches. For each
+branch, compute the merge-base and count the commits between them:
 
 ```sh
 mb=$(git merge-base <branch> <candidate>)

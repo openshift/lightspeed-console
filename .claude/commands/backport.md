@@ -8,9 +8,8 @@ description: >-
 
 # Backport to a release branch
 
-The release branches are listed in
-[release-branches.md](release-branches.md). Read that file to
-determine the available target branches.
+The release branches are listed in the "Release branches" section of
+`AGENTS.md`. Read that section to determine the available target branches.
 
 ## Key principle
 
@@ -43,8 +42,8 @@ components.
    3. `npm run build`
 9. Prefix the final commit title to identify the target branch (e.g. "PF5: " for
    pattern-fly-5, "4.19: " for release-4.19):
-   - If cherry-pick succeeded: amend the commit message title (e.g.
-     `git commit --amend`).
+   - If cherry-pick succeeded: amend the commit to include any changes from
+     step 8 and prefix its title (e.g. `git commit --amend`).
    - If changes were applied manually: create a new commit with the original
      message, prefixed appropriately.
 

@@ -1,3 +1,11 @@
+---
+name: css-review
+description: >-
+  Review CSS for coding style, PatternFly token usage, and best practices.
+  Use when the user asks to review CSS, check styles, or audit CSS files.
+argument-hint: "[path]"
+---
+
 Review CSS for coding style and best practices
 
 Reference: https://www.patternfly.org/tokens/all-patternfly-tokens
@@ -8,7 +16,8 @@ src/)
 1. If a path argument was provided, review just that file. Otherwise, review all
    CSS files in `src/`.
 
-2. Run stylelint first: `npx stylelint "src/**/*.css" --allow-empty-input`
+2. Run stylelint first on the path argument (default `"src/**/*.css"`):
+   `npx stylelint <path> --allow-empty-input`
 
 3. Beyond what stylelint catches, manually review the CSS for these issues:
 
