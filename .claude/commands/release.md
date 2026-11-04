@@ -1,1 +1,0 @@
-../../.cursor/skills/release/SKILL.md
