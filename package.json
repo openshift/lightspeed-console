@@ -57,7 +57,7 @@
     "@types/lodash": "4.17.26",
     "@types/node": "22.20.5",
     "@types/react": "17.0.93",
-    "@types/react-redux": "7.1.34",
+    "@types/react-redux": "7.1.35",
     "@typescript-eslint/eslint-plugin": "8.71.2",
     "@typescript-eslint/parser": "8.71.2",
     "eslint": "8.57.1",
