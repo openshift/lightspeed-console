@@ -11,16 +11,16 @@ runtime, adding custom pages and other extensions. They are based on
 Plugins are registered with console using the `ConsolePlugin` custom resource
 and enabled in the console operator config by a cluster administrator.
 
-Requires OpenShift 4.16 or higher.
+## Prerequisites
 
-- `main` branch supports OpenShift 4.22+
-- `release-4.19` branch supports OpenShift 4.19 – 4.21
-- `pattern-fly-5` branch supports OpenShift 4.16 – 4.18
-
-[Node.js](https://nodejs.org/en/) >= 22 and [npm](https://www.npmjs.com) are
-required to build and run. To run OpenShift console in a container, either
-[Docker](https://www.docker.com) or [podman 3.2.0+](https://podman.io) and
-[oc](https://console.redhat.com/openshift/downloads) are required.
+- An OpenShift 4.16+ cluster
+  - `main` branch supports OpenShift 4.22+
+  - `release-4.19` branch supports OpenShift 4.19 – 4.21
+  - `pattern-fly-5` branch supports OpenShift 4.16 – 4.18
+- [Node.js](https://nodejs.org) and [npm](https://www.npmjs.com) to build and run (see engines in
+  package.json for the minimum versions)
+- [oc](https://console.redhat.com/openshift/downloads) CLI for local console development
+- [Docker](https://www.docker.com) or [podman 3.2.0+](https://podman.io) for running console locally
 
 ## Development
 
