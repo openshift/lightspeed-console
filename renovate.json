@@ -1,6 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "schedule": ["* 6 * * *"],
   "prHourlyLimit": 10,
   "timezone": "UTC",
   "rangeStrategy": "pin",
@@ -11,11 +10,12 @@
     {
       "matchUpdateTypes": ["major", "minor", "patch"],
       "minimumReleaseAge": "14 days",
-      "schedule": ["* * * * *"]
+      "schedule": ["* * * * 1,4"]
     },
     {
       "matchPackageNames": ["/^quay\\.io\\/konflux-ci\\//"],
       "minimumReleaseAge": "0 days",
+      "schedule": ["* * * * *"],
       "addLabels": [
         "approved",
         "lgtm"
@@ -63,8 +63,7 @@
         "prettier",
         "stylelint",
         "stylelint-*"
-      ],
-      "schedule": ["* * * * 1,3,5"]
+      ]
     },
     {
       "groupName": "patternfly",
@@ -72,9 +71,7 @@
     },
     {
       "groupName": "test",
-      "matchPackageNames": ["@playwright/*", "mcr.microsoft.com/playwright"],
-      "minimumReleaseAge": "14 days",
-      "schedule": ["* * * * 1,3,5"]
+      "matchPackageNames": ["@playwright/*", "mcr.microsoft.com/playwright"]
     }
   ]
 }
