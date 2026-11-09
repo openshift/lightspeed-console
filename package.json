@@ -1,12 +1,16 @@
 {
   "name": "lightspeed-console-plugin",
   "version": "2.0.1",
+  "description": "OpenShift Lightspeed console plugin",
   "private": true,
-  "repository": "git@github.com:openshift/lightspeed-console.git",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=22.22.2",
     "npm": ">=11.10.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openshift/lightspeed-console.git"
   },
   "scripts": {
     "clean": "rm -rf dist",
@@ -88,7 +92,7 @@
       "usePopover": "./hooks/usePopover"
     },
     "dependencies": {
-      "@console/pluginAPI": "*"
+      "@console/pluginAPI": ">=4.22.0-0"
     }
   }
 }
