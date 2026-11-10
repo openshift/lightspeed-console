@@ -1,33 +1,36 @@
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
-const supportsHtmlClipboard = (): boolean =>
+const canWriteHtml = (): boolean =>
   typeof ClipboardItem !== 'undefined' &&
   typeof ClipboardItem.supports === 'function' &&
-  ClipboardItem.supports('text/html');
+  ClipboardItem.supports('text/html') &&
+  typeof navigator.clipboard?.write === 'function';
 
-export const copyToClipboard = async (value: string): Promise<void> => {
+export const copyToClipboard = async (text: string): Promise<void> => {
   try {
-    if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-      const blobs: Record<string, Blob> = {
-        'text/plain': new Blob([value], { type: 'text/plain' }),
-      };
-      if (supportsHtmlClipboard()) {
-        const html = DOMPurify.sanitize(marked.parse(value) as string);
-        blobs['text/html'] = new Blob([html], { type: 'text/html' });
-      }
-      await navigator.clipboard.write([new ClipboardItem(blobs)]);
-    } else {
-      await navigator.clipboard.writeText(value);
-    }
+    await navigator.clipboard.writeText(text);
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.warn('Rich clipboard write failed, falling back to plain text: ', err);
+    console.error('Failed to copy to clipboard: ', err);
+  }
+};
+
+export const copyMarkdownToClipboard = async (markdown: string): Promise<void> => {
+  if (canWriteHtml()) {
     try {
-      await navigator.clipboard.writeText(value);
-    } catch (fallbackErr) {
+      const html = DOMPurify.sanitize(marked.parse(markdown) as string);
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([markdown], { type: 'text/plain' }),
+        }),
+      ]);
+      return;
+    } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('Failed to copy to clipboard: ', fallbackErr);
+      console.warn('Rich clipboard write failed, falling back to plain text: ', err);
     }
   }
+  await copyToClipboard(markdown);
 };
