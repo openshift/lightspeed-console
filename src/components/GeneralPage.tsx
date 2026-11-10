@@ -39,7 +39,7 @@ import {
 
 import { toOLSAttachment } from '../attachments';
 import { getApiUrl } from '../config';
-import { copyToClipboard } from '../clipboard';
+import { copyMarkdownToClipboard } from '../clipboard';
 import { ErrorType, getFetchErrorMessage } from '../error';
 import { AuthStatus, getRequestInitWithAuthHeader, useAuth } from '../hooks/useAuth';
 import { useBoolean } from '../hooks/useBoolean';
@@ -222,7 +222,7 @@ const ChatHistoryEntry = React.memo(({ conversationID, entryIndex }: ChatHistory
     const actions = entry.error
       ? undefined
       : {
-          copy: { onClick: () => copyToClipboard(entry.text) },
+          copy: { onClick: () => copyMarkdownToClipboard(entry.text) },
           ...(isUserFeedbackEnabled && {
             positive: {
               clickedTooltipContent: thumbsUpTooltip,
