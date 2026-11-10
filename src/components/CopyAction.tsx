@@ -2,15 +2,16 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardCopyButton } from '@patternfly/react-core';
 
-import { copyToClipboard } from '../clipboard';
+import { copyMarkdownToClipboard, copyToClipboard } from '../clipboard';
 import { useBoolean } from '../hooks/useBoolean';
 
 type Props = {
   className?: string;
+  isMarkdown?: boolean;
   value: string;
 };
 
-const CopyAction: React.FC<Props> = ({ className, value }) => {
+const CopyAction: React.FC<Props> = ({ className, isMarkdown = false, value }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
 
   const [isCopied, , setCopied, setNotCopied] = useBoolean(false);
@@ -22,7 +23,7 @@ const CopyAction: React.FC<Props> = ({ className, value }) => {
       exitDelay={isCopied ? 1500 : 600}
       id="ols-plugin-copy-button"
       onClick={() => {
-        copyToClipboard(value);
+        (isMarkdown ? copyMarkdownToClipboard : copyToClipboard)(value);
         setCopied();
       }}
       onTooltipHidden={setNotCopied}
