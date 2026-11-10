@@ -149,7 +149,7 @@ const Feedback: React.FC<Props> = ({ conversationID, entryIndex }) => {
             {sentiment === THUMBS_DOWN ? <ThumbsDownIcon /> : <OutlinedThumbsDownIcon />}
           </div>
         </Tooltip>
-        <CopyAction className="ols-plugin__response-action" value={response} />
+        <CopyAction className="ols-plugin__response-action" isMarkdown value={response} />
         {isOpen && sentiment !== undefined && (
           <div className="ols-plugin__feedback-comment">
             <Title headingLevel="h3">
