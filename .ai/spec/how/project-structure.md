@@ -17,7 +17,7 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `src/attachments.ts` | `AttachmentTypes` enum (Events, Log, YAML, YAML filtered, YAMLUpload), `toOLSAttachment()` conversion function, `isAttachmentChanged()` comparison helper. |
 | `src/error.ts` | `ErrorType` and `FetchError` types. `getFetchErrorMessage()` extracts structured error messages from fetch responses, handling both string and object `detail` fields. |
 | `src/flags.ts` | `FLAG_LIGHTSPEED_PLUGIN` constant and `enableLightspeedPluginFlag()` handler for the `console.flag` extension. |
-| `src/clipboard.ts` | `copyToClipboard(value)` utility wrapping `navigator.clipboard.writeText()`. |
+| `src/clipboard.ts` | `copyToClipboard(text)` copies plain text via `navigator.clipboard.writeText()` and is used for non-markdown content (YAML, logs, tool output). `copyMarkdownToClipboard(markdown)` copies AI responses as both plain text and HTML, falling back to plain text when rich clipboard writes aren't supported. |
 | `src/pageContext.ts` | `resolveModelKey()` resolves URL resource keys to K8s model keys. Handles direct model keys (e.g., `Pod`), plural-based keys (e.g., `pods`), and group~version~kind references (e.g., `core~v1~Pod`). |
 | `src/validation.ts` | `alertingRuleID()` generates murmur3 hash matching the monitoring-console-plugin's alerting rule ID format. `isValidAlertName()` validates alert name strings. |
 
