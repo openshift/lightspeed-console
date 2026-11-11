@@ -1,5 +1,4 @@
-import { describe, it } from 'node:test';
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { describe, expect, it } from 'vitest';
 
 import { AttachmentTypes, isAttachmentChanged, toOLSAttachment } from '../src/attachments';
 import { Attachment } from '../src/types';
@@ -15,24 +14,24 @@ const makeAttachment = (overrides: Partial<Attachment> = {}): Attachment => ({
 
 describe('isAttachmentChanged', () => {
   it('returns false when originalValue is undefined', () => {
-    strictEqual(isAttachmentChanged(makeAttachment()), false);
+    expect(isAttachmentChanged(makeAttachment())).toBe(false);
   });
 
   it('returns false when originalValue equals value', () => {
     const attachment = makeAttachment({ originalValue: 'apiVersion: v1' });
-    strictEqual(isAttachmentChanged(attachment), false);
+    expect(isAttachmentChanged(attachment)).toBe(false);
   });
 
   it('returns true when originalValue differs from value', () => {
     const attachment = makeAttachment({ originalValue: 'apiVersion: v2' });
-    strictEqual(isAttachmentChanged(attachment), true);
+    expect(isAttachmentChanged(attachment)).toBe(true);
   });
 });
 
 /* eslint-disable camelcase */
 describe('toOLSAttachment', () => {
   it('maps YAML to api object with application/yaml', () => {
-    deepStrictEqual(toOLSAttachment(makeAttachment()), {
+    expect(toOLSAttachment(makeAttachment())).toStrictEqual({
       attachment_type: 'api object',
       content: 'apiVersion: v1',
       content_type: 'application/yaml',
@@ -41,7 +40,7 @@ describe('toOLSAttachment', () => {
 
   it('maps YAMLFiltered to api object with application/yaml', () => {
     const attachment = makeAttachment({ attachmentType: AttachmentTypes.YAMLFiltered });
-    deepStrictEqual(toOLSAttachment(attachment), {
+    expect(toOLSAttachment(attachment)).toStrictEqual({
       attachment_type: 'api object',
       content: 'apiVersion: v1',
       content_type: 'application/yaml',
@@ -50,7 +49,7 @@ describe('toOLSAttachment', () => {
 
   it('maps YAMLUpload to api object with application/yaml', () => {
     const attachment = makeAttachment({ attachmentType: AttachmentTypes.YAMLUpload });
-    deepStrictEqual(toOLSAttachment(attachment), {
+    expect(toOLSAttachment(attachment)).toStrictEqual({
       attachment_type: 'api object',
       content: 'apiVersion: v1',
       content_type: 'application/yaml',
@@ -59,7 +58,7 @@ describe('toOLSAttachment', () => {
 
   it('maps Events to event with application/yaml', () => {
     const attachment = makeAttachment({ attachmentType: AttachmentTypes.Events });
-    deepStrictEqual(toOLSAttachment(attachment), {
+    expect(toOLSAttachment(attachment)).toStrictEqual({
       attachment_type: 'event',
       content: 'apiVersion: v1',
       content_type: 'application/yaml',
@@ -71,7 +70,7 @@ describe('toOLSAttachment', () => {
       attachmentType: AttachmentTypes.Log,
       value: 'ERROR: something went wrong',
     });
-    deepStrictEqual(toOLSAttachment(attachment), {
+    expect(toOLSAttachment(attachment)).toStrictEqual({
       attachment_type: 'log',
       content: 'ERROR: something went wrong',
       content_type: 'text/plain',
@@ -80,7 +79,7 @@ describe('toOLSAttachment', () => {
 
   it('passes through the attachment value as content', () => {
     const attachment = makeAttachment({ value: 'kind: Deployment\nmetadata:\n  name: test' });
-    strictEqual(toOLSAttachment(attachment).content, 'kind: Deployment\nmetadata:\n  name: test');
+    expect(toOLSAttachment(attachment).content).toBe('kind: Deployment\nmetadata:\n  name: test');
   });
 });
 /* eslint-enable camelcase */

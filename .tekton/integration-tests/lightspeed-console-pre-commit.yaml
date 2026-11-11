@@ -106,7 +106,7 @@ spec:
               echo "node version: $(node -v)"
               echo "npm version: $(npm -v)"
               echo "---------------------------------------------"
-              NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
+              NODE_OPTIONS=--max-old-space-size=4096 npm ci --no-fund
               echo "---------------------------------------------"
               npm run lint
               echo "---------------------------------------------"
