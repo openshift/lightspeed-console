@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 
 import { useUserPreference } from '@openshift-console/dynamic-plugin-sdk';
 
+const THEME_SYSTEM_DEFAULT = 'systemDefault';
+
 const darkSchemeQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
 
 export const useIsDarkTheme = (): [boolean] => {
-  const [theme] = useUserPreference('console.theme', null, true);
+  const [theme] = useUserPreference<string>('console.theme', undefined, true);
   const [systemPrefersDark, setSystemPrefersDark] = useState(darkSchemeQuery?.matches ?? false);
 
   useEffect(() => {
@@ -18,5 +20,7 @@ export const useIsDarkTheme = (): [boolean] => {
     return () => darkSchemeQuery.removeEventListener('change', handler);
   }, []);
 
-  return [theme === 'systemDefault' || theme === null ? systemPrefersDark : theme === 'dark'];
+  // Match the console, which defaults to system default and treats unrecognized values as light
+  const isSystemDefault = theme === undefined || theme === THEME_SYSTEM_DEFAULT;
+  return [theme === 'dark' || (isSystemDefault && systemPrefersDark)];
 };

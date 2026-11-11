@@ -126,6 +126,11 @@ product is being rebranded to "Red Hat OpenShift Intelligent Assistant."
 23. The plugin must support both light and dark console themes. Theme
     detection uses the user's console theme setting, falling back to the
     OS-level `prefers-color-scheme` media query when set to system default.
+    Resolution must match the console's `ThemeProvider`: dark only for `dark`,
+    or for `systemDefault` (or no value set) with an OS dark preference;
+    anything else is light. The plugin must not pass a default value when
+    reading the setting, because `useUserPreference` persists the default to
+    the user settings ConfigMap when the key is missing.
 
 24. Theme-dependent assets (logos, avatars) must switch based on the active
     theme.
@@ -139,7 +144,7 @@ OpenShift Console user settings:
 |---|---|---|---|
 | `lightspeed.hasClosedChat` | bool | `false` | Tracks whether user has ever closed the chat (disables auto-open) |
 | `console.hideLightspeedButton` | bool | `false` | Hides the OLS button and popover entirely |
-| `console.theme` | string | `null` | Console theme (`light`, `dark`, `systemDefault`, or `null`) |
+| `console.theme` | string | `systemDefault` | Console theme (`light`, `dark`, or `systemDefault`) |
 
 Environment variables (development only):
 

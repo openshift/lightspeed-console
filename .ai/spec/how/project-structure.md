@@ -221,7 +221,8 @@ In development, `start-console.sh` configures an additional proxy from the conso
 - Console extensions in `console-extensions.json`
 - Redux reducer registration under `ols` scope
 - Feature flag `LIGHTSPEED_PLUGIN`
-- User settings (read/write): `lightspeed.hasClosedChat`, `console.hideLightspeedButton`, `console.theme`
+- User settings (read/write): `lightspeed.hasClosedChat`, `console.hideLightspeedButton`
+- User settings (read only): `console.theme`
 - Modal system via `useModal()`
 - K8s resource watching via `useK8sWatchResource()`
 - Navigation via React Router (code import redirect)
