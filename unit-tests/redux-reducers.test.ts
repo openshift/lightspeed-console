@@ -1,6 +1,5 @@
-import { describe, it } from 'node:test';
-import { deepStrictEqual, strictEqual } from 'node:assert';
 import { List as ImmutableList, Map as ImmutableMap } from 'immutable';
+import { describe, expect, it } from 'vitest';
 
 import reducer, { OLSState } from '../src/redux-reducers';
 import { ActionType } from '../src/redux-actions';
@@ -17,22 +16,22 @@ const initState = (): OLSState =>
 describe('reducer initialization', () => {
   it('returns default state when state is undefined', () => {
     const state = initState();
-    strictEqual(ImmutableMap.isMap(state), true);
-    strictEqual(state.get('isOpen'), false);
-    strictEqual(state.get('query'), '');
-    strictEqual(state.get('conversationID'), null);
-    strictEqual(state.get('autoSubmit'), false);
-    strictEqual(state.get('hidePrompt'), false);
-    strictEqual(state.get('isTroubleshooting'), false);
-    strictEqual(state.get('isUserFeedbackEnabled'), true);
-    strictEqual(state.get('isContextEventsLoading'), false);
-    strictEqual(state.get('codeBlock'), null);
-    strictEqual(state.get('openAttachment'), null);
-    strictEqual(ImmutableList.isList(state.get('chatHistory')), true);
-    strictEqual(state.get('chatHistory').size, 0);
-    strictEqual(ImmutableMap.isMap(state.get('attachments')), true);
-    strictEqual(state.get('attachments').size, 0);
-    deepStrictEqual(state.get('contextEvents'), []);
+    expect(ImmutableMap.isMap(state)).toBe(true);
+    expect(state.get('isOpen')).toBe(false);
+    expect(state.get('query')).toBe('');
+    expect(state.get('conversationID')).toBe(null);
+    expect(state.get('autoSubmit')).toBe(false);
+    expect(state.get('hidePrompt')).toBe(false);
+    expect(state.get('isTroubleshooting')).toBe(false);
+    expect(state.get('isUserFeedbackEnabled')).toBe(true);
+    expect(state.get('isContextEventsLoading')).toBe(false);
+    expect(state.get('codeBlock')).toBe(null);
+    expect(state.get('openAttachment')).toBe(null);
+    expect(ImmutableList.isList(state.get('chatHistory'))).toBe(true);
+    expect(state.get('chatHistory').size).toBe(0);
+    expect(ImmutableMap.isMap(state.get('attachments'))).toBe(true);
+    expect(state.get('attachments').size).toBe(0);
+    expect(state.get('contextEvents')).toStrictEqual([]);
   });
 });
 
@@ -41,7 +40,7 @@ describe('reducer returns state unchanged for unknown action', () => {
     const state = initState();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const next = reducer(state, { type: 'nonexistent' } as any);
-    strictEqual(next, state);
+    expect(next).toBe(state);
   });
 });
 
@@ -50,7 +49,7 @@ describe('context events', () => {
     const state = initState();
     const event = { kind: 'Pod', message: 'Started' };
     const next = dispatch(state, ActionType.AddContextEvent, { event });
-    deepStrictEqual(next.get('contextEvents'), [event]);
+    expect(next.get('contextEvents')).toStrictEqual([event]);
   });
 
   it('AddContextEvent appends to existing events', () => {
@@ -59,20 +58,20 @@ describe('context events', () => {
     const event2 = { kind: 'Pod', message: 'Pulled' };
     state = dispatch(state, ActionType.AddContextEvent, { event: event1 });
     state = dispatch(state, ActionType.AddContextEvent, { event: event2 });
-    deepStrictEqual(state.get('contextEvents'), [event1, event2]);
+    expect(state.get('contextEvents')).toStrictEqual([event1, event2]);
   });
 
   it('ClearContextEvents resets to empty array', () => {
     let state = initState();
     state = dispatch(state, ActionType.AddContextEvent, { event: { msg: 'test' } });
     state = dispatch(state, ActionType.ClearContextEvents);
-    deepStrictEqual(state.get('contextEvents'), []);
+    expect(state.get('contextEvents')).toStrictEqual([]);
   });
 
   it('SetIsContextEventsLoading sets the loading flag', () => {
     const state = initState();
     const next = dispatch(state, ActionType.SetIsContextEventsLoading, { isLoading: true });
-    strictEqual(next.get('isContextEventsLoading'), true);
+    expect(next.get('isContextEventsLoading')).toBe(true);
   });
 });
 
@@ -89,14 +88,14 @@ describe('attachments', () => {
   it('AttachmentSet with explicit id', () => {
     const state = initState();
     const next = dispatch(state, ActionType.AttachmentSet, { ...attachment, id: 'custom-id' });
-    strictEqual(next.getIn(['attachments', 'custom-id']).kind, 'Pod');
+    expect(next.getIn(['attachments', 'custom-id']).kind).toBe('Pod');
   });
 
   it('AttachmentSet generates id from type, kind, name, and ownerName', () => {
     const state = initState();
     const next = dispatch(state, ActionType.AttachmentSet, attachment);
     const expectedID = 'YAML_Pod_my-pod_my-deploy';
-    strictEqual(next.getIn(['attachments', expectedID]).kind, 'Pod');
+    expect(next.getIn(['attachments', expectedID]).kind).toBe('Pod');
   });
 
   it('AttachmentSet uses NO-OWNER when ownerName is undefined', () => {
@@ -110,24 +109,24 @@ describe('attachments', () => {
     };
     const next = dispatch(state, ActionType.AttachmentSet, noOwner);
     const expectedID = 'YAML_Pod_my-pod_NO-OWNER';
-    strictEqual(next.getIn(['attachments', expectedID]).kind, 'Pod');
+    expect(next.getIn(['attachments', expectedID]).kind).toBe('Pod');
   });
 
   it('AttachmentDelete removes an attachment by id', () => {
     let state = initState();
     state = dispatch(state, ActionType.AttachmentSet, { ...attachment, id: 'del-me' });
-    strictEqual(state.get('attachments').size, 1);
+    expect(state.get('attachments').size).toBe(1);
     state = dispatch(state, ActionType.AttachmentDelete, { id: 'del-me' });
-    strictEqual(state.get('attachments').size, 0);
+    expect(state.get('attachments').size).toBe(0);
   });
 
   it('AttachmentsClear removes all attachments', () => {
     let state = initState();
     state = dispatch(state, ActionType.AttachmentSet, { ...attachment, id: 'a' });
     state = dispatch(state, ActionType.AttachmentSet, { ...attachment, id: 'b' });
-    strictEqual(state.get('attachments').size, 2);
+    expect(state.get('attachments').size).toBe(2);
     state = dispatch(state, ActionType.AttachmentsClear);
-    strictEqual(state.get('attachments').size, 0);
+    expect(state.get('attachments').size).toBe(0);
   });
 
   it('AttachmentSet with explicit id updates in place on save (no duplicate)', () => {
@@ -143,8 +142,8 @@ describe('attachments', () => {
 
     let state = initState();
     state = dispatch(state, ActionType.AttachmentSet, alertAttachment);
-    strictEqual(state.get('attachments').size, 1);
-    strictEqual(state.getIn(['attachments', alertId]).value, 'original yaml');
+    expect(state.get('attachments').size).toBe(1);
+    expect(state.getIn(['attachments', alertId]).value).toBe('original yaml');
 
     state = dispatch(state, ActionType.AttachmentSet, {
       ...alertAttachment,
@@ -152,10 +151,10 @@ describe('attachments', () => {
       originalValue: 'original yaml',
       id: alertId,
     });
-    strictEqual(state.get('attachments').size, 1);
-    strictEqual(state.get('attachments').has(alertId), true);
-    strictEqual(state.getIn(['attachments', alertId]).value, 'edited yaml');
-    strictEqual(state.getIn(['attachments', alertId]).originalValue, 'original yaml');
+    expect(state.get('attachments').size).toBe(1);
+    expect(state.get('attachments').has(alertId)).toBe(true);
+    expect(state.getIn(['attachments', alertId]).value).toBe('edited yaml');
+    expect(state.getIn(['attachments', alertId]).originalValue).toBe('original yaml');
   });
 
   it('AttachmentSet with explicit id preserves edits on re-select (no duplicate)', () => {
@@ -178,7 +177,7 @@ describe('attachments', () => {
       originalValue: 'original yaml',
       id: alertId,
     });
-    strictEqual(state.get('attachments').size, 1);
+    expect(state.get('attachments').size).toBe(1);
 
     state = dispatch(state, ActionType.AttachmentSet, {
       ...alertAttachment,
@@ -186,10 +185,10 @@ describe('attachments', () => {
       originalValue: undefined,
       id: alertId,
     });
-    strictEqual(state.get('attachments').size, 1);
-    strictEqual(state.get('attachments').has(alertId), true);
-    strictEqual(state.getIn(['attachments', alertId]).value, 'edited yaml');
-    strictEqual(state.getIn(['attachments', alertId]).originalValue, 'original yaml');
+    expect(state.get('attachments').size).toBe(1);
+    expect(state.get('attachments').has(alertId)).toBe(true);
+    expect(state.getIn(['attachments', alertId]).value).toBe('edited yaml');
+    expect(state.getIn(['attachments', alertId]).originalValue).toBe('original yaml');
   });
 
   it('AttachmentSet overwrites unedited attachment with same id', () => {
@@ -200,8 +199,8 @@ describe('attachments', () => {
       id: 'a',
       value: 'updated yaml',
     });
-    strictEqual(state.getIn(['attachments', 'a']).value, 'updated yaml');
-    strictEqual(state.getIn(['attachments', 'a']).originalValue, undefined);
+    expect(state.getIn(['attachments', 'a']).value).toBe('updated yaml');
+    expect(state.getIn(['attachments', 'a']).originalValue).toBeUndefined();
   });
 
   it('AttachmentSet preserves user edits when re-selecting same attachment', () => {
@@ -217,8 +216,8 @@ describe('attachments', () => {
       id: 'a',
       value: 'fresh yaml from server',
     });
-    strictEqual(state.getIn(['attachments', 'a']).value, 'edited yaml');
-    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'fresh yaml from server');
+    expect(state.getIn(['attachments', 'a']).value).toBe('edited yaml');
+    expect(state.getIn(['attachments', 'a']).originalValue).toBe('fresh yaml from server');
   });
 
   it('AttachmentSet allows explicit save with originalValue on edited attachment', () => {
@@ -235,8 +234,8 @@ describe('attachments', () => {
       value: 'second edit',
       originalValue: 'apiVersion: v1',
     });
-    strictEqual(state.getIn(['attachments', 'a']).value, 'second edit');
-    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
+    expect(state.getIn(['attachments', 'a']).value).toBe('second edit');
+    expect(state.getIn(['attachments', 'a']).originalValue).toBe('apiVersion: v1');
   });
 
   it('AttachmentSet revert clears changed state when originalValue equals value', () => {
@@ -247,8 +246,8 @@ describe('attachments', () => {
       value: 'edited yaml',
       originalValue: 'apiVersion: v1',
     });
-    strictEqual(state.getIn(['attachments', 'a']).value, 'edited yaml');
-    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
+    expect(state.getIn(['attachments', 'a']).value).toBe('edited yaml');
+    expect(state.getIn(['attachments', 'a']).originalValue).toBe('apiVersion: v1');
 
     state = dispatch(state, ActionType.AttachmentSet, {
       ...attachment,
@@ -256,8 +255,8 @@ describe('attachments', () => {
       value: 'apiVersion: v1',
       originalValue: 'apiVersion: v1',
     });
-    strictEqual(state.getIn(['attachments', 'a']).value, 'apiVersion: v1');
-    strictEqual(state.getIn(['attachments', 'a']).originalValue, 'apiVersion: v1');
+    expect(state.getIn(['attachments', 'a']).value).toBe('apiVersion: v1');
+    expect(state.getIn(['attachments', 'a']).originalValue).toBe('apiVersion: v1');
   });
 
   it('AttachmentSet respects empty-string originalValue as explicit', () => {
@@ -274,8 +273,8 @@ describe('attachments', () => {
       value: 'second edit',
       originalValue: '',
     });
-    strictEqual(state.getIn(['attachments', 'a']).value, 'second edit');
-    strictEqual(state.getIn(['attachments', 'a']).originalValue, '');
+    expect(state.getIn(['attachments', 'a']).value).toBe('second edit');
+    expect(state.getIn(['attachments', 'a']).originalValue).toBe('');
   });
 });
 
@@ -292,8 +291,8 @@ describe('chat history', () => {
   it('ChatHistoryPush adds an entry', () => {
     const state = initState();
     const next = dispatch(state, ActionType.ChatHistoryPush, { entry: aiEntry });
-    strictEqual(next.get('chatHistory').size, 1);
-    strictEqual(next.get('chatHistory').get(0).get('id'), 'msg-1');
+    expect(next.get('chatHistory').size).toBe(1);
+    expect(next.get('chatHistory').get(0).get('id')).toBe('msg-1');
   });
 
   it('ChatHistoryPush preserves existing entries', () => {
@@ -302,16 +301,16 @@ describe('chat history', () => {
     state = dispatch(state, ActionType.ChatHistoryPush, {
       entry: { ...aiEntry, id: 'msg-2', text: 'World' },
     });
-    strictEqual(state.get('chatHistory').size, 2);
-    strictEqual(state.get('chatHistory').get(0).get('id'), 'msg-1');
-    strictEqual(state.get('chatHistory').get(1).get('id'), 'msg-2');
+    expect(state.get('chatHistory').size).toBe(2);
+    expect(state.get('chatHistory').get(0).get('id')).toBe('msg-1');
+    expect(state.get('chatHistory').get(1).get('id')).toBe('msg-2');
   });
 
   it('ChatHistoryClear removes all entries', () => {
     let state = initState();
     state = dispatch(state, ActionType.ChatHistoryPush, { entry: aiEntry });
     state = dispatch(state, ActionType.ChatHistoryClear);
-    strictEqual(state.get('chatHistory').size, 0);
+    expect(state.get('chatHistory').size).toBe(0);
   });
 
   it('ChatHistoryUpdateByID merges fields into the matching entry', () => {
@@ -322,9 +321,9 @@ describe('chat history', () => {
       entry: { isStreaming: false, text: 'Hello, updated' },
     });
     const updated = state.get('chatHistory').get(0);
-    strictEqual(updated.get('isStreaming'), false);
-    strictEqual(updated.get('text'), 'Hello, updated');
-    strictEqual(updated.get('id'), 'msg-1');
+    expect(updated.get('isStreaming')).toBe(false);
+    expect(updated.get('text')).toBe('Hello, updated');
+    expect(updated.get('id')).toBe('msg-1');
   });
 
   it('ChatHistoryUpdateTool merges tool data into the matching entry', () => {
@@ -336,15 +335,15 @@ describe('chat history', () => {
       tool: { name: 'search', status: 'success', content: 'result' },
     });
     const tool = state.getIn(['chatHistory', 0, 'tools', 'tool-1']);
-    strictEqual(tool.get('name'), 'search');
-    strictEqual(tool.get('status'), 'success');
+    expect(tool.get('name')).toBe('search');
+    expect(tool.get('status')).toBe('success');
   });
 });
 
 describe('popover open/close', () => {
   it('OpenOLS sets isOpen to true', () => {
     const state = initState();
-    strictEqual(dispatch(state, ActionType.OpenOLS).get('isOpen'), true);
+    expect(dispatch(state, ActionType.OpenOLS).get('isOpen')).toBe(true);
   });
 
   it('CloseOLS sets isOpen to false and hidePrompt to false', () => {
@@ -352,35 +351,33 @@ describe('popover open/close', () => {
     state = dispatch(state, ActionType.OpenOLS);
     state = dispatch(state, ActionType.SetHidePrompt, { hidePrompt: true });
     state = dispatch(state, ActionType.CloseOLS);
-    strictEqual(state.get('isOpen'), false);
-    strictEqual(state.get('hidePrompt'), false);
+    expect(state.get('isOpen')).toBe(false);
+    expect(state.get('hidePrompt')).toBe(false);
   });
 });
 
 describe('simple setters', () => {
   it('SetQuery', () => {
     const state = initState();
-    strictEqual(dispatch(state, ActionType.SetQuery, { query: 'hello' }).get('query'), 'hello');
+    expect(dispatch(state, ActionType.SetQuery, { query: 'hello' }).get('query')).toBe('hello');
   });
 
   it('SetConversationID', () => {
     const state = initState();
     const next = dispatch(state, ActionType.SetConversationID, { id: 'conv-123' });
-    strictEqual(next.get('conversationID'), 'conv-123');
+    expect(next.get('conversationID')).toBe('conv-123');
   });
 
   it('SetAutoSubmit', () => {
     const state = initState();
-    strictEqual(
-      dispatch(state, ActionType.SetAutoSubmit, { autoSubmit: true }).get('autoSubmit'),
+    expect(dispatch(state, ActionType.SetAutoSubmit, { autoSubmit: true }).get('autoSubmit')).toBe(
       true,
     );
   });
 
   it('SetHidePrompt', () => {
     const state = initState();
-    strictEqual(
-      dispatch(state, ActionType.SetHidePrompt, { hidePrompt: true }).get('hidePrompt'),
+    expect(dispatch(state, ActionType.SetHidePrompt, { hidePrompt: true }).get('hidePrompt')).toBe(
       true,
     );
   });
@@ -388,13 +385,13 @@ describe('simple setters', () => {
   it('SetIsTroubleshooting', () => {
     const state = initState();
     const next = dispatch(state, ActionType.SetIsTroubleshooting, { isTroubleshooting: true });
-    strictEqual(next.get('isTroubleshooting'), true);
+    expect(next.get('isTroubleshooting')).toBe(true);
   });
 
   it('ImportCodeBlock', () => {
     const state = initState();
     const code = { id: 'cb-1', value: 'console.log("hi")' };
-    strictEqual(dispatch(state, ActionType.ImportCodeBlock, { code }).get('codeBlock'), code);
+    expect(dispatch(state, ActionType.ImportCodeBlock, { code }).get('codeBlock')).toBe(code);
   });
 });
 
@@ -403,14 +400,14 @@ describe('open attachment', () => {
     const state = initState();
     const attachment = { kind: 'Pod', name: 'test' };
     const next = dispatch(state, ActionType.OpenAttachmentSet, { attachment });
-    deepStrictEqual(next.get('openAttachment'), attachment);
+    expect(next.get('openAttachment')).toStrictEqual(attachment);
   });
 
   it('OpenAttachmentClear resets to null', () => {
     let state = initState();
     state = dispatch(state, ActionType.OpenAttachmentSet, { attachment: { kind: 'Pod' } });
     state = dispatch(state, ActionType.OpenAttachmentClear);
-    strictEqual(state.get('openAttachment'), null);
+    expect(state.get('openAttachment')).toBe(null);
   });
 });
 
@@ -418,16 +415,16 @@ describe('open tool', () => {
   it('OpenToolSet stores chatEntryIndex and id', () => {
     const state = initState();
     const next = dispatch(state, ActionType.OpenToolSet, { chatEntryIndex: 2, id: 'tool-5' });
-    strictEqual(next.getIn(['openTool', 'chatEntryIndex']), 2);
-    strictEqual(next.getIn(['openTool', 'id']), 'tool-5');
+    expect(next.getIn(['openTool', 'chatEntryIndex'])).toBe(2);
+    expect(next.getIn(['openTool', 'id'])).toBe('tool-5');
   });
 
   it('OpenToolClear resets both fields to null', () => {
     let state = initState();
     state = dispatch(state, ActionType.OpenToolSet, { chatEntryIndex: 2, id: 'tool-5' });
     state = dispatch(state, ActionType.OpenToolClear);
-    strictEqual(state.getIn(['openTool', 'chatEntryIndex']), null);
-    strictEqual(state.getIn(['openTool', 'id']), null);
+    expect(state.getIn(['openTool', 'chatEntryIndex'])).toBe(null);
+    expect(state.getIn(['openTool', 'id'])).toBe(null);
   });
 });
 
@@ -447,20 +444,20 @@ describe('user feedback', () => {
   it('UserFeedbackOpen sets isOpen on the entry', () => {
     let state = pushAIEntry(initState());
     state = dispatch(state, ActionType.UserFeedbackOpen, { entryIndex: 0 });
-    strictEqual(state.getIn(['chatHistory', 0, 'userFeedback', 'isOpen']), true);
+    expect(state.getIn(['chatHistory', 0, 'userFeedback', 'isOpen'])).toBe(true);
   });
 
   it('UserFeedbackClose sets isOpen to false', () => {
     let state = pushAIEntry(initState());
     state = dispatch(state, ActionType.UserFeedbackOpen, { entryIndex: 0 });
     state = dispatch(state, ActionType.UserFeedbackClose, { entryIndex: 0 });
-    strictEqual(state.getIn(['chatHistory', 0, 'userFeedback', 'isOpen']), false);
+    expect(state.getIn(['chatHistory', 0, 'userFeedback', 'isOpen'])).toBe(false);
   });
 
   it('UserFeedbackSetSentiment stores sentiment value', () => {
     let state = pushAIEntry(initState());
     state = dispatch(state, ActionType.UserFeedbackSetSentiment, { entryIndex: 0, sentiment: 1 });
-    strictEqual(state.getIn(['chatHistory', 0, 'userFeedback', 'sentiment']), 1);
+    expect(state.getIn(['chatHistory', 0, 'userFeedback', 'sentiment'])).toBe(1);
   });
 
   it('UserFeedbackSetText stores feedback text', () => {
@@ -469,13 +466,12 @@ describe('user feedback', () => {
       entryIndex: 0,
       text: 'Great answer',
     });
-    strictEqual(state.getIn(['chatHistory', 0, 'userFeedback', 'text']), 'Great answer');
+    expect(state.getIn(['chatHistory', 0, 'userFeedback', 'text'])).toBe('Great answer');
   });
 
   it('UserFeedbackDisable disables feedback globally', () => {
     const state = initState();
-    strictEqual(
-      dispatch(state, ActionType.UserFeedbackDisable).get('isUserFeedbackEnabled'),
+    expect(dispatch(state, ActionType.UserFeedbackDisable).get('isUserFeedbackEnabled')).toBe(
       false,
     );
   });
