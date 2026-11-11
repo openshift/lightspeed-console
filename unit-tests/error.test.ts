@@ -1,5 +1,4 @@
-import { describe, it } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { describe, expect, it } from 'vitest';
 
 import { FetchError, getFetchErrorMessage } from '../src/error';
 
@@ -11,14 +10,14 @@ const t = ((s: string, opts?: Record<string, unknown>) =>
 describe('getFetchErrorMessage', () => {
   it('returns the detail string when detail is a string', () => {
     const error: FetchError = { json: { detail: 'Something went wrong' } };
-    deepStrictEqual(getFetchErrorMessage(error, t), { message: 'Something went wrong' });
+    expect(getFetchErrorMessage(error, t)).toStrictEqual({ message: 'Something went wrong' });
   });
 
   it('returns response and cause when detail is an object', () => {
     const error: FetchError = {
       json: { detail: { response: 'Model not available', cause: 'Provider timeout' } },
     };
-    deepStrictEqual(getFetchErrorMessage(error, t), {
+    expect(getFetchErrorMessage(error, t)).toStrictEqual({
       message: 'Model not available',
       moreInfo: 'Provider timeout',
     });
@@ -27,7 +26,7 @@ describe('getFetchErrorMessage', () => {
   it('falls back to json.message when detail is missing', () => {
     const error: FetchError = { json: { message: 'Bad request' } };
     const result = getFetchErrorMessage(error, t);
-    deepStrictEqual(result, {
+    expect(result).toStrictEqual({
       message:
         'If this error persists, please contact an administrator. Error details: Bad request',
     });
@@ -36,7 +35,7 @@ describe('getFetchErrorMessage', () => {
   it('falls back to error.message when json.message is missing', () => {
     const error: FetchError = { message: 'Network error' };
     const result = getFetchErrorMessage(error, t);
-    deepStrictEqual(result, {
+    expect(result).toStrictEqual({
       message:
         'If this error persists, please contact an administrator. Error details: Network error',
     });
@@ -45,7 +44,7 @@ describe('getFetchErrorMessage', () => {
   it('falls back to response.statusText as last resort', () => {
     const error: FetchError = { response: { statusText: 'Internal Server Error' } as Response };
     const result = getFetchErrorMessage(error, t);
-    deepStrictEqual(result, {
+    expect(result).toStrictEqual({
       message:
         'If this error persists, please contact an administrator. Error details: Internal Server Error',
     });
@@ -54,7 +53,7 @@ describe('getFetchErrorMessage', () => {
   it('ignores detail object when cause is missing', () => {
     const error: FetchError = { json: { detail: { response: 'partial' } as never } };
     const result = getFetchErrorMessage(error, t);
-    deepStrictEqual(result, {
+    expect(result).toStrictEqual({
       message: 'If this error persists, please contact an administrator. Error details: ',
     });
   });
@@ -62,7 +61,7 @@ describe('getFetchErrorMessage', () => {
   it('ignores detail object when response is missing', () => {
     const error: FetchError = { json: { detail: { cause: 'partial' } as never } };
     const result = getFetchErrorMessage(error, t);
-    deepStrictEqual(result, {
+    expect(result).toStrictEqual({
       message: 'If this error persists, please contact an administrator. Error details: ',
     });
   });

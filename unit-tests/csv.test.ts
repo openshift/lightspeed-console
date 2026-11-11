@@ -1,5 +1,4 @@
-import { deepStrictEqual, strictEqual, throws } from 'node:assert';
-import { describe, it } from 'node:test';
+import { describe, expect, it } from 'vitest';
 
 import { buildConsoleImagePatch, ClusterServiceVersion } from '../tests/support/csv';
 
@@ -68,8 +67,7 @@ describe('buildConsoleImagePatch', () => {
       CONSOLE_IMAGE,
     );
     const argsOp = patch.find((op) => op.path.includes('/deployments/'));
-    strictEqual(
-      argsOp.path,
+    expect(argsOp.path).toBe(
       '/spec/install/spec/deployments/1/spec/template/spec/containers/0/args',
     );
   });
@@ -77,8 +75,7 @@ describe('buildConsoleImagePatch', () => {
   it('targets index 0 when the classic operator is the only deployment', () => {
     const patch = buildConsoleImagePatch(csvWith([classicDeployment()]), CONSOLE_IMAGE);
     const argsOp = patch.find((op) => op.path.includes('/deployments/'));
-    strictEqual(
-      argsOp.path,
+    expect(argsOp.path).toBe(
       '/spec/install/spec/deployments/0/spec/template/spec/containers/0/args',
     );
   });
@@ -89,7 +86,7 @@ describe('buildConsoleImagePatch', () => {
       CONSOLE_IMAGE,
     );
     const argsOp = patch.find((op) => op.path.includes('/deployments/'));
-    deepStrictEqual(argsOp.value, [
+    expect(argsOp.value).toStrictEqual([
       '--leader-elect',
       `--console-image=${CONSOLE_IMAGE}`,
       `--console-image-pf5=${CONSOLE_IMAGE}`,
@@ -103,15 +100,12 @@ describe('buildConsoleImagePatch', () => {
       CONSOLE_IMAGE,
     );
     const relatedImageOps = patch.filter((op) => op.path.startsWith('/spec/relatedImages/'));
-    deepStrictEqual(relatedImageOps.map((op) => op.path).sort(), [
+    expect(relatedImageOps.map((op) => op.path).sort()).toStrictEqual([
       '/spec/relatedImages/1/image',
       '/spec/relatedImages/2/image',
       '/spec/relatedImages/3/image',
     ]);
-    strictEqual(
-      relatedImageOps.every((op) => op.value === CONSOLE_IMAGE),
-      true,
-    );
+    expect(relatedImageOps.every((op) => op.value === CONSOLE_IMAGE)).toBe(true);
   });
 
   it('selects the container that carries the console image arguments', () => {
@@ -122,15 +116,13 @@ describe('buildConsoleImagePatch', () => {
     });
     const patch = buildConsoleImagePatch(csvWith([deployment]), CONSOLE_IMAGE);
     const argsOp = patch.find((op) => op.path.includes('/deployments/'));
-    strictEqual(
-      argsOp.path,
+    expect(argsOp.path).toBe(
       '/spec/install/spec/deployments/0/spec/template/spec/containers/1/args',
     );
   });
 
   it('throws when the classic operator deployment is missing', () => {
-    throws(
-      () => buildConsoleImagePatch(csvWith([agenticDeployment()]), CONSOLE_IMAGE),
+    expect(() => buildConsoleImagePatch(csvWith([agenticDeployment()]), CONSOLE_IMAGE)).toThrow(
       /no deployment named lightspeed-operator-controller-manager/,
     );
   });
@@ -138,8 +130,7 @@ describe('buildConsoleImagePatch', () => {
   it('throws when the classic operator has no console image argument', () => {
     const deployment = classicDeployment();
     deployment.spec.template.spec.containers[0].args = ['--leader-elect'];
-    throws(
-      () => buildConsoleImagePatch(csvWith([deployment]), CONSOLE_IMAGE),
+    expect(() => buildConsoleImagePatch(csvWith([deployment]), CONSOLE_IMAGE)).toThrow(
       /has a --console-image argument/,
     );
   });
