@@ -16,11 +16,12 @@
     "start-console": "./start-console.sh",
     "i18n": "./i18n-scripts/build-i18n.sh && node ./i18n-scripts/set-english-defaults.js",
     "ts-node": "ts-node -O '{\"module\":\"commonjs\"}'",
-    "lint": "eslint ./*.{js,ts} ./src ./tests ./unit-tests && stylelint \"src/**/*.css\" --allow-empty-input",
-    "lint-fix": "eslint ./*.{js,ts} ./src ./tests ./unit-tests --fix && stylelint \"src/**/*.css\" --allow-empty-input --fix",
+    "lint": "eslint ./*.{js,mts,ts} ./src ./tests ./unit-tests && stylelint \"src/**/*.css\" --allow-empty-input && tsc -p unit-tests",
+    "lint-fix": "eslint ./*.{js,mts,ts} ./src ./tests ./unit-tests --fix && stylelint \"src/**/*.css\" --allow-empty-input --fix && tsc -p unit-tests",
     "test": "npx playwright test --ui",
     "test-headless": "npx playwright test",
-    "test-unit": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' node -r ts-node/register --test 'unit-tests/**/*.test.ts'"
+    "test-unit": "vitest run",
+    "test-watch": "vitest"
   },
   "dependencies": {
     "@openshift-console/dynamic-plugin-sdk": "1.4.0",
@@ -73,6 +74,7 @@
     "prettier": "3.9.10",
     "stylelint": "17.16.0",
     "stylelint-config-standard": "40.0.0",
+    "vitest": "4.1.12",
     "webpack-dev-server": "6.1.0"
   },
   "overrides": {

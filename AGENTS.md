@@ -120,8 +120,11 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
 
 ### Unit tests
 
-- Unit tests live in `unit-tests/` and use Node's built-in test runner
+- Unit tests live in `unit-tests/` and use Vitest
+- Vitest doesn't type-check, so `npm run lint` / `npm run lint-fix` type-check the tests with
+  `tsc -p unit-tests`
 - To run: `npm run test-unit`
+- To run in watch mode: `npm run test-watch`
 
 ### Keeping tests up to date
 

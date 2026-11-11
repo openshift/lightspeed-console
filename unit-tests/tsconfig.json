@@ -1,4 +1,9 @@
 {
   "extends": "../tsconfig.json",
-  "include": [".", "../src", "../types.d.ts"]
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [".", "../types.d.ts"]
 }
