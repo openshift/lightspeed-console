@@ -25,6 +25,7 @@ AI agents. Content is optimized for precision and machine consumption.
 | Fix a bug in chat or streaming | `what/chat.md` + `how/streaming.md` |
 | Add a new attachment type | `what/attachments.md` + `how/components.md` |
 | Understand tool approval UI | `what/tools.md` |
+| Understand the COO/Perses chart integration | `what/coo-integration.md` |
 | Understand the plugin API | `what/plugin-api.md` |
 | Navigate the codebase | `how/project-structure.md` |
 | Understand state management | `how/state-management.md` |
