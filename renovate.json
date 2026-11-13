@@ -22,6 +22,10 @@
       ]
     },
     {
+      "matchUpdateTypes": ["digest"],
+      "schedule": ["* * * * 1,4"]
+    },
+    {
       "matchFileNames": ["rpms.in.yaml", "rpms.lock.yaml"],
       "addLabels": [
         "approved",
