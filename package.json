@@ -25,6 +25,7 @@
     "test": "npx playwright test --ui",
     "test-headless": "npx playwright test",
     "test-unit": "vitest run",
+    "test-coverage": "vitest run --coverage",
     "test-watch": "vitest"
   },
   "dependencies": {
@@ -73,6 +74,7 @@
     "prettier": "3.9.10",
     "stylelint": "17.16.0",
     "stylelint-config-standard": "40.0.0",
+    "@vitest/coverage-v8": "5.0.5",
     "vitest": "5.0.5",
     "webpack-dev-server": "6.1.0"
   },
