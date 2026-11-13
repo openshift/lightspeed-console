@@ -117,10 +117,11 @@ const fetchManagedClusterInfo = async (clusterName: string): Promise<K8sResource
 };
 
 type PromptProps = {
+  isCompact: boolean;
   scrollIntoView: () => void;
 };
 
-const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
+const Prompt: React.FC<PromptProps> = ({ isCompact, scrollIntoView }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
   const dispatch = useDispatch();
 
@@ -927,6 +928,7 @@ const Prompt: React.FC<PromptProps> = ({ scrollIntoView }) => {
         handleStopButton={() => onStreamCancel()}
         hasStopButton={isStreaming}
         innerRef={textareaRef}
+        isCompact={isCompact}
         isSendButtonDisabled={!query || query.trim().length === 0}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e, e.target.value)}
         onSendMessage={onSubmit}
