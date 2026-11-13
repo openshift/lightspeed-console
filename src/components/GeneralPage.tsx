@@ -490,6 +490,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
 
   const dispatch = useDispatch();
 
+  const isCompact = !onCollapse;
+
   const chatHistory: ImmutableList<ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
@@ -561,6 +563,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
       className={className}
       data-test="ols-plugin__popover"
       displayMode={onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default}
+      isCompact={isCompact}
     >
       {/* @ts-expect-error: TS2786 */}
       <ChatbotHeader>
@@ -659,8 +662,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
         // @ts-expect-error: TS2786
-        <ChatbotFooter>
-          <Prompt scrollIntoView={scrollIntoView} />
+        <ChatbotFooter isCompact={isCompact}>
+          <Prompt isCompact={isCompact} scrollIntoView={scrollIntoView} />
           {/* @ts-expect-error: TS2786 */}
           <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
           <div className="ols-plugin__footnote">
