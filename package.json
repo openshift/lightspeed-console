@@ -79,7 +79,8 @@
     "dompurify": "3.4.17",
     "monaco-editor": "0.57.0",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "uri-js": "npm:fast-uri@3.1.9"
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
