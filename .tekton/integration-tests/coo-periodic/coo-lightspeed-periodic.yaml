@@ -1,0 +1,644 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: coo-lightspeed-periodic
+spec:
+  description: |
+    Periodic end-to-end test for the integration between OpenShift Lightspeed's
+    show_timeseries tool call and COO's Perses dashboards.
+
+    Provisions an ephemeral OpenShift cluster, installs COO (via OLM) and OLS
+    (via operator-sdk), deploys the lightspeed-console plugin image from the
+    application snapshot, and runs the Playwright e2e test
+    coo-show-timeseries.spec.ts from this repository.
+
+    This test is non-deterministic (depends on live LLM responses) and must
+    never gate PRs. It is triggered only by periodic Konflux CronJobs.
+  params:
+    - name: SNAPSHOT
+      description: 'The JSON string representing the snapshot of the application under test.'
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
+    - name: test-name
+      description: 'The name of the test corresponding to a defined Konflux integration test.'
+      default: 'coo-lightspeed-periodic'
+    - name: component-name
+      description: >
+        The lightspeed-console component whose image is extracted from the
+        application snapshot and deployed for testing, e.g.
+        lightspeed-console, lightspeed-console-4-19 or lightspeed-console-pf5.
+      default: 'lightspeed-console'
+    - name: namespace
+      description: 'Namespace on the cluster where OLS is installed'
+      default: 'openshift-lightspeed'
+    - name: console-repo
+      description: >
+        Git repo to clone the Playwright e2e tests from. Defaults to the repo hosting
+        this pipeline; override for pre-merge runs that need a fork branch.
+      default: 'https://github.com/openshift/lightspeed-console.git'
+    - name: console-ref
+      description: >
+        Git ref of the console repo to test. Defaults to the commit from the
+        application snapshot; override with a branch for pre-merge runs.
+      default: ''
+  tasks:
+    - name: extract-snapshot-metadata
+      description: Extract console image and commit for the component under test from SNAPSHOT input
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+        - name: component-name
+          value: $(params.component-name)
+      taskSpec:
+        results:
+          - name: console-image
+            value: "$(steps.get-snapshot-images.results.console-image)"
+          - name: commit
+            value: "$(steps.get-snapshot-images.results.commit)"
+        params:
+          - name: SNAPSHOT
+          - name: component-name
+        steps:
+          - name: get-snapshot-images
+            image: registry.redhat.io/openshift4/ose-cli-rhel9:v4.22
+            securityContext:
+              runAsUser: 0
+            env:
+              - name: SNAPSHOT
+                value: $(params.SNAPSHOT)
+              - name: COMPONENT_NAME
+                value: $(params.component-name)
+            results:
+              - name: console-image
+                type: string
+                description: "console image for the component under test"
+              - name: commit
+                type: string
+                description: "commit sha of the component under test"
+            script: |
+              dnf -y install jq
+              echo -n "$(jq -r --arg component_name "$COMPONENT_NAME" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")" > $(step.results.console-image.path)
+              echo -n "$(jq -r --arg component_name "$COMPONENT_NAME" '.components[] | select(.name == $component_name) | .source.git.revision' <<< "$SNAPSHOT")" > $(step.results.commit.path)
+    - name: provision-ephemeral-cluster
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/openshift/konflux-tasks
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: tasks/provision-ephemeral-cluster/0.1/provision-ephemeral-cluster.yaml
+      params:
+        - name: ownerName
+          value: $(context.pipelineRun.name) # Internal usage only, use always this value here
+        - name: ownerUid
+          value: $(context.pipelineRun.uid) # Internal usage only, use always this value here
+        - name: workflow
+          value: hypershift-hostedcluster-workflow
+        - name: clusterProfile
+          value: aws-konflux-prod
+        - name: env
+          value: '{"COMPUTE_NODE_TYPE": "m5.2xlarge", "HYPERSHIFT_NODE_COUNT": "3"}'
+        - name: releases
+          value: |
+            {"latest":{"release":{"channel":"stable","version":"4.22","architecture":"multi"}}}
+      runAfter:
+        - extract-snapshot-metadata
+    - name: coo-lightspeed-e2e-test
+      description: Install COO and OLS, deploy the console image under test, run the coo-show-timeseries Playwright test
+      runAfter:
+        - extract-snapshot-metadata
+        - provision-ephemeral-cluster
+      params:
+        - name: console-image
+          value: $(tasks.extract-snapshot-metadata.results.console-image)
+        - name: commit
+          value: $(tasks.extract-snapshot-metadata.results.commit)
+        - name: ols-namespace
+          value: $(params.namespace)
+        - name: clusterCredentialsSecretRef
+          value: $(tasks.provision-ephemeral-cluster.results.secretRef)
+      taskSpec:
+        volumes:
+          - name: openai-token
+            secret:
+              secretName: openai
+          - name: credentials
+            secret:
+              secretName: $(params.clusterCredentialsSecretRef)
+          - name: ols-konflux-artifacts-bot-creds
+            secret:
+              secretName: ols-konflux-artifacts-bot
+        params:
+          - name: console-image
+          - name: commit
+          - name: ols-namespace
+          - name: clusterCredentialsSecretRef
+            type: string
+            description: "The secret that holds the cluster credentials"
+        steps:
+          - name: install-operators
+            image: mcr.microsoft.com/playwright:v1.64.1-noble
+            volumeMounts:
+              - name: openai-token
+                mountPath: /var/run/openai
+              - name: credentials
+                mountPath: /credentials
+            env:
+              - name: KUBECONFIG
+                value: "/credentials/kubeconfig"
+              - name: OLS_NAMESPACE
+                value: "$(params.ols-namespace)"
+              - name: CONSOLE_IMAGE
+                value: "$(params.console-image)"
+              - name: COO_NAMESPACE
+                value: "openshift-cluster-observability-operator"
+              - name: OLS_BUNDLE_IMAGE
+                value: "quay.io/openshift-lightspeed/lightspeed-operator-bundle:latest"
+            resources:
+              limits:
+                memory: 4Gi
+            script: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              echo "KUBECONFIG: ${KUBECONFIG}"
+              echo "CONSOLE_IMAGE: ${CONSOLE_IMAGE}"
+              echo "OLS_NAMESPACE: ${OLS_NAMESPACE}"
+              echo "COO_NAMESPACE: ${COO_NAMESPACE}"
+
+              # Install oc
+              wget --no-verbose -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
+                  && tar -xzf oc.tar.gz \
+                  && chmod +x oc kubectl \
+                  && mv oc kubectl /usr/local/bin/ \
+                  && rm -rf oc.tar.gz
+
+              # Install operator-sdk
+              OPERATOR_SDK_VERSION=1.36.1
+              ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
+              OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}
+              wget --no-verbose -O /usr/local/bin/operator-sdk ${OPERATOR_SDK_DL_URL}/operator-sdk_linux_${ARCH}
+              chmod +x /usr/local/bin/operator-sdk
+              operator-sdk version
+
+              # ── Install COO via OLM subscription from redhat-operators ──
+              oc create namespace "${COO_NAMESPACE}" --dry-run=client -o yaml | oc apply -f -
+              oc label namespace "${COO_NAMESPACE}" openshift.io/cluster-monitoring=true --overwrite
+
+              cat <<'EOF' | oc apply -f -
+              apiVersion: operators.coreos.com/v1
+              kind: OperatorGroup
+              metadata:
+                name: cluster-observability-operator
+                namespace: openshift-cluster-observability-operator
+              EOF
+
+              cat <<'EOF' | oc apply -f -
+              apiVersion: operators.coreos.com/v1alpha1
+              kind: Subscription
+              metadata:
+                name: cluster-observability-operator
+                namespace: openshift-cluster-observability-operator
+              spec:
+                name: cluster-observability-operator
+                channel: stable
+                source: redhat-operators
+                sourceNamespace: openshift-marketplace
+                installPlanApproval: Automatic
+              EOF
+
+              echo "Waiting for COO CSV to be Succeeded..."
+              COO_TIMEOUT=900
+              COO_ELAPSED=0
+              until oc get csv -n "${COO_NAMESPACE}" -o jsonpath='{range .items[*]}{.status.phase}{"\n"}{end}' | grep -q Succeeded; do
+                if [ "$COO_ELAPSED" -ge "$COO_TIMEOUT" ]; then
+                  echo "Timed out waiting for COO CSV to be Succeeded" >&2
+                  echo "=== OperatorGroups ==="
+                  oc get operatorgroup -n "${COO_NAMESPACE}" -o yaml || true
+                  echo "=== Subscription status ==="
+                  oc get subscription cluster-observability-operator -n "${COO_NAMESPACE}" -o yaml || true
+                  echo "=== InstallPlans ==="
+                  oc get installplan -n "${COO_NAMESPACE}" -o yaml || true
+                  echo "=== CSVs ==="
+                  oc get csv -n "${COO_NAMESPACE}" -o yaml || true
+                  echo "=== CatalogSources ==="
+                  oc get catalogsource -n openshift-marketplace || true
+                  echo "=== catalog-operator logs (last 50) ==="
+                  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator --tail=50 || true
+                  exit 1
+                fi
+                sleep 15
+                COO_ELAPSED=$((COO_ELAPSED + 15))
+              done
+              oc get csv -n "${COO_NAMESPACE}"
+
+              # Wait for the operator deployment to be available
+              oc wait --for=condition=Available deployment/observability-operator -n "${COO_NAMESPACE}" --timeout=600s
+
+              # Defensive check: ensure OpenShift mode is enabled on COO.
+              # Catalog installs normally run in OpenShift mode by default; only
+              # bundle installs require the explicit flag. Patch if missing.
+              COO_ARGS=$(oc get deployment observability-operator -n "${COO_NAMESPACE}" -o jsonpath='{.spec.template.spec.containers[0].args}')
+              echo "COO deployment args: ${COO_ARGS}"
+              if ! grep -q "openshift.enabled=true" <<< "${COO_ARGS}"; then
+                echo "OpenShift mode not enabled on COO, patching..."
+                CSV_NAME=$(oc get csv -n "${COO_NAMESPACE}" -o name | grep observability-operator | head -1)
+                oc get "${CSV_NAME}" -n "${COO_NAMESPACE}" -o json | node -e '
+                  const chunks = [];
+                  process.stdin.on("data", (c) => chunks.push(c));
+                  process.stdin.on("end", () => {
+                    const csv = JSON.parse(Buffer.concat(chunks).toString());
+                    const deployments = csv.spec.install.spec.deployments;
+                    const opIdx = deployments.findIndex((d) => d.name === "observability-operator");
+                    if (opIdx === -1) { process.exit(1); }
+                    const patch = [{
+                      op: "add",
+                      path: `/spec/install/spec/deployments/${opIdx}/spec/template/spec/containers/0/args/-`,
+                      value: "--openshift.enabled=true",
+                    }];
+                    require("fs").writeFileSync("/tmp/coo-csv-patch.json", JSON.stringify(patch));
+                  });
+                '
+                oc patch "${CSV_NAME}" -n "${COO_NAMESPACE}" --type=json --patch-file /tmp/coo-csv-patch.json
+                oc patch deployment observability-operator -n "${COO_NAMESPACE}" --type=json \
+                  -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--openshift.enabled=true"}]'
+                oc rollout status deployment/observability-operator -n "${COO_NAMESPACE}" --timeout=300s
+              fi
+
+              # ── Install OLS via operator-sdk ──
+              oc get ns "${OLS_NAMESPACE}" || oc create ns "${OLS_NAMESPACE}"
+              oc label namespace "${OLS_NAMESPACE}" openshift.io/cluster-monitoring=true --overwrite=true
+
+              operator-sdk run bundle --timeout=15m --namespace "${OLS_NAMESPACE}" "${OLS_BUNDLE_IMAGE}"
+
+              # Replace the console plugin image in the CSV with the image under test
+              CSV_NAME=$(oc get clusterserviceversion -n "${OLS_NAMESPACE}" -o name | head -1)
+              oc scale --replicas=0 deployment/lightspeed-operator-controller-manager -n "${OLS_NAMESPACE}"
+              oc get "${CSV_NAME}" -n "${OLS_NAMESPACE}" -o json | node -e '
+                const chunks = [];
+                process.stdin.on("data", (c) => chunks.push(c));
+                process.stdin.on("end", () => {
+                  const csv = JSON.parse(Buffer.concat(chunks).toString());
+                  const consoleImage = process.env.CONSOLE_IMAGE;
+                  const argToRelatedImage = {
+                    "--console-image-pf5": "lightspeed-console-plugin-pf5",
+                    "--console-image-4-19": "lightspeed-console-plugin-4-19",
+                    "--console-image=": "lightspeed-console-plugin",
+                  };
+                  const containers = csv.spec.install.spec.deployments[0].spec.template.spec.containers;
+                  const args = containers[0].args;
+                  const relatedImages = csv.spec.relatedImages || [];
+                  const ops = [];
+                  for (const arg of args) {
+                    for (const [prefix, riName] of Object.entries(argToRelatedImage)) {
+                      if (arg.startsWith(prefix)) {
+                        const idx = relatedImages.findIndex((ri) => ri.name === riName);
+                        if (idx !== -1) {
+                          ops.push({ op: "replace", path: `/spec/relatedImages/${idx}/image`, value: consoleImage });
+                        }
+                      }
+                    }
+                  }
+                  const updatedArgs = args.map((arg) =>
+                    arg.startsWith("--console-image") ? arg.replace(/=.*/, `=${consoleImage}`) : arg
+                  );
+                  ops.push({
+                    op: "replace",
+                    path: "/spec/install/spec/deployments/0/spec/template/spec/containers/0/args",
+                    value: updatedArgs,
+                  });
+                  require("fs").writeFileSync("/tmp/ols-csv-patch.json", JSON.stringify(ops));
+                });
+              '
+              oc patch "${CSV_NAME}" -n "${OLS_NAMESPACE}" --type=json --patch-file /tmp/ols-csv-patch.json
+              oc scale --replicas=1 deployment/lightspeed-operator-controller-manager -n "${OLS_NAMESPACE}"
+
+              # Create the LLM credentials secret with the real token
+              oc create secret generic openai-api-keys \
+                --from-literal=apitoken="$(cat /var/run/openai/token)" \
+                -n "${OLS_NAMESPACE}" --dry-run=client -o yaml | oc apply -f -
+
+              # Create OLSConfig
+              cat <<EOF | oc apply -f -
+              apiVersion: ols.openshift.io/v1alpha1
+              kind: OLSConfig
+              metadata:
+                name: cluster
+              spec:
+                llm:
+                  providers:
+                    - type: openai
+                      name: openai
+                      credentialsSecretRef:
+                        name: openai-api-keys
+                      url: https://api.openai.com/v1
+                      models:
+                        - name: gpt-6-luna
+                ols:
+                  defaultModel: gpt-6-luna
+                  defaultProvider: openai
+                  # introspectionEnabled deploys the openshift-mcp-server, which
+                  # provides the show_timeseries tool this test exercises
+                  introspectionEnabled: true
+                  # This test exercises metrics tools, not RAG; skip the RHOKP/Solr
+                  # stack (slow/flaky to start on ephemeral clusters)
+                  byokRAGOnly: true
+                  logLevel: INFO
+              EOF
+
+              # Enable Perses in the Monitoring UIPlugin so the OLS chart can be
+              # rendered and added to Perses dashboards (mirrors the prow
+              # monitoring-plugin-tests-ols-ui step)
+              if oc get uiplugin monitoring; then
+                oc patch uiplugin monitoring --type=merge \
+                  -p '{"spec":{"type":"Monitoring","monitoring":{"perses":{"enabled":true}}}}'
+              else
+              cat <<'UIEOF' | oc apply -f -
+              apiVersion: observability.openshift.io/v1alpha1
+              kind: UIPlugin
+              metadata:
+                name: monitoring
+              spec:
+                type: Monitoring
+                monitoring:
+                  perses:
+                    enabled: true
+              UIEOF
+              fi
+              oc wait deployment -n "${COO_NAMESPACE}" -l app.kubernetes.io/name=perses \
+                --for=condition=Available --timeout=5m || echo "Warning: perses deployment not ready, continuing"
+
+              # Create the global Prometheus datasource the OLS show_timeseries
+              # chart resolves against (mirrors monitoring-plugin's cypress
+              # fixture perses-global-datasources.yaml). The proxy spec's
+              # secret reference is REQUIRED: the perses-operator syncs the
+              # client TLS config (the mounted service CA) into a perses
+              # Secret named <datasource>-secret, and the server only uses
+              # it when the proxy references it by name.
+              cat <<'DSEOF' | oc apply -f -
+              apiVersion: perses.dev/v1alpha2
+              kind: PersesGlobalDatasource
+              metadata:
+                name: thanos-querier-datasource
+                namespace: ${COO_NAMESPACE}
+              spec:
+                config:
+                  display:
+                    name: "Thanos Querier Datasource"
+                  default: true
+                  plugin:
+                    kind: "PrometheusDatasource"
+                    spec:
+                      proxy:
+                        kind: HTTPProxy
+                        spec:
+                          url: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+                          secret: thanos-querier-datasource-secret
+                client:
+                  tls:
+                    enable: true
+                    caCert:
+                      type: file
+                      certPath: /ca/service-ca.crt
+              DSEOF
+
+              # ── Wait for the TLS material the chart data path depends on ──
+              # On fresh clusters the service CA configmap and serving certs are
+              # issued asynchronously; chart queries that race them fail with
+              # "x509: certificate signed by unknown authority". The perses
+              # serving secret covers the console -> perses leg; the service CA
+              # configmap covers the perses -> thanos leg (mounted at
+              # /ca/service-ca.crt in the perses pod).
+              echo "Waiting for perses TLS material..."
+              TLS_TIMEOUT=300
+              TLS_ELAPSED=0
+              until oc -n "${COO_NAMESPACE}" get configmap openshift-service-ca.crt -o jsonpath='{.data.service-ca\.crt}' 2>/dev/null | grep -q 'BEGIN CERTIFICATE' \
+                && oc -n "${COO_NAMESPACE}" get secret perses -o jsonpath='{.data.tls\.crt}' 2>/dev/null | base64 -d | grep -q 'BEGIN CERTIFICATE'; do
+                if [ "$TLS_ELAPSED" -ge "$TLS_TIMEOUT" ]; then
+                  echo "Warning: perses TLS material not ready within ${TLS_TIMEOUT}s, continuing" >&2
+                  break
+                fi
+                sleep 5
+                TLS_ELAPSED=$((TLS_ELAPSED + 5))
+              done
+              echo "perses TLS material ready (after ${TLS_ELAPSED}s)"
+
+              # The kubelet can lag syncing configmap updates into running
+              # pods, so also verify the CA is actually mounted (best effort;
+              # the perses container is minimal).
+              if oc exec -n "${COO_NAMESPACE}" perses-0 -c perses -- cat /ca/service-ca.crt >/dev/null 2>&1; then
+                TLS_ELAPSED=0
+                until oc exec -n "${COO_NAMESPACE}" perses-0 -c perses -- cat /ca/service-ca.crt 2>/dev/null | grep -q 'BEGIN CERTIFICATE'; do
+                  if [ "$TLS_ELAPSED" -ge "$TLS_TIMEOUT" ]; then
+                    echo "Warning: mounted service CA not populated within ${TLS_TIMEOUT}s, continuing" >&2
+                    break
+                  fi
+                  sleep 5
+                  TLS_ELAPSED=$((TLS_ELAPSED + 5))
+                done
+                echo "mounted service CA populated (after ${TLS_ELAPSED}s)"
+              else
+                echo "cat not available in perses pod, skipping mounted CA check"
+              fi
+
+              # The perses server reads the datasource CA file when it loads
+              # the datasource; if the pod mounted the service CA configmap
+              # before it was populated, every thanos query fails with x509
+              # for the pod's lifetime. Restart to force a fresh read now
+              # that the material is verified present.
+              echo "Restarting perses to pick up the populated service CA..."
+              oc -n "${COO_NAMESPACE}" rollout restart statefulset/perses
+              oc -n "${COO_NAMESPACE}" rollout status statefulset/perses --timeout=300s \
+                || echo "Warning: perses restart did not complete, continuing"
+
+              # End-to-end TLS probe of the perses -> thanos leg (best effort:
+              # the perses container may not include curl). Any HTTP status
+              # means the TLS handshake succeeded; 000 means it did not.
+              if oc exec -n "${COO_NAMESPACE}" perses-0 -c perses -- curl --version >/dev/null 2>&1; then
+                echo "Probing perses -> thanos TLS handshake..."
+                TLS_ELAPSED=0
+                until [ "$(oc exec -n "${COO_NAMESPACE}" perses-0 -c perses -- curl -s -o /dev/null --cacert /ca/service-ca.crt -w '%{http_code}' --max-time 10 https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 2>/dev/null)" != "000" ]; do
+                  if [ "$TLS_ELAPSED" -ge "$TLS_TIMEOUT" ]; then
+                    echo "Warning: perses -> thanos TLS probe did not succeed within ${TLS_TIMEOUT}s, continuing" >&2
+                    break
+                  fi
+                  sleep 5
+                  TLS_ELAPSED=$((TLS_ELAPSED + 5))
+                done
+                echo "perses -> thanos TLS handshake OK (after ${TLS_ELAPSED}s)"
+              else
+                echo "curl not available in perses pod, skipping TLS probe"
+              fi
+
+              oc wait --for=condition=Available deployment/lightspeed-operator-controller-manager -n "${OLS_NAMESPACE}" --timeout=600s
+              echo "Operators installed successfully"
+
+          - name: run-playwright-tests
+            onError: continue
+            image: mcr.microsoft.com/playwright:v1.64.1-noble
+            volumeMounts:
+              - name: credentials
+                mountPath: /credentials
+            env:
+              - name: KUBECONFIG
+                value: "/credentials/kubeconfig"
+              - name: KUBECONFIG_PATH
+                value: "/credentials/kubeconfig"
+              - name: LOGIN_IDP
+                value: "kube:admin"
+              - name: LOGIN_USERNAME
+                value: "kubeadmin"
+              - name: LOGIN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: $(params.clusterCredentialsSecretRef)
+                    key: kubeAdminPassword
+              - name: CONSOLE_REF
+                value: "$(params.console-ref)"
+              - name: COMMIT_SHA
+                value: "$(params.commit)"
+              - name: COO_NAMESPACE
+                value: "openshift-cluster-observability-operator"
+            resources:
+              limits:
+                memory: 8Gi
+            script: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              # Install oc (needed by the tests' oc helper)
+              wget --no-verbose -O oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
+                  && tar -xzf oc.tar.gz \
+                  && chmod +x oc kubectl \
+                  && mv oc kubectl /usr/local/bin/ \
+                  && rm -rf oc.tar.gz
+
+              if [ -z "$LOGIN_PASSWORD" ]; then
+                echo "kubeAdminPassword is empty in the cluster credentials secret produced by provision-ephemeral-cluster" >&2
+                exit 1
+              fi
+
+              export BASE_URL="https://$(oc get route console -n openshift-console -o go-template --template="{{.spec.host}}")"
+              echo "BASE_URL: ${BASE_URL}"
+
+              # ── Clone lightspeed-console at the commit under test and run the test ──
+              TEST_REF="${CONSOLE_REF:-${COMMIT_SHA}}"
+              echo "Testing lightspeed-console@${TEST_REF}"
+              cd /home
+              rm -rf lightspeed-console
+              git clone "$(params.console-repo)" lightspeed-console
+              cd lightspeed-console
+              git fetch origin "${TEST_REF}"
+              git config advice.detachedHead false
+              git checkout FETCH_HEAD
+
+              echo "---------------------------------------------"
+              echo "node version: $(node -v)"
+              echo "npm version: $(npm -v)"
+              echo "---------------------------------------------"
+              NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
+
+              set +e
+              npx playwright test --grep "COO: show_timeseries"
+              err_status=$?
+              set -e
+              echo -n "${err_status}" > /workspace/playwright-exit-code
+              echo "Playwright exit code: ${err_status}"
+
+              # ── Collect artifacts ──
+              # Use a run-unique directory: the push stepaction untars the previous
+              # artifact into the workdir before pushing, which would overwrite
+              # same-named files (test-results, pods.yaml) with stale copies.
+              RUN_DIR="/workspace/artifacts/run-$(context.pipelineRun.name)"
+              mkdir -p "${RUN_DIR}"
+              cp -r gui_test_screenshots "${RUN_DIR}/" 2>/dev/null || echo "no test artifacts found"
+
+          - name: gather-cluster-resources
+            onError: continue
+            ref:
+              resolver: git
+              params:
+                - name: url
+                  value: https://github.com/konflux-ci/tekton-integration-catalog
+                - name: revision
+                  value: main
+                - name: pathInRepo
+                  value: stepactions/gather-cluster-resources/0.1/gather-cluster-resources.yaml
+            params:
+              - name: credentials
+                value: "credentials"
+              - name: kubeconfig
+                value: "kubeconfig"
+              - name: artifact-dir
+                value: "/workspace/artifacts/run-$(context.pipelineRun.name)/konflux-artifacts"
+          - name: push-artifacts
+            onError: continue
+            ref:
+              resolver: git
+              params:
+                - name: url
+                  value: https://github.com/konflux-ci/tekton-integration-catalog.git
+                - name: revision
+                  value: main
+                - name: pathInRepo
+                  value: stepactions/secure-push-oci/0.1/secure-push-oci.yaml
+            params:
+              - name: workdir-path
+                value: "/workspace/artifacts"
+              - name: oci-ref
+                # Per-run tag: each run pushes a small self-contained artifact.
+                # A shared per-commit tag accumulates every run's cluster logs
+                # and media; the push stepaction downloads and re-uploads the
+                # whole thing each time, which OOM-kills the push at scale.
+                value: "quay.io/openshift-lightspeed/ols-console-artifacts:coo-tests-$(params.commit)-$(context.pipelineRun.name)"
+              - name: credentials-volume-name
+                value: ols-konflux-artifacts-bot-creds
+          - name: assert-playwright-succeeded
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+            workingDir: "/workspace/"
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              code_file="/workspace/playwright-exit-code"
+              if [ ! -f "$code_file" ]; then
+                echo "Playwright exit code file missing at $code_file"
+                exit 99
+              fi
+              code=$(cat "$code_file")
+              if [ "$code" != "0" ]; then
+                echo "Playwright failed with exit code: $code"
+                exit "$code"
+              fi
+              echo "Playwright tests passed"
+          - name: fail-if-any-step-failed
+            ref:
+              resolver: git
+              params:
+                - name: url
+                  value: https://github.com/konflux-ci/tekton-integration-catalog.git
+                - name: revision
+                  value: main
+                - name: pathInRepo
+                  value: stepactions/fail-if-any-step-failed/0.1/fail-if-any-step-failed.yaml
+  finally:
+    - name: export-logs-for-retention
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: tasks/export-logs/0.1/export-logs-to-quay.yaml
+      params:
+        - name: pipeline-run-name
+          value: $(context.pipelineRun.name)
+        - name: namespace
+          value: $(context.pipelineRun.namespace)
+        - name: quay-repo
+          value: "quay.io/openshift-lightspeed/ols-console-artifacts"
+        - name: artifact-credentials-secret
+          value: ols-konflux-artifacts-bot
