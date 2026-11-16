@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: lightspeed-console-unit-coverage-on-push
+  namespace: crt-nshift-lightspeed-tenant
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/openshift/lightspeed-console?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: ''
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"
+    pipelinesascode.tekton.dev/cancel-in-progress: 'false'
+    pipelinesascode.tekton.dev/max-keep-runs: '3'
+  labels:
+    pipelines.appstudio.openshift.io/type: test
+spec:
+  params:
+    - name: source-url
+      value: '{{source_url}}'
+    - name: revision
+      value: '{{revision}}'
+    - name: branch
+      value: '{{target_branch}}'
+    - name: pr-number
+      value: '{{pull_request_number}}'
+    - name: job-type
+      value: postsubmit
+  timeouts:
+    pipeline: 30m
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-lightspeed-console
+  pipelineRef:
+    resolver: git
+    params:
+      - name: url
+        value: '{{source_url}}'
+      - name: revision
+        value: '{{revision}}'
+      - name: pathInRepo
+        value: .tekton/pipelines/unit-test-coverage-pipeline.yaml

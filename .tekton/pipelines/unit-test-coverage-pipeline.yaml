@@ -1,0 +1,147 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: lightspeed-console-unit-coverage
+spec:
+  description: |
+    Run the unit test suite with coverage and upload the lcov report to
+    Codecov. Referenced by the pull-request and push PipelineRuns in the
+    parent directory; the event-specific metadata (trigger, branch, PR
+    number, job type) is supplied by those PipelineRuns.
+  params:
+    - name: source-url
+      type: string
+    - name: revision
+      type: string
+    - name: branch
+      type: string
+    - name: pr-number
+      type: string
+    - name: job-type
+      type: string
+  tasks:
+    - name: unit-coverage
+      params:
+        - name: source-url
+          value: $(params.source-url)
+        - name: revision
+          value: $(params.revision)
+        - name: branch
+          value: $(params.branch)
+        - name: pr-number
+          value: $(params.pr-number)
+        - name: job-type
+          value: $(params.job-type)
+      taskSpec:
+        params:
+          - name: source-url
+            type: string
+          - name: revision
+            type: string
+          - name: branch
+            type: string
+          - name: pr-number
+            type: string
+          - name: job-type
+            type: string
+        volumes:
+          - name: work
+            emptyDir: {}
+        stepTemplate:
+          image: registry.access.redhat.com/ubi9/nodejs-22-minimal:latest
+          workingDir: /workspace
+          volumeMounts:
+            - name: work
+              mountPath: /workspace
+          env:
+            - name: HOME
+              value: /tmp
+        steps:
+          - name: checkout
+            env:
+              - name: SOURCE_URL
+                value: $(params.source-url)
+              - name: REVISION
+                value: $(params.revision)
+            script: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+              # Public source: no GitHub credentials exposed to the test task.
+              # The nodejs-22-minimal image has neither git nor gzip (and
+              # packages cannot be installed without root): fetch the exact
+              # commit tarball from GitHub, decompress it with node's zlib,
+              # and extract it with tar.
+              mkdir -p /workspace/source
+              tarball_url="${SOURCE_URL/github.com/codeload.github.com}/tar.gz/${REVISION}"
+              curl --fail --silent --show-error --location --retry 3 \
+                "$tarball_url" --output /tmp/source.tar.gz
+              node -e 'const zlib=require("node:zlib"),fs=require("node:fs");fs.writeFileSync("/tmp/source.tar",zlib.gunzipSync(fs.readFileSync("/tmp/source.tar.gz")))'
+              tar --extract --file /tmp/source.tar --strip-components=1 --directory /workspace/source
+              # Tarballs carry no git metadata; verify the checkout landed.
+              test -f /workspace/source/package.json
+          - name: unit-tests
+            # Do not declare the clone destination as a workingDir: Tekton
+            # precreates working directories before checkout, potentially
+            # leaving source owned by a different user.
+            script: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+              cd /workspace/source
+              # The image bundles npm 10, but the repository lockfile
+              # requires npm >= 11.10: bootstrap the pinned npm without root.
+              # Do NOT use --omit=optional: vitest (rolldown) needs the
+              # optional platform-specific binding packages at runtime
+              # (matches the ITS lint task after the vitest migration).
+              npx -y npm@11.21.1 ci --no-fund
+              NODE_OPTIONS=--max-old-space-size=4096 npm run test-coverage
+          - name: upload-coverage
+            env:
+              # Only the upload step receives the Codecov token.
+              - name: CODECOV_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: ols-codecov-token-lightspeed-console
+                    key: CODECOV_TOKEN
+              - name: JOB_TYPE
+                value: $(params.job-type)
+              - name: PULL_PULL_SHA
+                value: $(params.revision)
+              - name: PULL_BASE_SHA
+                value: $(params.revision)
+              - name: PULL_BASE_REF
+                value: $(params.branch)
+              - name: PULL_NUMBER
+                value: $(params.pr-number)
+              - name: REPO_OWNER
+                value: openshift
+              - name: REPO_NAME
+                value: lightspeed-console
+            script: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+              cd /workspace/source
+              # The nodejs-22-minimal image has no python, gzip, or uv:
+              # fetch the pinned uv release, decompress it with node's
+              # zlib, and let uv provision its own CPython to run the
+              # Python-based codecov CLI.
+              case "$(uname -m)" in
+                x86_64)
+                  uv_arch=x86_64-unknown-linux-gnu
+                  ;;
+                aarch64)
+                  uv_arch=aarch64-unknown-linux-gnu
+                  ;;
+                *)
+                  echo "Unsupported architecture: $(uname -m)" >&2
+                  exit 1
+                  ;;
+              esac
+              curl --fail --silent --show-error --location --retry 3 \
+                "https://github.com/astral-sh/uv/releases/download/0.10.0/uv-${uv_arch}.tar.gz" \
+                --output /tmp/uv.tar.gz
+              node -e 'const zlib=require("node:zlib"),fs=require("node:fs");fs.writeFileSync("/tmp/uv.tar",zlib.gunzipSync(fs.readFileSync("/tmp/uv.tar.gz")))'
+              mkdir -p /tmp/tools
+              tar --extract --file /tmp/uv.tar --strip-components=1 --directory /tmp/tools
+              export PATH="/tmp/tools:$PATH"
+              uv --version
+              bash scripts/codecov.sh coverage/cobertura-coverage.xml unit

@@ -5,6 +5,7 @@
 .nodeenv
 .playwright-mcp
 CLAUDE.local.md
+coverage/
 dist/
 gui_test_screenshots/
 node_modules/

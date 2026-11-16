@@ -6,5 +6,12 @@ export default defineConfig({
     include: ['unit-tests/**/*.test.ts'],
     // Limit the number of workers to avoid OOM errors in CI
     maxWorkers: 8,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'cobertura'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['unit-tests/**'],
+    },
   },
 });

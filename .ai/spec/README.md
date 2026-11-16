@@ -59,6 +59,7 @@ These specs describe HOW the plugin is structured — module boundaries, data fl
 | [state-management.md](how/state-management.md) | Redux store shape, Immutable.js usage, actions, reducer, selectors |
 | [streaming.md](how/streaming.md) | SSE stream processing, event types, buffering, throttled dispatch, abort handling |
 | [components.md](how/components.md) | Component tree, Popover/GeneralPage/Prompt hierarchy, PatternFly Chatbot integration |
+| [ci-pipelines.md](how/ci-pipelines.md) | Konflux/PaC pipelines: unit coverage, Codecov upload, shared Pipeline structure, image constraints |
 
 **When to read how/ specs:**
 - **Navigating the codebase**: Start with `project-structure.md` to understand where things live.
