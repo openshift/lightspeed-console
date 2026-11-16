@@ -488,6 +488,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
 
   const dispatch = useDispatch();
 
+  const isCompact = !onCollapse;
+
   const chatHistory: ImmutableList<ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.get('chatHistory'),
   );
@@ -558,6 +560,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
       className={className}
       data-test="ols-plugin__popover"
       displayMode={onCollapse ? ChatbotDisplayMode.fullscreen : ChatbotDisplayMode.default}
+      isCompact={isCompact}
     >
       <ChatbotHeader>
         <ChatbotHeaderMain>
@@ -649,8 +652,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({
       </ChatbotContent>
 
       {authStatus !== AuthStatus.NotAuthenticated && authStatus !== AuthStatus.NotAuthorized && (
-        <ChatbotFooter>
-          <Prompt scrollIntoView={scrollIntoView} />
+        <ChatbotFooter isCompact={isCompact}>
+          <Prompt isCompact={isCompact} scrollIntoView={scrollIntoView} />
           <ChatbotFootnote label={t('Always review AI generated content prior to use.')} />
           <div className="ols-plugin__footnote">
             {t('For questions or feedback about OpenShift Lightspeed,')}{' '}

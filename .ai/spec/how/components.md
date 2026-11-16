@@ -111,6 +111,10 @@ The `GeneralPage` component receives `onExpand` OR `onCollapse` prop
 - `onExpand` present -> collapsed mode (`ChatbotDisplayMode.default`)
 - `onCollapse` present -> fullscreen mode (`ChatbotDisplayMode.fullscreen`)
 
+Collapsed mode also passes `isCompact` to `Chatbot`, `ChatbotFooter` and the
+Prompt's `MessageBar` to fit more of the conversation in the smaller window.
+`Message` components are always compact in both modes.
+
 The Popover parent tracks `isExpanded` state and passes the appropriate
 callback.
 
