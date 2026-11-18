@@ -32,7 +32,7 @@ exposes hooks and extension points for other plugins to interact with OLS.
 5. The hook returns a callback function with the following signature:
 
    ```
-   (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean, hidePrompt?: boolean) => void
+   (prompt?: string, attachments?: Attachment[], submitImmediately?: boolean, hidePrompt?: boolean, mode?: 'ask' | 'troubleshooting') => void
    ```
 
 6. The callback must:
@@ -40,7 +40,10 @@ exposes hooks and extension points for other plugins to interact with OLS.
    b. Add all provided attachments to Redux state (if any).
    c. Set the `autoSubmit` flag (if `submitImmediately` is true).
    d. Set the `hidePrompt` flag (if `hidePrompt` is true).
-   e. Dispatch `openOLS` to show the chat window.
+   e. Set the `isTroubleshooting` flag when `mode` is provided (`true` for
+      `troubleshooting`, `false` for `ask`). Existing callers that omit
+      `mode` keep the current Redux value.
+   f. Dispatch `openOLS` to show the chat window.
 
 7. When called with no arguments, the callback must simply open the chat
    window without modifying the prompt or attachments.

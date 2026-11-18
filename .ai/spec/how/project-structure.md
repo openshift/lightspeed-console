@@ -25,7 +25,7 @@ and communicates with the OLS backend service via the console's plugin proxy.
 |---|---|
 | `src/hooks/useBoolean.ts` | Generic boolean state hook. Returns `[value, toggle, setTrue, setFalse, set]`. Used extensively for modal/toggle state. |
 | `src/hooks/useAuth.ts` | Authorization check hook. POSTs to `/authorized` on mount. Returns `[AuthStatus]` enum (AuthorizedLoading, Authorized, NotAuthenticated, NotAuthorized, AuthorizedError). Also exports `getRequestInitWithAuthHeader()` for adding bearer token to requests. |
-| `src/hooks/useOpenOLS.ts` | Public API hook exposed as a console extension. Returns a callback `(prompt?, attachments?, submitImmediately?, hidePrompt?) => void` that dispatches Redux actions to open OLS with optional context. |
+| `src/hooks/useOpenOLS.ts` | Public API hook exposed as a console extension. Returns a callback `(prompt?, attachments?, submitImmediately?, hidePrompt?, mode?) => void` that dispatches Redux actions to open OLS with optional context and request mode. |
 | `src/hooks/usePopover.ts` | Side-effect hook that launches the Popover component as a console modal exactly once. Uses `useModal()` from the console SDK with a stable modal ID. |
 | `src/hooks/useLocationContext.ts` | URL parser that extracts the Kubernetes resource (kind, name, namespace) from the current page path. Handles standard K8s URLs, ACM ManagedCluster, ACM search, ACM Applications, ACM Policies, and Alert pages. Returns `[kind, name, namespace]`. |
 | `src/hooks/useFirstTimeUser.ts` | Tracks first-time user state via `lightspeed.hasClosedChat` user setting. Returns `[isFirstTimeUser, markAsExperienced, isLoaded]`. |
