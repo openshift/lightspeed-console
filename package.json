@@ -81,7 +81,7 @@
   "overrides": {
     "dompurify": "3.4.17",
     "monaco-editor": "0.57.0",
-    "uri-js": "npm:fast-uri@3.1.9"
+    "uri-js": "npm:fast-uri@4.2.3"
   },
   "consolePlugin": {
     "name": "lightspeed-console-plugin",
