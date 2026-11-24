@@ -113,7 +113,9 @@ spec:
   // mistaken for an OLS installation.
   let operatorAlreadyInstalled = false;
   try {
-    const csvCheck = oc(['get', 'csv', '--namespace', OLS_NAMESPACE]);
+    // -o name is required: the default table output has no fixed prefix,
+    // and the regex below matches the <resource>/<name> listing format.
+    const csvCheck = oc(['get', 'csv', '--namespace', OLS_NAMESPACE, '-o', 'name']);
     operatorAlreadyInstalled =
       /^clusterserviceversion\.operators\.coreos\.com\/lightspeed-operator\./m.test(csvCheck);
   } catch {
