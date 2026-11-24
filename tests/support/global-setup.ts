@@ -15,6 +15,9 @@ import { oc } from './fixtures';
 const MINUTE = 60 * 1000;
 const AUTH_DIR = path.join(__dirname, '..', '.auth');
 const STATE_FILE = path.join(AUTH_DIR, 'state.json');
+// Written when the run reused a pre-existing OLS installation; the global
+// teardown checks it to avoid deleting resources it did not create.
+const PREINSTALLED_MARKER = path.join(__dirname, '..', '.ols-preinstalled');
 
 // Confirms the operator actually reconciled the candidate image, so a substitution that silently
 // did nothing fails the run instead of testing the published image
@@ -104,12 +107,15 @@ spec:
     introspectionEnabled: false
     logLevel: INFO`;
 
-  // Check if operator is already installed
+  // Check if operator is already installed. Match by name: on clusters with
+  // COO (installed AllNamespaces), OLM copies COO CSVs into every namespace,
+  // and a copied cluster-observability-operator CSV would otherwise be
+  // mistaken for an OLS installation.
   let operatorAlreadyInstalled = false;
   try {
     const csvCheck = oc(['get', 'csv', '--namespace', OLS_NAMESPACE]);
     operatorAlreadyInstalled =
-      csvCheck.trim() !== '' && !csvCheck.toLowerCase().includes('no resources found');
+      /^clusterserviceversion\.operators\.coreos\.com\/lightspeed-operator\./m.test(csvCheck);
   } catch {
     operatorAlreadyInstalled = false;
   }
@@ -122,6 +128,9 @@ spec:
           'candidate one.',
       );
     }
+    // Record that this run reused a pre-existing installation, so the global
+    // teardown preserves it instead of deleting the OLSConfig and namespace.
+    fs.writeFileSync(PREINSTALLED_MARKER, '');
     console.log(`Operator already installed in ${OLS_NAMESPACE}. Skipping installation.`);
   } else {
     console.log('Operator not found. Proceeding with installation.');

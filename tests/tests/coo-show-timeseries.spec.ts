@@ -14,9 +14,11 @@ import { expect, oc, test } from '../support/fixtures';
  * - OLS installed and configured with a live LLM provider
  * - the monitoring-plugin console plugin loaded (Perses dashboards UI)
  *
- * To run against a local cluster, use SKIP_OLS_SETUP=true: the shared
- * global teardown otherwise deletes the OLSConfig and the
- * openshift-lightspeed namespace, including pre-existing installations.
+ * To run against a local cluster with a pre-existing OLS installation, just
+ * run the suite: the global setup detects the existing installation and
+ * reuses it, and the global teardown preserves it (it only removes the role
+ * bindings the setup granted). Alternatively use SKIP_OLS_SETUP=true to also
+ * skip the browser login and diagnostic collection.
  *
  * Relies on live LLM responses, so responses are not identical across runs. It must
  * never gate PRs.
@@ -262,7 +264,35 @@ test.describe.serial('COO: show_timeseries', { tag: '@coo' }, () => {
     const panelHeader = page.locator('[data-testid="panel"] h6').first();
     await expect(panelHeader).toBeVisible({ timeout: OLS_RESPONSE_TIMEOUT });
 
+    // Set up the response listener before clicking so a fast save cannot
+    // slip past it.
+    const saveResponse = page
+      .waitForResponse(
+        (resp) => resp.request().method() !== 'GET' && /dashboard/i.test(resp.url()),
+        { timeout: OLS_RESPONSE_TIMEOUT },
+      )
+      .catch(() => null);
     await page.getByRole('button', { name: 'Save' }).first().click();
+
+    // The Perses editor may show a "Save Changes" confirmation dialog
+    const saveChanges = page.getByRole('button', { name: 'Save Changes' });
+    if (await saveChanges.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await saveChanges.click();
+    }
+
+    // Wait for the save to complete before reloading: reloading mid-save
+    // races the persist request and can fail the test spuriously.
+    const response = await saveResponse;
+    if (response) {
+      // Any 2xx response confirms the save was persisted
+      expect(response.ok()).toBeTruthy();
+    } else {
+      // No matching request observed (e.g. the save is fully local); fall
+      // back to the editor leaving edit mode as the completion signal.
+      await expect(page.getByRole('button', { name: 'Save' }).first()).toBeHidden({
+        timeout: OLS_RESPONSE_TIMEOUT,
+      });
+    }
 
     // Verify persistence: reload the dashboard and assert the panel is
     // present outside edit mode (visibility before save proves nothing)

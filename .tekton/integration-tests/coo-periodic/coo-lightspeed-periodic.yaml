@@ -35,8 +35,10 @@ spec:
       default: 'https://github.com/openshift/lightspeed-console.git'
     - name: console-ref
       description: >
-        Git ref of the console repo to test. Defaults to the commit from the
-        application snapshot; override with a branch for pre-merge runs.
+        Git ref of the console repo to clone the Playwright e2e tests from.
+        Defaults to main: the snapshot only selects the console image under
+        test, not the test checkout. Override with a fork branch for
+        pre-merge runs.
       default: ''
   tasks:
     - name: extract-snapshot-metadata
@@ -79,6 +81,13 @@ spec:
                 description: "commit sha of the component under test"
             script: |
               dnf -y install jq
+              # Require exactly one matching component: multiple matches
+              # would concatenate values that pass the nonempty checks below.
+              COMPONENT_COUNT="$(jq -r --arg component_name "$COMPONENT_NAME" '[.components[] | select(.name == $component_name)] | length' <<< "$SNAPSHOT")"
+              if [ "$COMPONENT_COUNT" != "1" ]; then
+                echo "Snapshot must contain exactly one component '$COMPONENT_NAME' (found ${COMPONENT_COUNT:-0})" >&2
+                exit 1
+              fi
               COMPONENT_IMAGE="$(jq -r --arg component_name "$COMPONENT_NAME" '.components[] | select(.name == $component_name) | .containerImage' <<< "$SNAPSHOT")"
               COMPONENT_REVISION="$(jq -r --arg component_name "$COMPONENT_NAME" '.components[] | select(.name == $component_name) | .source.git.revision' <<< "$SNAPSHOT")"
               if [ -z "$COMPONENT_IMAGE" ] || [ "$COMPONENT_IMAGE" = "null" ] || [ -z "$COMPONENT_REVISION" ] || [ "$COMPONENT_REVISION" = "null" ]; then
@@ -423,7 +432,11 @@ spec:
               # it when the proxy references it by name.
               # The Perses CRDs are only established after the Monitoring
               # UIPlugin reconciles; the deployment wait above does not
-              # guarantee the CRD is served.
+              # guarantee the CRD is served. A condition= wait on a resource
+              # that does not exist yet fails immediately with NotFound, so
+              # wait for the CRD to be created first, then for it to be
+              # Established.
+              oc wait --for=create crd/persesglobaldatasources.perses.dev --timeout=5m
               oc wait --for=condition=Established crd/persesglobaldatasources.perses.dev --timeout=5m
 
               cat <<'DSEOF' | oc apply -f -
@@ -496,14 +509,25 @@ spec:
               # the datasource; if the pod mounted the service CA configmap
               # before it was populated, every thanos query fails with x509
               # for the pod's lifetime. Restart to force a fresh read now
-              # that the material is verified present.
+              # that the material is verified present. The StatefulSet can
+              # appear late on fresh clusters, so wait (bounded) for it
+              # instead of checking once: a single check would skip the
+              # restart whenever Perses was not yet created.
+              STS_ELAPSED=0
+              until oc get statefulset perses -n "${COO_NAMESPACE}" >/dev/null 2>&1; do
+                if [ "$STS_ELAPSED" -ge 300 ]; then
+                  break
+                fi
+                sleep 5
+                STS_ELAPSED=$((STS_ELAPSED + 5))
+              done
               if oc get statefulset perses -n "${COO_NAMESPACE}" >/dev/null 2>&1; then
                 echo "Restarting perses to pick up the populated service CA..."
                 oc -n "${COO_NAMESPACE}" rollout restart statefulset/perses
                 oc -n "${COO_NAMESPACE}" rollout status statefulset/perses --timeout=300s \
                   || echo "Warning: perses restart did not complete, continuing"
               else
-                echo "Warning: perses statefulset not found, skipping restart" >&2
+                echo "Warning: perses statefulset not found within 300s, skipping restart" >&2
               fi
 
               # End-to-end TLS probe of the perses -> thanos leg (best effort:
@@ -513,7 +537,16 @@ spec:
                 echo "Probing perses -> thanos TLS handshake..."
                 TLS_ELAPSED=0
                 TLS_OK=false
-                until PROBE_STATUS="$(oc exec -n "${COO_NAMESPACE}" perses-0 -c perses -- curl -s -o /dev/null --cacert /ca/service-ca.crt -w '%{http_code}' --max-time 10 https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 2>/dev/null)"; [ "$PROBE_STATUS" != "000" ] && [ -n "$PROBE_STATUS" ]; do
+                # Require both a successful oc exec (curl exit code 0) and a
+                # valid HTTP status: curl can print a status code and still
+                # exit nonzero (e.g. transfer timeout after headers), and an
+                # empty output is not a handshake success either.
+                while true; do
+                  if PROBE_STATUS="$(oc exec -n "${COO_NAMESPACE}" perses-0 -c perses -- curl -s -o /dev/null --cacert /ca/service-ca.crt -w '%{http_code}' --max-time 10 https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 2>/dev/null)" \
+                    && [ -n "${PROBE_STATUS}" ] && [ "${PROBE_STATUS}" != "000" ]; then
+                    TLS_OK=true
+                    break
+                  fi
                   if [ "$TLS_ELAPSED" -ge "$TLS_TIMEOUT" ]; then
                     echo "Warning: perses -> thanos TLS probe did not succeed within ${TLS_TIMEOUT}s, continuing" >&2
                     break
@@ -521,8 +554,7 @@ spec:
                   sleep 5
                   TLS_ELAPSED=$((TLS_ELAPSED + 5))
                 done
-                if [ -n "$PROBE_STATUS" ] && [ "$PROBE_STATUS" != "000" ]; then
-                  TLS_OK=true
+                if [ "$TLS_OK" = true ]; then
                   echo "perses -> thanos TLS handshake OK (HTTP ${PROBE_STATUS}, after ${TLS_ELAPSED}s)"
                 fi
               else
@@ -547,6 +579,11 @@ spec:
                 sleep 5
                 IMG_ELAPSED=$((IMG_ELAPSED + 5))
               done
+              # The template check alone can pass while pods from a previous
+              # rollout are still serving; wait for the rollout to complete so
+              # the running pods use the candidate image before Playwright
+              # starts.
+              oc rollout status deployment/lightspeed-console-plugin -n "${OLS_NAMESPACE}" --timeout=300s
               echo "console plugin runs the candidate image"
               echo "Operators installed successfully"
 
