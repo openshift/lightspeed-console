@@ -17,7 +17,7 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `src/attachments.ts` | `AttachmentTypes` enum (Events, Log, YAML, YAML filtered, YAMLUpload), `toOLSAttachment()` conversion function, `isAttachmentChanged()` comparison helper. |
 | `src/error.ts` | `ErrorType` and `FetchError` types. `getFetchErrorMessage()` extracts structured error messages from fetch responses, handling both string and object `detail` fields. |
 | `src/flags.ts` | `FLAG_LIGHTSPEED_PLUGIN` constant and `enableLightspeedPluginFlag()` handler for the `console.flag` extension. |
-| `src/clipboard.ts` | `copyToClipboard(text)` copies plain text via `navigator.clipboard.writeText()` and is used for non-markdown content (YAML, logs, tool output). `copyMarkdownToClipboard(markdown)` copies AI responses as both plain text and HTML, falling back to plain text when rich clipboard writes aren't supported. |
+| `src/clipboard.ts` | `copyToClipboard(text)` copies plain text via `navigator.clipboard.writeText()` and is used for non-markdown content (YAML, logs, tool output). `copyMarkdownToClipboard(markdown)` copies AI responses as both plain text and HTML, falling back to plain text when rich clipboard writes aren't supported. The HTML is rendered wherever the user pastes it, and responses may be prompt-injected, so `markdownToClipboardHtml()` only keeps the tags and attributes marked emits (plus a few harmless extras like `<details>`), none of which can load external resources or act on their own. Task list checkboxes render as ☑/☐ text so `<input>` stays off the allow list. The allow lists are in `purifyConfig`. |
 | `src/pageContext.ts` | `resolveModelKey()` resolves URL resource keys to K8s model keys. Handles direct model keys (e.g., `Pod`), plural-based keys (e.g., `pods`), and group~version~kind references (e.g., `core~v1~Pod`). |
 | `src/validation.ts` | `alertingRuleID()` generates murmur3 hash matching the monitoring-console-plugin's alerting rule ID format. `isValidAlertName()` validates alert name strings. |
 
@@ -156,7 +156,7 @@ RPM path (`"."`). This enables hermetic builds with pre-fetched dependencies.
 | `tests/` | Playwright e2e test specs |
 | `tests/support/` | E2E harness: `global-setup.ts` installs the operator and injects `CONSOLE_IMAGE` into the CSV, `csv.ts` builds that patch, `fixtures.ts` provides shared test fixtures |
 | `playwright.config.ts` | Playwright configuration |
-| `unit-tests/` | Unit tests using Vitest. Tests for: redux-reducers (via the action creators), error handling, attachments, pageContext (model key resolution), validation (alert rule ID hashing), CSV console image patching |
+| `unit-tests/` | Unit tests using Vitest. Tests for: redux-reducers (via the action creators), error handling, attachments, pageContext (model key resolution), validation (alert rule ID hashing), CSV console image patching, clipboard HTML sanitizing (uses the jsdom environment) |
 
 ## Data Flow
 
