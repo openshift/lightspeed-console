@@ -297,8 +297,15 @@ spec:
 
               operator-sdk run bundle --timeout=15m --namespace "${OLS_NAMESPACE}" "${OLS_BUNDLE_IMAGE}"
 
-              # Replace the console plugin image in the CSV with the image under test
-              CSV_NAME=$(oc get clusterserviceversion -n "${OLS_NAMESPACE}" -o name | head -1)
+              # Replace the console plugin image in the CSV with the image under test.
+              # Select by name: COO is installed AllNamespaces, so OLM copies its
+              # CSVs into every namespace including this one, and a copied
+              # cluster-observability-operator CSV sorts before lightspeed-operator.
+              CSV_NAME=$(oc get clusterserviceversion -n "${OLS_NAMESPACE}" -o name | grep '/lightspeed-operator\.' | head -1)
+              if [ -z "${CSV_NAME}" ]; then
+                echo "No lightspeed-operator CSV found in ${OLS_NAMESPACE}" >&2
+                exit 1
+              fi
               oc scale --replicas=0 deployment/lightspeed-operator-controller-manager -n "${OLS_NAMESPACE}"
               oc get "${CSV_NAME}" -n "${OLS_NAMESPACE}" -o json | node -e '
                 const chunks = [];
