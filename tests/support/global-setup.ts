@@ -15,6 +15,9 @@ import { oc } from './fixtures';
 const MINUTE = 60 * 1000;
 const AUTH_DIR = path.join(__dirname, '..', '.auth');
 const STATE_FILE = path.join(AUTH_DIR, 'state.json');
+// Written when the run reused a pre-existing OLS installation; the global
+// teardown checks it to avoid deleting resources it did not create.
+const PREINSTALLED_MARKER = path.join(__dirname, '..', '.ols-preinstalled');
 
 // Confirms the operator actually reconciled the candidate image, so a substitution that silently
 // did nothing fails the run instead of testing the published image
@@ -104,12 +107,17 @@ spec:
     introspectionEnabled: false
     logLevel: INFO`;
 
-  // Check if operator is already installed
+  // Check if operator is already installed. Match by name: on clusters with
+  // COO (installed AllNamespaces), OLM copies COO CSVs into every namespace,
+  // and a copied cluster-observability-operator CSV would otherwise be
+  // mistaken for an OLS installation.
   let operatorAlreadyInstalled = false;
   try {
-    const csvCheck = oc(['get', 'csv', '--namespace', OLS_NAMESPACE]);
+    // -o name is required: the default table output has no fixed prefix,
+    // and the regex below matches the <resource>/<name> listing format.
+    const csvCheck = oc(['get', 'csv', '--namespace', OLS_NAMESPACE, '-o', 'name']);
     operatorAlreadyInstalled =
-      csvCheck.trim() !== '' && !csvCheck.toLowerCase().includes('no resources found');
+      /^clusterserviceversion\.operators\.coreos\.com\/lightspeed-operator\./m.test(csvCheck);
   } catch {
     operatorAlreadyInstalled = false;
   }
@@ -122,6 +130,9 @@ spec:
           'candidate one.',
       );
     }
+    // Record that this run reused a pre-existing installation, so the global
+    // teardown preserves it instead of deleting the OLSConfig and namespace.
+    fs.writeFileSync(PREINSTALLED_MARKER, '');
     console.log(`Operator already installed in ${OLS_NAMESPACE}. Skipping installation.`);
   } else {
     console.log('Operator not found. Proceeding with installation.');
@@ -165,7 +176,12 @@ spec:
 
     // Replace console image in CSV if CONSOLE_IMAGE is set
     if (process.env.CONSOLE_IMAGE) {
-      const csvName = oc([
+      // Select only the OLS CSV, and require exactly one match: on clusters
+      // with COO (installed AllNamespaces), OLM copies COO CSVs into every
+      // namespace, and a copied cluster-observability-operator CSV sorts
+      // before lightspeed-operator.vX. buildConsoleImagePatch rejects a COO
+      // CSV, but selecting by name fails earlier and clearer.
+      const csvNames = oc([
         'get',
         'clusterserviceversion',
         '--namespace',
@@ -175,7 +191,16 @@ spec:
       ])
         .trim()
         .split('\n')
-        .filter(Boolean)[0];
+        .filter(Boolean)
+        .filter((name) =>
+          /^clusterserviceversion\.operators\.coreos\.com\/lightspeed-operator\./.test(name),
+        );
+      if (csvNames.length !== 1) {
+        throw new Error(
+          `Expected exactly one lightspeed-operator CSV in ${OLS_NAMESPACE}, found ${csvNames.length}`,
+        );
+      }
+      const csvName = csvNames[0];
 
       oc([
         'scale',

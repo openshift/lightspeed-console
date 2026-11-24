@@ -214,7 +214,7 @@ spec:
               NODE_OPTIONS=--max-old-space-size=4096 npm ci --omit=optional --no-fund
               echo "---------------------------------------------"
               set +e
-              npx playwright test
+              npx playwright test --grep-invert @coo
               err_status=$?
               echo -n "${err_status}" > /workspace/playwright-exit-code
               echo "---------------------------------------------"
