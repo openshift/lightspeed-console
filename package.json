@@ -29,8 +29,8 @@
     "test-watch": "vitest"
   },
   "dependencies": {
-    "@openshift-console/dynamic-plugin-sdk": "4.22.0",
-    "@openshift-console/dynamic-plugin-sdk-webpack": "4.22.0",
+    "@openshift-console/dynamic-plugin-sdk": "4.23.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "4.23.0",
     "@patternfly/chatbot": "6.6.0",
     "@patternfly/react-code-editor": "6.6.0",
     "@patternfly/react-core": "6.6.0",
