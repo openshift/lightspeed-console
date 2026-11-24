@@ -176,7 +176,12 @@ spec:
 
     // Replace console image in CSV if CONSOLE_IMAGE is set
     if (process.env.CONSOLE_IMAGE) {
-      const csvName = oc([
+      // Select only the OLS CSV, and require exactly one match: on clusters
+      // with COO (installed AllNamespaces), OLM copies COO CSVs into every
+      // namespace, and a copied cluster-observability-operator CSV sorts
+      // before lightspeed-operator.vX. buildConsoleImagePatch rejects a COO
+      // CSV, but selecting by name fails earlier and clearer.
+      const csvNames = oc([
         'get',
         'clusterserviceversion',
         '--namespace',
@@ -186,7 +191,16 @@ spec:
       ])
         .trim()
         .split('\n')
-        .filter(Boolean)[0];
+        .filter(Boolean)
+        .filter((name) =>
+          /^clusterserviceversion\.operators\.coreos\.com\/lightspeed-operator\./.test(name),
+        );
+      if (csvNames.length !== 1) {
+        throw new Error(
+          `Expected exactly one lightspeed-operator CSV in ${OLS_NAMESPACE}, found ${csvNames.length}`,
+        );
+      }
+      const csvName = csvNames[0];
 
       oc([
         'scale',
