@@ -156,7 +156,7 @@ RPM path (`"."`). This enables hermetic builds with pre-fetched dependencies.
 | `tests/` | Playwright e2e test specs |
 | `tests/support/` | E2E harness: `global-setup.ts` installs the operator and injects `CONSOLE_IMAGE` into the CSV, `csv.ts` builds that patch, `fixtures.ts` provides shared test fixtures |
 | `playwright.config.ts` | Playwright configuration |
-| `unit-tests/` | Unit tests using Vitest. Tests for: redux-reducers (via the action creators), error handling, attachments, pageContext (model key resolution), validation (alert rule ID hashing), CSV console image patching, clipboard HTML sanitizing (uses the jsdom environment) |
+| `unit-tests/` | Unit tests using Vitest. Tests for: redux-reducers (via the action creators), error handling, attachments, clipboard (HTML sanitizing and rich HTML copy with plain text fallback; uses the jsdom environment), config, flags, pageContext (model key resolution), validation (alert rule ID hashing), CSV console image patching |
 
 ## Data Flow
 
