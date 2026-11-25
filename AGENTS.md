@@ -129,6 +129,12 @@ All conversation state (chat history, attachments, etc.) is managed in Redux.
   `tsc -p unit-tests`
 - To run: `npm run test-unit`
 - To run in watch mode: `npm run test-watch`
+- Components and hooks are tested with React Testing Library (`render` / `renderHook`)
+  - Add `// @vitest-environment jsdom` at the top of any test file that needs a DOM
+  - Use `renderWithStore()` from `unit-tests/test-utils.tsx` for components that use Redux
+  - `@openshift-console/dynamic-plugin-sdk` is aliased to
+    `unit-tests/__mocks__/dynamic-plugin-sdk.ts`; add any SDK exports a test needs there
+  - Mock other modules, such as `react-router`, with `vi.mock()` in the test file
 
 ### Keeping tests up to date
 
