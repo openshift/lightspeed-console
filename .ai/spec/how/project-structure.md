@@ -90,7 +90,7 @@ and communicates with the OLS backend service via the console's plugin proxy.
 | `.eslintrc.yml` | ESLint config: recommended + react + react-hooks + typescript + i18next + prettier |
 | `.prettierrc.yml` | Prettier config: 100 char width, single quotes, trailing commas |
 | `.stylelintrc.yaml` | Stylelint config: no hex colors (use PF design tokens), selector must match `ols-plugin__*` |
-| `vitest.config.mts` | Vitest config: runs `unit-tests/**/*.test.ts` in the Node environment |
+| `vitest.config.mts` | Vitest config: runs `unit-tests/**/*.test.{ts,tsx}` in the Node environment by default, with `unit-tests/setup.ts` as the setup file and the console SDK aliased to `unit-tests/__mocks__/dynamic-plugin-sdk.ts` |
 | `start-console.sh` | Dev script: runs console in Docker/Podman on port 9000, proxies plugin from port 9001, proxies OLS API from localhost:8080 |
 | `.gitmodules` | Git submodule definitions for `branches/pf5` (pattern-fly-5) and `branches/4-19` (release-4.19) |
 | `entrypoint.sh` | Container entrypoint. Maps `OCP_VERSION` env var to the correct build directory via symlink, then execs nginx |
@@ -156,7 +156,10 @@ RPM path (`"."`). This enables hermetic builds with pre-fetched dependencies.
 | `tests/` | Playwright e2e test specs |
 | `tests/support/` | E2E harness: `global-setup.ts` installs the operator and injects `CONSOLE_IMAGE` into the CSV, `csv.ts` builds that patch, `fixtures.ts` provides shared test fixtures |
 | `playwright.config.ts` | Playwright configuration |
-| `unit-tests/` | Unit tests using Vitest. Tests for: redux-reducers (via the action creators), error handling, attachments, clipboard (HTML sanitizing and rich HTML copy with plain text fallback; uses the jsdom environment), config, flags, pageContext (model key resolution), validation (alert rule ID hashing), CSV console image patching |
+| `unit-tests/` | Unit tests using Vitest. Tests for: redux-reducers (via the action creators), error handling, attachments, clipboard (HTML sanitizing and rich HTML copy with plain text fallback), config, flags, pageContext (model key resolution), validation (alert rule ID hashing), CSV console image patching, the `useLocationContext` hook and the `AttachmentLabel` and `ConfirmationModal` components |
+| `unit-tests/setup.ts` | Vitest setup: jest-dom matchers, `data-test` as the Testing Library test ID attribute, and a `react-i18next` mock that echoes translation keys |
+| `unit-tests/test-utils.tsx` | `renderWithStore()`: renders a component inside a Redux `Provider` backed by the real OLS reducer, optionally dispatching actions first to set up state |
+| `unit-tests/__mocks__/dynamic-plugin-sdk.ts` | Stand-in for `@openshift-console/dynamic-plugin-sdk`, which only exists inside the console. Hooks are `vi.fn()`s that tests override with `vi.mocked()` |
 
 ## Data Flow
 
