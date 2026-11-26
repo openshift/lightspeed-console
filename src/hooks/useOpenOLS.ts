@@ -1,8 +1,17 @@
 import * as React from 'react';
 import { useDispatch } from 'react-redux';
 
-import { attachmentSet, openOLS, setAutoSubmit, setHidePrompt, setQuery } from '../redux-actions';
+import {
+  attachmentSet,
+  openOLS,
+  setAutoSubmit,
+  setHidePrompt,
+  setIsTroubleshooting,
+  setQuery,
+} from '../redux-actions';
 import { Attachment } from '../types';
+
+export type OpenOLSMode = 'ask' | 'troubleshooting';
 
 // Hook that provides a callback function to open the OpenShift Lightspeed UI with an optional
 // initial prompt. Exposed as a console extension so other console pages and plugins can discover
@@ -16,6 +25,8 @@ const useOpenOLS = (): ((
   submitImmediately?: boolean,
   // If true, hides the user's message from chat history (useful for contextual help)
   hidePrompt?: boolean,
+  // OLS request mode; drives Redux isTroubleshooting and the API `mode` field
+  mode?: OpenOLSMode,
 ) => void) => {
   const dispatch = useDispatch();
 
@@ -25,6 +36,7 @@ const useOpenOLS = (): ((
       attachments?: Attachment[],
       submitImmediately?: boolean,
       hidePrompt?: boolean,
+      mode?: OpenOLSMode,
     ) => {
       if (prompt) {
         dispatch(setQuery(prompt));
@@ -51,6 +63,10 @@ const useOpenOLS = (): ((
       }
 
       dispatch(setHidePrompt(Boolean(hidePrompt)));
+
+      if (mode !== undefined) {
+        dispatch(setIsTroubleshooting(mode === 'troubleshooting'));
+      }
 
       dispatch(openOLS());
     },
