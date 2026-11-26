@@ -42,6 +42,7 @@
         "@types/react",
         "@patternfly/*",
         "eslint",
+        "fast-uri",
         "react-markdown",
         "remark-gfm"
       ],
