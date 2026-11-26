@@ -93,6 +93,7 @@ spec:
               # Split args into names and times arrays
               NAMES_ARRAY=("${ALL_ARGS[@]:0:$NUM_TESTS}")
               TIMES_ARRAY=("${ALL_ARGS[@]:$NUM_TESTS:$NUM_TESTS}")
+              REPORT_EPOCH=$(date -u +%s)
 
               echo "Tests to check:" >&2
               for i in "${!NAMES_ARRAY[@]}"; do
@@ -134,10 +135,23 @@ spec:
                 local all_pipelineruns=""
                 local fallback_pipelineruns=""
 
+                # Report the seven most recent completed scheduled occurrences. If
+                # today's occurrence has not happened yet, start with yesterday rather
+                # than querying a future window and dropping the oldest occurrence.
+                local start_day_offset=0
+                local today_scheduled_timestamp
+                today_scheduled_timestamp=$(date -u -d "0 days ago ${scheduled_hour}:${scheduled_minute}:00" +"%Y-%m-%dT%H:%M:%S.000000000Z")
+                local today_scheduled_epoch
+                today_scheduled_epoch=$(date -u -d "$today_scheduled_timestamp" +%s)
+                if [ "$today_scheduled_epoch" -gt "$REPORT_EPOCH" ]; then
+                  start_day_offset=1
+                fi
+
                 # Query each scheduled occurrence separately with explicit --after and
                 # --before bounds. This replaces the old fixed 06:00 cutoff, which hid
                 # same-day runs scheduled later than 06:00.
-                for day_offset in {0..6}; do
+                for day_step in {0..6}; do
+                  local day_offset=$((start_day_offset + day_step))
                   local scheduled_timestamp
                   scheduled_timestamp=$(date -u -d "${day_offset} days ago ${scheduled_hour}:${scheduled_minute}:00" +"%Y-%m-%dT%H:%M:%S.000000000Z")
                   local after_timestamp
