@@ -171,7 +171,7 @@ spec:
             # collected; the exit code is trapped to /workspace/install-exit-code
             # and the playwright step skips itself when setup failed.
             onError: continue
-            image: mcr.microsoft.com/playwright:v1.64.1-noble
+            image: mcr.microsoft.com/playwright:v1.65.1-noble
             volumeMounts:
               - name: openai-token
                 mountPath: /var/run/openai
@@ -589,7 +589,7 @@ spec:
 
           - name: run-playwright-tests
             onError: continue
-            image: mcr.microsoft.com/playwright:v1.64.1-noble
+            image: mcr.microsoft.com/playwright:v1.65.1-noble
             volumeMounts:
               - name: credentials
                 mountPath: /credentials
