@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@patternfly/react-table": "5.4.16",
-    "@playwright/test": "1.64.1",
+    "@playwright/test": "1.65.0",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "12.1.5",
