@@ -93,6 +93,7 @@ spec:
               # Split args into names and times arrays
               NAMES_ARRAY=("${ALL_ARGS[@]:0:$NUM_TESTS}")
               TIMES_ARRAY=("${ALL_ARGS[@]:$NUM_TESTS:$NUM_TESTS}")
+              REPORT_EPOCH=$(date -u +%s)
 
               echo "Tests to check:" >&2
               for i in "${!NAMES_ARRAY[@]}"; do
@@ -121,48 +122,117 @@ spec:
                 echo "Checking PipelineRuns from kubearchive for prefix: $prefix" >&2
 
                 # Parse the scheduled time (e.g., "3:00 AM" -> 03:00 in 24h format)
-                local scheduled_hour=$(date -d "$scheduled_time" +%H 2>/dev/null || echo "00")
-                local scheduled_minute=$(date -d "$scheduled_time" +%M 2>/dev/null || echo "00")
-                local scheduled_minutes_total=$((10#$scheduled_hour * 60 + 10#$scheduled_minute))
+                local scheduled_hour=$(date -u -d "$scheduled_time" +%H 2>/dev/null || echo "00")
+                local scheduled_minute=$(date -u -d "$scheduled_time" +%M 2>/dev/null || echo "00")
 
-                echo "Looking for runs at approximately $scheduled_time (${scheduled_hour}:${scheduled_minute} UTC, +/- 2 minutes)" >&2
+                # Cron -> integration-tests-scheduler -> PipelineRun latency can be
+                # significant (more than 10 minutes has been observed), so use a
+                # generous window instead of the old +/- 2 minute window.
+                local match_window_minutes=60
 
-                # Get the most recent PipelineRuns matching the prefix (last 7 days) from kubearchive
-                # Query each day separately to avoid the 100 result limit
+                echo "Looking for runs around $scheduled_time (${scheduled_hour}:${scheduled_minute} UTC, +/- ${match_window_minutes} minutes)" >&2
+
                 local all_pipelineruns=""
+                local fallback_pipelineruns=""
 
-                # Query pipelineruns for each of the last 7 days at 6AM
-                for day_offset in {0..6}; do
-                  # Calculate the timestamp for 6AM on this day
-                  local before_timestamp=$(date -u -d "${day_offset} days ago 06:00:00" +"%Y-%m-%dT06:00:00.000000000Z")
+                # Report the seven most recent completed scheduled occurrences. If
+                # today's occurrence has not happened yet, start with yesterday rather
+                # than querying a future window and dropping the oldest occurrence.
+                local start_day_offset=0
+                local today_scheduled_timestamp
+                today_scheduled_timestamp=$(date -u -d "0 days ago ${scheduled_hour}:${scheduled_minute}:00" +"%Y-%m-%dT%H:%M:%S.000000000Z")
+                local today_scheduled_epoch
+                today_scheduled_epoch=$(date -u -d "$today_scheduled_timestamp" +%s)
+                if [ "$today_scheduled_epoch" -gt "$REPORT_EPOCH" ]; then
+                  start_day_offset=1
+                fi
 
-                  echo "Querying pipelineruns before: $before_timestamp (day -$day_offset)" >&2
+                # Query each scheduled occurrence separately with explicit --after and
+                # --before bounds. This replaces the old fixed 06:00 cutoff, which hid
+                # same-day runs scheduled later than 06:00.
+                for day_step in {0..6}; do
+                  local day_offset=$((start_day_offset + day_step))
+                  local scheduled_timestamp
+                  scheduled_timestamp=$(date -u -d "${day_offset} days ago ${scheduled_hour}:${scheduled_minute}:00" +"%Y-%m-%dT%H:%M:%S.000000000Z")
+                  local after_timestamp
+                  after_timestamp=$(date -u -d "${scheduled_timestamp} - ${match_window_minutes} minutes" +"%Y-%m-%dT%H:%M:%S.000000000Z")
+                  local before_timestamp
+                  before_timestamp=$(date -u -d "${scheduled_timestamp} + ${match_window_minutes} minutes" +"%Y-%m-%dT%H:%M:%S.000000000Z")
 
-                  local day_pipelineruns=$(kubectl ka get pipelinerun -n "$NAMESPACE" \
+                  echo "Querying pipelineruns between $after_timestamp and $before_timestamp (day -$day_offset)" >&2
+
+                  local day_pipelineruns
+                  day_pipelineruns=$(kubectl ka get pipelinerun -n "$NAMESPACE" \
+                    --after "$after_timestamp" \
                     --before "$before_timestamp" \
                     --archived \
-                    -o json | jq -c --arg prefix "$prefix" \
-                    --argjson target_minutes "$scheduled_minutes_total" \
-                    'limit(1; .items[] | select(.metadata.name | startswith($prefix)) |
-                    . as $item |
-                    ($item.metadata.creationTimestamp[11:16] | split(":") | (.[0] | tonumber) * 60 + (.[1] | tonumber)) as $run_minutes |
-                    (if ($run_minutes - $target_minutes) < 0 then ($target_minutes - $run_minutes) else ($run_minutes - $target_minutes) end) as $diff |
-                    select($diff <= 2) |
+                    --limit 1000 \
+                    -o json | jq -c --arg prefix "$prefix" '
+                    .items | map(select(.metadata.name | startswith($prefix))) |
+                    sort_by(.metadata.creationTimestamp) | last |
+                    select(. != null) |
                     {name: .metadata.name,
                      status: (.status.conditions[0].status // "Unknown"),
                      reason: (.status.conditions[0].reason // "Unknown"),
-                     creationTime: .metadata.creationTimestamp})')
+                     creationTime: .metadata.creationTimestamp}')
 
-                  # Append to all_pipelineruns if not empty
                   if [ -n "$day_pipelineruns" ]; then
                     all_pipelineruns="${all_pipelineruns}${day_pipelineruns}"$'\n'
+                    continue
+                  fi
+
+                  # Nothing matched this occurrence. Look for the closest run from
+                  # the surrounding 12 hours so a miss can explain itself in the report.
+                  local fallback_after_timestamp
+                  fallback_after_timestamp=$(date -u -d "${scheduled_timestamp} - 12 hours" +"%Y-%m-%dT%H:%M:%S.000000000Z")
+                  local fallback_before_timestamp
+                  fallback_before_timestamp=$(date -u -d "${scheduled_timestamp} + 12 hours" +"%Y-%m-%dT%H:%M:%S.000000000Z")
+                  local scheduled_epoch
+                  scheduled_epoch=$(date -u -d "$scheduled_timestamp" +%s)
+
+                  local closest_run
+                  closest_run=$(kubectl ka get pipelinerun -n "$NAMESPACE" \
+                    --after "$fallback_after_timestamp" \
+                    --before "$fallback_before_timestamp" \
+                    --archived \
+                    --limit 1000 \
+                    -o json | jq -c --arg prefix "$prefix" --argjson scheduled_epoch "$scheduled_epoch" '
+                    .items | map(select(.metadata.name | startswith($prefix))) |
+                    map(. as $item |
+                      (($item.metadata.creationTimestamp[0:19] + "Z") | fromdateiso8601) as $created_epoch |
+                      {name: $item.metadata.name,
+                       status: ($item.status.conditions[0].status // "Unknown"),
+                       reason: ($item.status.conditions[0].reason // "Unknown"),
+                       creationTime: $item.metadata.creationTimestamp,
+                       drift_minutes: (((($created_epoch - $scheduled_epoch) | if . < 0 then -. else . end) / 60) | floor)}) |
+                    sort_by(.drift_minutes) | first |
+                    select(. != null)')
+
+                  if [ -n "$closest_run" ]; then
+                    fallback_pipelineruns="${fallback_pipelineruns}${closest_run}"$'\n'
                   fi
                 done
 
                 echo "$all_pipelineruns" >&2
                 if [ -z "$all_pipelineruns" ]; then
-                  echo "No recent PipelineRuns found for $prefix" >&2
-                  echo "{\"test\": \"$test_name\", \"scheduled_time\": \"$scheduled_time\", \"status\": \"NOT_FOUND\", \"runs\": []}"
+                  echo "No PipelineRuns found within +/-${match_window_minutes} minutes of $scheduled_time for $prefix" >&2
+                  local closest_run="null"
+                  if [ -n "$fallback_pipelineruns" ]; then
+                    closest_run=$(echo "$fallback_pipelineruns" | jq -s --arg namespace "$NAMESPACE" --arg app "$APPLICATION" '
+                      [.[] | select(length > 0)] | sort_by(.drift_minutes) | first |
+                      if . == null then null else
+                        {name: .name,
+                         status: (if (.status == "True" and .reason == "Succeeded") then "SUCCEEDED"
+                                  elif (.status == "False" and .reason == "Failed") then "FAILED"
+                                  elif (.reason == "Running" or .reason == "Started") then "RUNNING"
+                                  else "UNKNOWN" end),
+                         created: .creationTime,
+                         drift_minutes: .drift_minutes,
+                         log_link: "https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/\($namespace)/applications/\($app)/pipelineruns/\(.name)"}
+                      end')
+                    echo "Closest run for $prefix: $closest_run" >&2
+                  fi
+                  echo "{\"test\": \"$test_name\", \"scheduled_time\": \"$scheduled_time\", \"status\": \"NOT_FOUND\", \"runs\": [], \"closest_run\": $closest_run}"
                   return
                 fi
 
@@ -233,7 +303,18 @@ spec:
 
                 echo "<h2>$test_name Tests (Scheduled at $scheduled_time)</h2>"
                 if [ "${runs_count:-0}" -eq 0 ]; then
-                  echo "<p style='color: orange;'><strong>No recent test runs found</strong></p>"
+                  local closest_run=$(echo "$data" | jq -c '.closest_run // empty')
+                  if [ -n "$closest_run" ]; then
+                    local closest_name=$(echo "$closest_run" | jq -r '.name')
+                    local closest_status=$(echo "$closest_run" | jq -r '.status')
+                    local closest_created=$(echo "$closest_run" | jq -r '.created')
+                    local closest_drift=$(echo "$closest_run" | jq -r '.drift_minutes')
+                    local closest_link=$(echo "$closest_run" | jq -r '.log_link')
+                    echo "<p style='color: orange;'><strong>No test run matched the scheduled time.</strong></p>"
+                    echo "<p>Closest run: <a href='$closest_link'>$closest_name</a> &mdash; $closest_status, created $closest_created (${closest_drift} minutes from the scheduled time).</p>"
+                  else
+                    echo "<p style='color: orange;'><strong>No recent test runs found</strong></p>"
+                  fi
                   return
                 fi
 
