@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Map as ImmutableMap } from 'immutable';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Alert } from '@patternfly/react-core';
 import { State } from '../redux-reducers';
 import { useToolUIMapping } from '../hooks/useToolUIMapping';
 import type { OlsToolUIComponent, Tool } from '../types';
@@ -22,7 +24,8 @@ type OlsToolUIsProps = {
 };
 
 const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
-  const [toolUIMapping] = useToolUIMapping();
+  const { t } = useTranslation('plugin__lightspeed-console-plugin');
+  const [toolUIMapping, mappingResolved] = useToolUIMapping();
 
   const toolsData: ImmutableMap<string, ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'tools']),
@@ -32,20 +35,42 @@ const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
     return null;
   }
 
+  // Successful tools carrying an olsToolUiID are kept even when their UI
+  // component cannot be resolved: the tool's UI extension (e.g. the Perses
+  // chart contributed by the monitoring-console-plugin) may not exist on the
+  // console the plugin runs in, and silently dropping it leaves the user with
+  // a chat answer describing a chart that never rendered.
   const olsToolsWithUI = toolsData
     .map((value) => {
       const tool = value.toJS() as Tool;
       const toolUIComponent = tool.olsToolUiID && toolUIMapping[tool.olsToolUiID];
       return { tool, toolUIComponent };
     })
-    .filter(({ tool, toolUIComponent }) => tool.status !== 'error' && !!toolUIComponent);
+    .filter(({ tool }) => tool.status !== 'error' && !!tool.olsToolUiID);
 
   return (
     <>
       {olsToolsWithUI
-        .map(({ tool, toolUIComponent }, toolID) => (
-          <OlsToolUI key={`ols-tool-ui-${toolID}`} tool={tool} toolUIComponent={toolUIComponent} />
-        ))
+        .map(({ tool, toolUIComponent }, toolID) =>
+          toolUIComponent ? (
+            <OlsToolUI
+              key={`ols-tool-ui-${toolID}`}
+              tool={tool}
+              toolUIComponent={toolUIComponent}
+            />
+          ) : mappingResolved ? (
+            // The mapping is only authoritative once the console has resolved
+            // the ols.tool-ui extensions; before that an unmatched ID means
+            // "not yet known", not "unsupported".
+            <Alert
+              className="ols-plugin__alert"
+              isInline
+              key={`ols-tool-ui-unsupported-${toolID}`}
+              title={t('Chart rendering is not supported in this version of OpenShift')}
+              variant="info"
+            />
+          ) : null,
+        )
         .valueSeq()}
     </>
   );

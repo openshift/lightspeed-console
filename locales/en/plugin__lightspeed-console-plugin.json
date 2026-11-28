@@ -15,6 +15,7 @@
   "Cancel": "Cancel",
   "Cancelled": "Cancelled",
   "Changes you made may not be saved.": "Changes you made may not be saved.",
+  "Chart rendering is not supported in this version of OpenShift": "Chart rendering is not supported in this version of OpenShift",
   "Clear chat": "Clear chat",
   "Collapse": "Collapse",
   "Compressed in {{seconds}} seconds": "Compressed in {{seconds}} seconds",
