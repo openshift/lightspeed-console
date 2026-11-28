@@ -7,10 +7,15 @@ import { chatHistoryPush, chatHistoryUpdateTool } from '../src/redux-actions';
 import { renderWithStore } from './test-utils';
 
 // The tool UI mapping depends on console extensions, which only exist inside
-// the console; mock the hook and control the mapping per test.
-const toolUIMapping: Record<string, unknown> = {};
+// the console; mock the hook and control the mapping and its resolved flag
+// per test. vi.mock factories are hoisted above module-scope declarations,
+// so the shared state lives in vi.hoisted().
+const { toolUIMapping, mappingResolved } = vi.hoisted(() => ({
+  toolUIMapping: {} as Record<string, unknown>,
+  mappingResolved: { value: true },
+}));
 vi.mock('../src/hooks/useToolUIMapping', () => ({
-  useToolUIMapping: () => [toolUIMapping, true],
+  useToolUIMapping: () => [toolUIMapping, mappingResolved.value],
 }));
 
 const pushEntryWithTool = (toolID: string, tool: Record<string, unknown>) => {
@@ -84,6 +89,27 @@ describe('OlsToolUIs', () => {
     expect(
       screen.queryByText('Chart rendering is not supported in this version of OpenShift'),
     ).not.toBeInTheDocument();
+  });
+
+  it('renders nothing while tool UI extensions have not resolved yet', () => {
+    // E.g. a stored conversation reopened before the console finished
+    // resolving extensions: an unmatched ID means "not yet known", not
+    // "unsupported".
+    delete toolUIMapping['mcp-obs/show-timeseries'];
+    mappingResolved.value = false;
+
+    renderWithStore(<OlsToolUIs entryIndex={0} />, {
+      actions: pushEntryWithTool('tool-1', {
+        ...baseTool,
+        olsToolUiID: 'mcp-obs/show-timeseries',
+      }),
+    });
+
+    expect(
+      screen.queryByText('Chart rendering is not supported in this version of OpenShift'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('resolved-tool-ui')).not.toBeInTheDocument();
+    mappingResolved.value = true;
   });
 
   it('renders nothing for tools without a tool UI ID', () => {

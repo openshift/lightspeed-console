@@ -25,7 +25,7 @@ type OlsToolUIsProps = {
 
 const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
   const { t } = useTranslation('plugin__lightspeed-console-plugin');
-  const [toolUIMapping] = useToolUIMapping();
+  const [toolUIMapping, mappingResolved] = useToolUIMapping();
 
   const toolsData: ImmutableMap<string, ImmutableMap<string, unknown>> = useSelector((s: State) =>
     s.plugins?.ols?.getIn(['chatHistory', entryIndex, 'tools']),
@@ -58,7 +58,10 @@ const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
               tool={tool}
               toolUIComponent={toolUIComponent}
             />
-          ) : (
+          ) : mappingResolved ? (
+            // The mapping is only authoritative once the console has resolved
+            // the ols.tool-ui extensions; before that an unmatched ID means
+            // "not yet known", not "unsupported".
             <Alert
               className="ols-plugin__alert"
               isInline
@@ -66,7 +69,7 @@ const OlsToolUIs: React.FC<OlsToolUIsProps> = ({ entryIndex }) => {
               title={t('Chart rendering is not supported in this version of OpenShift')}
               variant="info"
             />
-          ),
+          ) : null,
         )
         .valueSeq()}
     </>
